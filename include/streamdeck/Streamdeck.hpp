@@ -108,7 +108,7 @@ class StreamdeckClient : public QThread {
 
 		void read();
 
-		void write(QJsonDocument data, bool& result);
+		void write(QJsonDocument data);
 
 	/*
 	====================================================================================================
@@ -293,6 +293,6 @@ class Streamdeck : public QObject {
 
 	signals:
 
-		void write(QJsonDocument data, bool& result);
+		void write(QJsonDocument data);
 
 };

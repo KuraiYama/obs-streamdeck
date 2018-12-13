@@ -59,8 +59,8 @@ Streamdeck::Streamdeck(StreamdeckClient& client) : m_internalClient(client) {
 	m_internalClient.setParent(this);
 	connect(&m_internalClient, SIGNAL(disconnected(int)), this, SLOT(disconnected(int)));
 	connect(&m_internalClient, SIGNAL(read(QJsonDocument)), this, SLOT(read(QJsonDocument)));
-	connect(this, SIGNAL(write(QJsonDocument, bool&)), &m_internalClient, 
-		SLOT(write(QJsonDocument, bool&)), Qt::ConnectionType::BlockingQueuedConnection);
+	connect(this, SIGNAL(write(QJsonDocument)), &m_internalClient, SLOT(write(QJsonDocument)), 
+		Qt::ConnectionType::QueuedConnection);
 	connect(this, &Streamdeck::close_client, &m_internalClient, &StreamdeckClient::close);
 
 	for(int i = 1; i < (int)rpc_event::RPC_ID_COUNT; i++) {
@@ -83,8 +83,7 @@ Streamdeck::~Streamdeck() {
 
 	disconnect(&m_internalClient, SIGNAL(disconnected(int)), this, SLOT(disconnected(int)));
 	disconnect(&m_internalClient, SIGNAL(read(QJsonDocument)), this, SLOT(read(QJsonDocument)));
-	disconnect(this, SIGNAL(write(QJsonDocument, bool&)), &m_internalClient,
-		SLOT(write(QJsonDocument, bool&)));
+	disconnect(this, SIGNAL(write(QJsonDocument)), &m_internalClient, SLOT(write(QJsonDocument)));
 	disconnect(this, &Streamdeck::close_client, &m_internalClient, &StreamdeckClient::close);
 
 	delete &m_internalClient;
@@ -237,8 +236,8 @@ bool Streamdeck::sendSubscriptionMessage(const rpc_event event, const std::strin
 	m_subscribedResources[event] = resourceId;
 	QJsonObject response = buildJsonResult(event, QString::fromStdString(resourceId));
 	bool result = false;
-	emit write(QJsonDocument(response), result);
-	return result;
+	emit write(QJsonDocument(response));
+	return true;
 }
 
 bool Streamdeck::sendStatusMessage(const rpc_event event, const std::string& status) {
@@ -254,9 +253,9 @@ bool Streamdeck::sendStatusMessage(const rpc_event event, const std::string& sta
 		QString::fromStdString(m_subscribedResources[event]));
 	addToJsonObject(response["result"], "data", status.c_str());
 	bool result = false;
-	emit write(QJsonDocument(response), result);
+	emit write(QJsonDocument(response));
 	updateEventAuthorizations(event, true);
-	return result;
+	return true;
 }
 
 bool Streamdeck::sendStatusMessage(const rpc_event event) {
@@ -271,9 +270,9 @@ bool Streamdeck::sendStatusMessage(const rpc_event event) {
 	QJsonObject response = buildJsonResult(rpc_event::RPC_ID_NO_EVENT,
 		QString::fromStdString(m_subscribedResources[event]));
 	bool result = false;
-	emit write(QJsonDocument(response), result);
+	emit write(QJsonDocument(response));
 	updateEventAuthorizations(event, true);
-	return result;
+	return true;
 }
 
 bool Streamdeck::sendRecordStreamState(const rpc_event event, const std::string& resourceId,
@@ -285,8 +284,8 @@ bool Streamdeck::sendRecordStreamState(const rpc_event event, const std::string&
 	addToJsonObject(response["result"], "streamingStatus", streaming.c_str());
 	addToJsonObject(response["result"], "recordingStatus", recording.c_str());
 	bool result = false;
-	emit write(QJsonDocument(response), result);
-	return result;
+	emit write(QJsonDocument(response));
+	return true;
 }
 
 bool Streamdeck::sendErrorMessage(const rpc_event event, const std::string& resourceId, bool error) {
@@ -298,9 +297,9 @@ bool Streamdeck::sendErrorMessage(const rpc_event event, const std::string& reso
 	QJsonObject response = buildJsonResult(event, QString::fromStdString(resourceId));
 	this->addToJsonObject(response, "error", error);
 	bool result = false;
-	emit this->write(QJsonDocument(response), result);
+	emit this->write(QJsonDocument(response));
 	updateEventAuthorizations(event, false);
-	return result;
+	return true;
 }
 
 bool Streamdeck::sendActiveCollectionMessage(const rpc_event event, const std::string& resourceId,
@@ -316,8 +315,8 @@ bool Streamdeck::sendActiveCollectionMessage(const rpc_event event, const std::s
 		std::to_string((reinterpret_cast<unsigned long long>(collection))));
 	this->addToJsonObject(response["result"], "id", id);
 	bool result = false;
-	emit this->write(QJsonDocument(response), result);
-	return result;
+	emit this->write(QJsonDocument(response));
+	return true;
 }
 
 bool Streamdeck::sendCollectionSwitchMessage(const rpc_event event, const Collection* collection) {
@@ -337,9 +336,9 @@ bool Streamdeck::sendCollectionSwitchMessage(const rpc_event event, const Collec
 	addToJsonObject(data, "id", id);
 	addToJsonObject(response["result"], "data", data);
 	bool result = false;
-	emit write(QJsonDocument(response), result);
+	emit write(QJsonDocument(response));
 	updateEventAuthorizations(event, true);
-	return result;
+	return true;
 }
 
 bool Streamdeck::sendCollectionsMessage(const rpc_event event, const std::string& resourceId,
@@ -372,11 +371,11 @@ bool Streamdeck::sendCollectionsMessage(const rpc_event event, const std::string
 	addToJsonObject(response["result"], "data", data);
 
 	bool result = false;
-	emit this->write(QJsonDocument(response), result);
+	emit this->write(QJsonDocument(response));
 
 	updateEventAuthorizations(rpc_event::RPC_ID_GET_COLLECTIONS, true);
 
-	return result;
+	return true;
 }
 
 bool Streamdeck::sendCollectionsSchema(const rpc_event event, const Collections& collections) {
@@ -442,11 +441,11 @@ bool Streamdeck::sendCollectionsSchema(const rpc_event event, const Collections&
 	addToJsonObject(response["result"], "data", data_collections);
 
 	bool result = false;
-	emit this->write(QJsonDocument(response), result);
+	emit this->write(QJsonDocument(response));
 
 	updateEventAuthorizations(rpc_event::RPC_ID_GET_COLLECTIONS, true);
 
-	return result;
+	return true;
 }
 
 bool Streamdeck::sendScenesMessage(const rpc_event event, const std::string& resourceId,
@@ -496,11 +495,11 @@ bool Streamdeck::sendScenesMessage(const rpc_event event, const std::string& res
 	addToJsonObject(response, "result", data);
 
 	bool result = false;
-	emit this->write(QJsonDocument(response), result);
+	emit this->write(QJsonDocument(response));
 
 	updateEventAuthorizations(rpc_event::RPC_ID_GET_COLLECTIONS, true);
 
-	return result;
+	return true;
 }
 
 /*
@@ -527,7 +526,7 @@ void StreamdeckClient::read() {
 	}
 }
 
-void StreamdeckClient::write(QJsonDocument document, bool& result) {
+void StreamdeckClient::write(QJsonDocument document) {
 
 	log_custom(LOG_STREAMDECK_CLIENT) << QString("[Streamdeck Client] Write message...").toStdString();
 	if(_isVerbose) {
@@ -536,9 +535,13 @@ void StreamdeckClient::write(QJsonDocument document, bool& result) {
 	}
 
 	QByteArray data = document.toJson(QJsonDocument::JsonFormat::Compact).append("\n");
+	bool result = false;
 	if(m_internalSocket != nullptr && m_internalSocket->isValid()) {
 		result = m_internalSocket->write(data) == data.length();
 	}
+
+	if(!result)
+		m_internalSocket->close();
 }
 
 void Streamdeck::read(QJsonDocument json_quest) {
