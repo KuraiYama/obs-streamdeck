@@ -1,0 +1,261 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{64F457B4-983A-3984-A485-6C801ED2B81C}</ProjectGuid>
+    <RootNamespace>StreamDeckPlugin</RootNamespace>
+    <Keyword>Qt4VSv1.0</Keyword>
+    <WindowsTargetPlatformVersion>10.0.14393.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformMinVersion>10.0.14393.0</WindowsTargetPlatformMinVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <PlatformToolset>v141</PlatformToolset>
+    <OutputDirectory>release\</OutputDirectory>
+    <ATLMinimizesCRunTimeLibraryUsage>false</ATLMinimizesCRunTimeLibraryUsage>
+    <CharacterSet>NotSet</CharacterSet>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <IntermediateDirectory>release\</IntermediateDirectory>
+    <PrimaryOutput>StreamDeckPlugin2</PrimaryOutput>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <PlatformToolset>v141</PlatformToolset>
+    <OutputDirectory>debug\</OutputDirectory>
+    <ATLMinimizesCRunTimeLibraryUsage>false</ATLMinimizesCRunTimeLibraryUsage>
+    <CharacterSet>NotSet</CharacterSet>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <IntermediateDirectory>debug\</IntermediateDirectory>
+    <PrimaryOutput>StreamDeckPlugin2</PrimaryOutput>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <PropertyGroup Condition="'$(QtMsBuild)'=='' or !Exists('$(QtMsBuild)\qt.targets')">
+    <QtMsBuild>$(MSBuildProjectDirectory)\QtMsBuild</QtMsBuild>
+  </PropertyGroup>
+  <Target Name="QtMsBuildNotFound" BeforeTargets="CustomBuild;ClCompile" Condition="!Exists('$(QtMsBuild)\qt.targets') or !Exists('$(QtMsBuild)\qt.props')">
+    <Message Importance="High" Text="QtMsBuild: could not locate qt.targets, qt.props; project may not build correctly." />
+  </Target>
+  <ImportGroup Condition="Exists('$(QtMsBuild)\qt.props')">
+    <Import Project="$(QtMsBuild)\qt.props" />
+  </ImportGroup>
+  <ImportGroup Label="ExtensionSettings" />
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">..\obs-studio-22.0.2\build64\rundir\Release\obs-plugins\64bit\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(Platform)\$(Configuration)\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">StreamDeckPlugin2</TargetName>
+    <IgnoreImportLibrary Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</IgnoreImportLibrary>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkIncremental>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">..\obs-studio-22.0.2\build64\rundir\Debug\obs-plugins\64bit\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(Platform)\$(Configuration)\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">StreamDeckPlugin2</TargetName>
+    <IgnoreImportLibrary Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</IgnoreImportLibrary>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>.;D:\Libraries\boost;D:\Projects\obs-studio-22.0.2\libobs;D:\Projects\obs-studio-22.0.2\UI;..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\include;..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\include\QtWidgets;..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\include\QtGui;..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\include\QtANGLE;..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\include\QtNetwork;..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\include\QtCore;release;\include;..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\mkspecs\win32-msvc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>-Zc:rvalueCast -Zc:inline -Zc:strictStrings -Zc:throwingNew -Zc:referenceBinding -w34100 -w34189 -w44996 -w44456 -w44457 -w44458 /std:c++17 %(AdditionalOptions)</AdditionalOptions>
+      <AssemblerListingLocation>release\</AssemblerListingLocation>
+      <BrowseInformation>false</BrowseInformation>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4577;4467;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <Optimization>MaxSpeed</Optimization>
+      <PreprocessorDefinitions>_WINDOWS;UNICODE;_UNICODE;WIN32;WIN64;OBSPLUGINSTREAMDECK_LIBRARY;VERSION_STR="3.4";QT_NO_DEBUG;QT_WIDGETS_LIB;QT_GUI_LIB;QT_NETWORK_LIB;QT_CORE_LIB;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessToFile>false</PreprocessToFile>
+      <ProgramDataBaseFileName>$(IntDir)vc$(PlatformToolsetVersion).pdb</ProgramDataBaseFileName>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <WarningLevel>Level3</WarningLevel>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>-dead_strip;.\obs-dev\bin\win\obs.lib;.\obs-dev\bin\win\obs-frontend-api.lib;$(QTDIR)\lib\Qt5Widgets.lib;$(QTDIR)\lib\Qt5Gui.lib;$(QTDIR)\lib\Qt5Network.lib;$(QTDIR)\lib\Qt5Core.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(QTDIR)\lib;.\obs-dev\bin\win;D:\LIBRARIES\QT\5.11.2\MSVC2017_64\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <DataExecutionPrevention>true</DataExecutionPrevention>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <IgnoreImportLibrary>true</IgnoreImportLibrary>
+      <LinkDLL>true</LinkDLL>
+      <LinkIncremental>false</LinkIncremental>
+      <OutputFile>$(OutDir)\StreamDeckPlugin2.dll</OutputFile>
+      <RandomizedBaseAddress>true</RandomizedBaseAddress>
+      <SubSystem>Windows</SubSystem>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <Version>2.3</Version>
+    </Link>
+    <Midl>
+      <DefaultCharType>Unsigned</DefaultCharType>
+      <EnableErrorChecks>None</EnableErrorChecks>
+      <WarningLevel>0</WarningLevel>
+    </Midl>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_WINDOWS;UNICODE;_UNICODE;WIN32;WIN64;OBSPLUGINSTREAMDECK_LIBRARY;VERSION_STR=\"2.3.1\";QT_NO_DEBUG;QT_WIDGETS_LIB;QT_GUI_LIB;QT_NETWORK_LIB;QT_CORE_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+    <QtMoc>
+      <IncludePath>.;D:\Libraries\boost;D:\Projects\obs-studio-22.0.2\libobs;D:\Projects\obs-studio-22.0.2\UI;..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\include;..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\include\QtWidgets;..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\include\QtGui;..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\include\QtANGLE;..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\include\QtNetwork;..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\include\QtCore;release;\include;..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\mkspecs\win32-msvc;%(AdditionalIncludeDirectories)</IncludePath>
+      <Define>_WINDOWS;UNICODE;_UNICODE;WIN32;WIN64;OBSPLUGINSTREAMDECK_LIBRARY;VERSION_STR=3.4;QT_NO_DEBUG;QT_WIDGETS_LIB;QT_GUI_LIB;QT_NETWORK_LIB;QT_CORE_LIB;NDEBUG;_WINDLL</Define>
+      <OutputFile>$(ConfigurationName)\moc_%(Filename).cpp</OutputFile>
+      <ExecutionDescription>Moc'ing %(Identity)...</ExecutionDescription>
+    </QtMoc>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>.;D:\Libraries\boost;D:\Projects\obs-studio-22.0.2\libobs;D:\Projects\obs-studio-22.0.2\UI;..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\include;..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\include\QtWidgets;..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\include\QtGui;..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\include\QtANGLE;..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\include\QtNetwork;..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\include\QtCore;debug;\include;..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\mkspecs\win32-msvc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>-Zc:rvalueCast -Zc:inline -Zc:strictStrings -Zc:throwingNew -Zc:referenceBinding -w34100 -w34189 -w44996 -w44456 -w44457 -w44458 /std:c++17 %(AdditionalOptions)</AdditionalOptions>
+      <AssemblerListingLocation>debug\</AssemblerListingLocation>
+      <BrowseInformation>false</BrowseInformation>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4577;4467;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>_WINDOWS;UNICODE;_UNICODE;WIN32;WIN64;OBSPLUGINSTREAMDECK_LIBRARY;VERSION_STR="3.4";QT_WIDGETS_LIB;QT_GUI_LIB;QT_NETWORK_LIB;QT_CORE_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessToFile>false</PreprocessToFile>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <WarningLevel>Level3</WarningLevel>
+      <ProgramDataBaseFileName>$(IntDir)vc$(PlatformToolsetVersion).pdb</ProgramDataBaseFileName>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>-dead_strip;D:\Projects\obs-studio-22.0.2\build64\libobs\Debug\obs.lib;D:\Projects\obs-studio-22.0.2\build64\UI\obs-frontend-api\Debug\obs-frontend-api.lib;$(QTDIR)\lib\Qt5Widgetsd.lib;$(QTDIR)\lib\Qt5Guid.lib;$(QTDIR)\lib\Qt5Networkd.lib;$(QTDIR)\lib\Qt5Cored.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(QTDIR)\lib;D:\Projects\obs-studio-22.0.2\build64\rundir\Debug\bin\64bit;D:\LIBRARIES\QT\5.11.2\MSVC2017_64\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <DataExecutionPrevention>true</DataExecutionPrevention>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <IgnoreImportLibrary>true</IgnoreImportLibrary>
+      <LinkDLL>true</LinkDLL>
+      <OutputFile>$(OutDir)\StreamDeckPlugin2.dll</OutputFile>
+      <RandomizedBaseAddress>true</RandomizedBaseAddress>
+      <SubSystem>Windows</SubSystem>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <Version>2.3</Version>
+    </Link>
+    <Midl>
+      <DefaultCharType>Unsigned</DefaultCharType>
+      <EnableErrorChecks>None</EnableErrorChecks>
+      <WarningLevel>0</WarningLevel>
+    </Midl>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_WINDOWS;UNICODE;_UNICODE;WIN32;WIN64;OBSPLUGINSTREAMDECK_LIBRARY;VERSION_STR=\"2.3.1\";QT_WIDGETS_LIB;QT_GUI_LIB;QT_NETWORK_LIB;QT_CORE_LIB;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+    <QtMoc>
+      <IncludePath>.;D:\Libraries\boost;D:\Projects\obs-studio-22.0.2\libobs;D:\Projects\obs-studio-22.0.2\UI;..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\include;..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\include\QtWidgets;..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\include\QtGui;..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\include\QtANGLE;..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\include\QtNetwork;..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\include\QtCore;debug;\include;..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\mkspecs\win32-msvc;%(AdditionalIncludeDirectories)</IncludePath>
+      <Define>_WINDOWS;UNICODE;_UNICODE;WIN32;WIN64;OBSPLUGINSTREAMDECK_LIBRARY;VERSION_STR=3.4;QT_WIDGETS_LIB;QT_GUI_LIB;QT_NETWORK_LIB;QT_CORE_LIB;_WINDLL</Define>
+      <OutputFile>$(ConfigurationName)\moc_%(Filename).cpp</OutputFile>
+      <ExecutionDescription>Moc'ing %(Identity)...</ExecutionDescription>
+    </QtMoc>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="source\common\Logger.cpp" />
+    <ClCompile Include="source\obs\Collection.cpp" />
+    <ClCompile Include="source\obs\Item.cpp" />
+    <ClCompile Include="source\obs\Scene.cpp" />
+    <ClCompile Include="source\plugin_module.cpp" />
+    <ClCompile Include="source\services\ApplicationService.cpp" />
+    <ClCompile Include="source\services\CollectionsService.cpp" />
+    <ClCompile Include="source\services\RecordingService.cpp" />
+    <ClCompile Include="source\services\ScenesService.cpp" />
+    <ClCompile Include="source\services\Service.cpp" />
+    <ClCompile Include="source\services\StreamingService.cpp" />
+    <ClCompile Include="source\streamdeck\Streamdeck.cpp" />
+    <ClCompile Include="source\streamdeck\StreamdeckManager.cpp" />
+    <ClCompile Include="source\ui\InfoDialog.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\common\Logger.hpp" />
+    <ClInclude Include="include\common\SharedVariables.hpp" />
+    <ClInclude Include="include\common\SharedVariablesManager.hpp" />
+    <ClInclude Include="include\events\EventObservable.hpp" />
+    <ClInclude Include="include\events\EventObserver.hpp" />
+    <ClInclude Include="include\global.h" />
+    <QtMoc Include="include\ui\InfoDialog.h" />
+    <ClInclude Include="include\obs\Collection.hpp" />
+    <ClInclude Include="include\obs\Item.hpp" />
+    <ClInclude Include="include\obs\Scene.hpp" />
+    <ClInclude Include="include\services\ApplicationService.hpp" />
+    <ClInclude Include="include\services\CollectionsService.hpp" />
+    <ClInclude Include="include\services\RecordingService.hpp" />
+    <ClInclude Include="include\services\ScenesService.hpp" />
+    <ClInclude Include="include\services\Service.hpp" />
+    <QtMoc Include="include\streamdeck\StreamdeckManager.hpp">
+      <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.;D:\Libraries\boost;D:\Projects\obs-studio-22.0.2\libobs;D:\Projects\obs-studio-22.0.2\UI;.\..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\include;.\..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\include\QtWidgets;.\..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\include\QtGui;.\..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\include\QtANGLE;.\..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\include\QtNetwork;.\..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\include\QtCore;.\debug;\include;.\..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\mkspecs\win32-msvc</IncludePath>
+      <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.;D:\Libraries\boost;D:\Projects\obs-studio-22.0.2\libobs;D:\Projects\obs-studio-22.0.2\UI;.\..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\include;.\..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\include\QtWidgets;.\..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\include\QtGui;.\..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\include\QtANGLE;.\..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\include\QtNetwork;.\..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\include\QtCore;.\release;\include;.\..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\mkspecs\win32-msvc</IncludePath>
+    </QtMoc>
+    <QtMoc Include="include\streamdeck\Streamdeck.hpp">
+      <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.;D:\Libraries\boost;D:\Projects\obs-studio-22.0.2\libobs;D:\Projects\obs-studio-22.0.2\UI;.\..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\include;.\..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\include\QtWidgets;.\..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\include\QtGui;.\..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\include\QtANGLE;.\..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\include\QtNetwork;.\..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\include\QtCore;.\debug;\include;.\..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\mkspecs\win32-msvc</IncludePath>
+      <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.;D:\Libraries\boost;D:\Projects\obs-studio-22.0.2\libobs;D:\Projects\obs-studio-22.0.2\UI;.\..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\include;.\..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\include\QtWidgets;.\..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\include\QtGui;.\..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\include\QtANGLE;.\..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\include\QtNetwork;.\..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\include\QtCore;.\release;\include;.\..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\mkspecs\win32-msvc</IncludePath>
+    </QtMoc>
+    <ClInclude Include="include\services\StreamingService.hpp" />
+    <ClInclude Include="resource.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="debug\moc_predefs.h.cbt">
+      <FileType>Document</FileType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\mkspecs\features\data\dummy.cpp;%(AdditionalInputs)</AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">cl -Bx"$(QTDIR)\bin\qmake.exe" -nologo -Zc:wchar_t -FS -Zc:rvalueCast -Zc:inline -Zc:strictStrings -Zc:throwingNew -Zc:referenceBinding -Zi -MDd -W3 -w34100 -w34189 -w44996 -w44456 -w44457 -w44458 -wd4577 -wd4467 -E ..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\mkspecs\features\data\dummy.cpp 2&gt;NUL &gt;debug\moc_predefs.h</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Generate moc_predefs.h</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">debug\moc_predefs.h;%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="release\moc_predefs.h.cbt">
+      <FileType>Document</FileType>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\mkspecs\features\data\dummy.cpp;%(AdditionalInputs)</AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">cl -Bx"$(QTDIR)\bin\qmake.exe" -nologo -Zc:wchar_t -FS -Zc:rvalueCast -Zc:inline -Zc:strictStrings -Zc:throwingNew -Zc:referenceBinding -O2 -MD -W3 -w34100 -w34189 -w44996 -w44456 -w44457 -w44458 -wd4577 -wd4467 -E ..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\mkspecs\features\data\dummy.cpp 2&gt;NUL &gt;release\moc_predefs.h</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Generate moc_predefs.h</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">release\moc_predefs.h;%(Outputs)</Outputs>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </CustomBuild>
+    <ClInclude Include="ui_infodialog.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="infodialog.ui">
+      <FileType>Document</FileType>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">infodialog.ui;D:\LIBRARIES\QT\5.11.2\MSVC2017_64\bin\uic.exe;%(AdditionalInputs)</AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">D:\LIBRARIES\QT\5.11.2\MSVC2017_64\bin\uic.exe -no-stringliteral infodialog.ui -o ui_infodialog.h</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">UIC infodialog.ui</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">ui_infodialog.h;%(Outputs)</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">infodialog.ui;D:\LIBRARIES\QT\5.11.2\MSVC2017_64\bin\uic.exe;%(AdditionalInputs)</AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">D:\LIBRARIES\QT\5.11.2\MSVC2017_64\bin\uic.exe -no-stringliteral infodialog.ui -o ui_infodialog.h</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">UIC infodialog.ui</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">ui_infodialog.h;%(Outputs)</Outputs>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include=".\StreamDeckPlugin_resource.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="template\events\EventObservable.tpp" />
+    <None Include="template\events\EventObserver.tpp" />
+    <None Include="template\events\SafeEventObservable.tpp" />
+    <None Include="template\events\UnsafeEventObservable.tpp" />
+    <None Include="template\services\Service.tpp" />
+    <None Include="template\streamdeck\StreamdeckManager.tpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">
+    <Import Project="$(QtMsBuild)\qt.targets" />
+  </ImportGroup>
+  <ImportGroup Label="ExtensionTargets" />
+  <ProjectExtensions>
+    <VisualStudio>
+      <UserProperties UicDir=".\GeneratedFiles" RccDir=".\GeneratedFiles" Qt5Version_x0020_x64="msvc2017_64" />
+    </VisualStudio>
+  </ProjectExtensions>
+</Project>
