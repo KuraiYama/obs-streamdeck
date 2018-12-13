@@ -67,7 +67,7 @@ class StreamdeckClient : public QThread {
 
 		bool m_startExecution;
 
-		bool m_isClosed;
+		bool m_isClosing = false;
 
 	/*
 	====================================================================================================
@@ -95,16 +95,14 @@ class StreamdeckClient : public QThread {
 
 		void run() override final;
 
-	private:
-
-		void close();
-
 	/*
 	====================================================================================================
 		Slots
 	====================================================================================================
 	*/
 	private slots:
+
+		void close();
 
 		void disconnected();
 
@@ -280,6 +278,10 @@ class Streamdeck : public QObject {
 		Signals
 	====================================================================================================
 	*/
+	signals:
+
+		void close_client();
+
 	signals:
 
 		void clientDisconnected(Streamdeck*, int);

@@ -117,10 +117,6 @@ void StreamdeckManager::onClientDisconnected(Streamdeck* streamdeck, int code) {
 
 void StreamdeckManager::close(Streamdeck* streamdeck) {
 	streamdeck->close();
-	m_streamdecks.remove(streamdeck);
-	disconnect(streamdeck, &Streamdeck::clientDisconnected, this,
-		&StreamdeckManager::onClientDisconnected);
-	streamdeck->deleteLater();
 }
 
 bool StreamdeckManager::setRecordStreamState(Streamdeck* client, 

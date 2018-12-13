@@ -20,12 +20,6 @@ Item::Item(Scene* scene, obs_sceneitem_t* item) : m_parentScene(scene), m_sceneI
 	m_name = obs_source_get_name(m_source);
 }
 
-Item::Item(const Item&& item) {
-	m_source = item.m_source;
-	m_sceneItem = item.m_sceneItem;
-	m_name = std::move(item.m_name);
-}
-
 Item::~Item() {
 }
 
@@ -50,9 +44,9 @@ const char* Item::type() const {
 }
 
 int64_t Item::id() const {
-	return obs_sceneitem_get_id(m_sceneItem);
+	return 54;// obs_sceneitem_get_id(m_sceneItem);
 }
 
 bool Item::visible() const {
-	return obs_sceneitem_visible(m_sceneItem);
+	return true;// obs_sceneitem_visible(m_sceneItem);
 }

@@ -39,14 +39,19 @@ bool StreamdeckClient::_isVerbose = false;
 ========================================================================================================
 */
 
-StreamdeckClient::StreamdeckClient(qintptr socketDescriptor) :
-		m_socketDescriptor(socketDescriptor),
-		m_startExecution(false) {
+StreamdeckClient::StreamdeckClient(qintptr socketDescriptor) : m_socketDescriptor(socketDescriptor),
+		m_startExecution(false), m_isClosing(false) {
+
 	m_internalSocket = nullptr;
 }
 
 StreamdeckClient::~StreamdeckClient() {
-	close();
+	if(m_internalSocket != nullptr) {
+		disconnect(m_internalSocket, SIGNAL(disconnected(void)), this, SLOT(disconnected(void)));
+		disconnect(m_internalSocket, SIGNAL(readyRead(void)), this, SLOT(read(void)));
+		m_internalSocket->deleteLater();
+		m_internalSocket = nullptr;
+	}
 	log_custom(LOG_STREAMDECK_CLIENT) << "[Streamdeck Client] Destroyed.";
 }
 
@@ -56,6 +61,7 @@ Streamdeck::Streamdeck(StreamdeckClient& client) : m_internalClient(client) {
 	connect(&m_internalClient, SIGNAL(read(QJsonDocument)), this, SLOT(read(QJsonDocument)));
 	connect(this, SIGNAL(write(QJsonDocument, bool&)), &m_internalClient, 
 		SLOT(write(QJsonDocument, bool&)), Qt::ConnectionType::BlockingQueuedConnection);
+	connect(this, &Streamdeck::close_client, &m_internalClient, &StreamdeckClient::close);
 
 	for(int i = 1; i < (int)rpc_event::RPC_ID_COUNT; i++) {
 		m_authorizedEvents[(rpc_event)i] = true;
@@ -79,8 +85,9 @@ Streamdeck::~Streamdeck() {
 	disconnect(&m_internalClient, SIGNAL(read(QJsonDocument)), this, SLOT(read(QJsonDocument)));
 	disconnect(this, SIGNAL(write(QJsonDocument, bool&)), &m_internalClient,
 		SLOT(write(QJsonDocument, bool&)));
+	disconnect(this, &Streamdeck::close_client, &m_internalClient, &StreamdeckClient::close);
 
-	m_internalClient.deleteLater();
+	delete &m_internalClient;
 }
 
 /*
@@ -111,7 +118,6 @@ void StreamdeckClient::run() {
 
 	if(m_internalSocket != nullptr) {
 		connect(m_internalSocket, SIGNAL(disconnected(void)), this, SLOT(disconnected(void)));
-
 		connect(m_internalSocket, SIGNAL(readyRead(void)), this, SLOT(read(void)));
 	}
 
@@ -122,18 +128,11 @@ void StreamdeckClient::run() {
 
 	while(!m_startExecution);
 
-	m_isClosed = false;
-
 	/*****************************/
 	//        EVENT LOOP         //
 	///////////////////////////////
 	int result = exec();
 	/****************************/
-
-	close();
-
-	if(!m_isClosed)
-		emit disconnected(result);
 }
 
 /*
@@ -639,22 +638,18 @@ QTcpSocket* StreamdeckClient::socket() const {
 
 void StreamdeckClient::close() {
 	log_custom(LOG_STREAMDECK_CLIENT) << "[Streamdeck Client] Connection was lost with a client.";
-	if(m_internalSocket != nullptr) {
+	exit(0);
+	if(m_internalSocket != nullptr && m_internalSocket->isOpen()) {
 		m_internalSocket->close();
-
 		disconnect(m_internalSocket, SIGNAL(disconnected(void)), this, SLOT(disconnected(void)));
-
 		disconnect(m_internalSocket, SIGNAL(readyRead(void)), this, SLOT(read(void)));
-
 		m_internalSocket->deleteLater();
 		m_internalSocket = nullptr;
-		m_isClosed = true;
 	}
 }
 
 void StreamdeckClient::disconnected() {
-	close();
-	exit(0);
+	emit disconnected(0);
 }
 
 /*
@@ -691,7 +686,7 @@ void StreamdeckClient::ready() {
 
 void Streamdeck::close() {
 	log_custom(LOG_STREAMDECK) << "[Streamdeck] Closing...";
-	m_internalClient.exit(0);
+	emit close_client();
 }
 
 void Streamdeck::disconnected(int code) {
