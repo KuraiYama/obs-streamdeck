@@ -57,6 +57,10 @@ class Item {
 
 		Item(Scene* scene, obs_sceneitem_t* item);
 
+		Item(const Item& item);
+
+		Item(const Item&& item);
+
 		virtual ~Item();
 
 	/*

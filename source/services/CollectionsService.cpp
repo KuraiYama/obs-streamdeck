@@ -42,8 +42,8 @@ CollectionsService::CollectionsService(StreamdeckManager* streamdeckManager,
 	this->setupEvent<const rpc_event_data&>(Streamdeck::rpc_event::RPC_ID_COLLECTION_UPDATED_SUBSCRIBE,
 		&CollectionsService::subscribeCollectionChange);
 
-	//this->setupEvent<const rpc_event_data&>(Streamdeck::rpc_event::RPC_ID_COLLECTION_SWITCHED_SUBSCRIBE,
-		//&CollectionsService::subscribeCollectionChange);
+	this->setupEvent<const rpc_event_data&>(Streamdeck::rpc_event::RPC_ID_COLLECTION_SWITCHED_SUBSCRIBE,
+		&CollectionsService::subscribeCollectionChange);
 }
 
 CollectionsService::~CollectionsService() {
