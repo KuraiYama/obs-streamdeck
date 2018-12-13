@@ -10,6 +10,7 @@
 */
 
 Logger& operator<<(Logger& logger, const std::string& str) {
+#ifdef DEBUG
 	if(logger.m_editOutput != nullptr) {
 		std::lock_guard<std::mutex> lock(logger.m_mutex);
 		try {
@@ -23,10 +24,12 @@ Logger& operator<<(Logger& logger, const std::string& str) {
 			std::cout << e.what() << std::endl;
 		}
 	}
+#endif
 	return logger;
 }
 
 Logger& operator<<(Logger& logger, const std::string&& str) {
+#ifdef DEBUG
 	if(logger.m_editOutput != nullptr) {
 		std::lock_guard<std::mutex> lock(logger.m_mutex);
 		try {
@@ -40,6 +43,7 @@ Logger& operator<<(Logger& logger, const std::string&& str) {
 			std::cout << e.what() << std::endl;
 		}
 	}
+#endif
 	return logger;
 }
 
