@@ -109,7 +109,7 @@
     </ResourceCompile>
     <QtMoc>
       <IncludePath>.;D:\Libraries\boost;D:\Projects\obs-studio-22.0.2\libobs;D:\Projects\obs-studio-22.0.2\UI;..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\include;..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\include\QtWidgets;..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\include\QtGui;..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\include\QtANGLE;..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\include\QtNetwork;..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\include\QtCore;release;\include;..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\mkspecs\win32-msvc;%(AdditionalIncludeDirectories)</IncludePath>
-      <Define>_WINDOWS;UNICODE;_UNICODE;WIN32;WIN64;OBSPLUGINSTREAMDECK_LIBRARY;VERSION_STR=3.4;QT_NO_DEBUG;QT_WIDGETS_LIB;QT_GUI_LIB;QT_NETWORK_LIB;QT_CORE_LIB;NDEBUG;_WINDLL</Define>
+      <Define>_WINDOWS;UNICODE;_UNICODE;WIN32;WIN64;OBSPLUGINSTREAMDECK_LIBRARY;VERSION_STR="3.4";QT_NO_DEBUG;QT_WIDGETS_LIB;QT_GUI_LIB;QT_NETWORK_LIB;QT_CORE_LIB;NDEBUG;%(PreprocessorDefinitions)</Define>
       <OutputFile>$(ConfigurationName)\moc_%(Filename).cpp</OutputFile>
       <ExecutionDescription>Moc'ing %(Identity)...</ExecutionDescription>
     </QtMoc>
@@ -125,7 +125,7 @@
       <ExceptionHandling>Sync</ExceptionHandling>
       <ObjectFileName>$(IntDir)</ObjectFileName>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_WINDOWS;UNICODE;_UNICODE;WIN32;WIN64;OBSPLUGINSTREAMDECK_LIBRARY;VERSION_STR="3.4";QT_WIDGETS_LIB;QT_GUI_LIB;QT_NETWORK_LIB;QT_CORE_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WINDOWS;UNICODE;_UNICODE;WIN32;WIN64;OBSPLUGINSTREAMDECK_LIBRARY;VERSION_STR="3.4";QT_WIDGETS_LIB;QT_GUI_LIB;QT_NETWORK_LIB;QT_CORE_LIB;DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessToFile>false</PreprocessToFile>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -157,7 +157,7 @@
     </ResourceCompile>
     <QtMoc>
       <IncludePath>.;D:\Libraries\boost;D:\Projects\obs-studio-22.0.2\libobs;D:\Projects\obs-studio-22.0.2\UI;..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\include;..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\include\QtWidgets;..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\include\QtGui;..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\include\QtANGLE;..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\include\QtNetwork;..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\include\QtCore;debug;\include;..\..\LIBRARIES\QT\5.11.2\MSVC2017_64\mkspecs\win32-msvc;%(AdditionalIncludeDirectories)</IncludePath>
-      <Define>_WINDOWS;UNICODE;_UNICODE;WIN32;WIN64;OBSPLUGINSTREAMDECK_LIBRARY;VERSION_STR=3.4;QT_WIDGETS_LIB;QT_GUI_LIB;QT_NETWORK_LIB;QT_CORE_LIB;_WINDLL</Define>
+      <Define>_WINDOWS;UNICODE;_UNICODE;WIN32;WIN64;OBSPLUGINSTREAMDECK_LIBRARY;VERSION_STR="3.4";QT_WIDGETS_LIB;QT_GUI_LIB;QT_NETWORK_LIB;QT_CORE_LIB;DEBUG;%(PreprocessorDefinitions)</Define>
       <OutputFile>$(ConfigurationName)\moc_%(Filename).cpp</OutputFile>
       <ExecutionDescription>Moc'ing %(Identity)...</ExecutionDescription>
     </QtMoc>
