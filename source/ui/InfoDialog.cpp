@@ -1,6 +1,6 @@
 // InfoDialog Include
 #include "include/ui/infodialog.h"
-#include "ui_infodialog.h"
+#include "ui/ui_infodialog.h"
 
 InfoDialog::InfoDialog(QWidget *parent) : QDialog(parent), ui(new Ui::InfoDialog)
 {

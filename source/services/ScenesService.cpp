@@ -15,8 +15,8 @@ ScenesService::ScenesService(StreamdeckManager* streamdeckManager, CollectionMan
 
 	m_collectionManager = collectionManager;
 
-	this->setupEvent<const rpc_event_data&>(Streamdeck::rpc_event::RPC_ID_GET_SCENES,
-		&ScenesService::onGetScenes);
+	/*this->setupEvent<const rpc_event_data&>(Streamdeck::rpc_event::RPC_ID_GET_SCENES,
+		&ScenesService::onGetScenes);*/
 }
 
 ScenesService::~ScenesService() {
