@@ -1,8 +1,8 @@
 /*
  * Plugin Includes
  */
-#include "include/ui/infodialog.h"
-#include "ui/ui_infodialog.h"
+#include "include/ui/InfoDialog.h"
+#include "ui/ui_InfoDialog.h"
 
 /*
 ========================================================================================================
