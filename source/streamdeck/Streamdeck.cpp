@@ -13,6 +13,7 @@
 /*
  * Plugin Includes
  */
+#include "include/common/Global.h"
 #include "include/streamdeck/Streamdeck.hpp"
 #include "include/common/SharedVariablesManager.hpp"
 #include "include/common/Logger.hpp"
@@ -55,22 +56,17 @@ StreamdeckClient::~StreamdeckClient() {
 	log_custom(LOG_STREAMDECK_CLIENT) << "[Streamdeck Client] Destroyed.";
 }
 
-Streamdeck::Streamdeck(StreamdeckClient& client) : m_internalClient(client) {
-	m_internalClient.setParent(this);
+Streamdeck::Streamdeck(StreamdeckClient& client) :
+	m_internalClient(client) {
 	connect(&m_internalClient, SIGNAL(disconnected(int)), this, SLOT(disconnected(int)));
 	connect(&m_internalClient, SIGNAL(read(QJsonDocument)), this, SLOT(read(QJsonDocument)));
 	connect(this, SIGNAL(write(QJsonDocument)), &m_internalClient, SLOT(write(QJsonDocument)), 
 		Qt::ConnectionType::QueuedConnection);
 	connect(this, &Streamdeck::close_client, &m_internalClient, &StreamdeckClient::close);
 
-	for(int i = 1; i < (int)rpc_event::RPC_ID_COUNT; i++) {
-		m_authorizedEvents[(rpc_event)i] = true;
+	for(int i = (int)rpc_event::NO_EVENT+1; i < (int)rpc_event::COUNT; i++) {
+		m_authorizedEvents[(rpc_event)i] = (EVENT_READ | EVENT_WRITE); // Read-Write Authorization
 	}
-
-	updateEventAuthorizations(rpc_event::RPC_ID_START_STREAMING, false);
-	updateEventAuthorizations(rpc_event::RPC_ID_STOP_STREAMING, false);
-	updateEventAuthorizations(rpc_event::RPC_ID_START_RECORDING, false);
-	updateEventAuthorizations(rpc_event::RPC_ID_STOP_RECORDING, false);
 }
 
 Streamdeck::~Streamdeck() {
@@ -131,7 +127,7 @@ StreamdeckClient::run() {
 	/*****************************/
 	//        EVENT LOOP         //
 	///////////////////////////////
-	int result = exec();
+	exec();
 	/****************************/
 }
 
@@ -147,7 +143,7 @@ Streamdeck::buildJsonResult(const rpc_event event, const QString& resourceId) co
 	response["jsonrpc"] = "2.0";
 	response["id"] = (int)event;
 	result["resourceId"] = resourceId;
-	if(event == rpc_event::RPC_ID_NO_EVENT)
+	if(event == rpc_event::NO_EVENT)
 		result["_type"] = "EVENT";
 	response["result"] = result;
 	return response;
@@ -159,7 +155,7 @@ Streamdeck::buildJsonResponse(const rpc_event event, const QString& resourceId) 
 	response["jsonrpc"] = "2.0";
 	response["id"] = (int)event;
 	response["resourceId"] = resourceId;
-	if(event == rpc_event::RPC_ID_NO_EVENT)
+	if(event == rpc_event::NO_EVENT)
 		response["_type"] = "EVENT";
 	return response;
 }
@@ -199,37 +195,34 @@ Streamdeck::addToJsonArray(QJsonValueRef&& json_array, QJsonValue&& value) const
 */
 
 void
-Streamdeck::updateEventAuthorizations(const rpc_event event, bool value) {
-	m_authorizedEvents[event] = value;
+Streamdeck::lockEventAuthorizations(const rpc_event event) {
 	switch(event) {
-		case rpc_event::RPC_ID_START_STREAMING:
-		case rpc_event::RPC_ID_STOP_STREAMING:
-			m_authorizedEvents[rpc_event::RPC_ID_STREAMING_STATUS_CHANGED_SUBSCRIBE] = !value;
+		case rpc_event::START_STREAMING:
+			m_authorizedEvents[rpc_event::START_STREAMING] = EVENT_WRITE;
+			m_authorizedEvents[rpc_event::STREAMING_STATUS_CHANGED_SUBSCRIBE] = 0x0;
 			break;
 
-		case rpc_event::RPC_ID_START_RECORDING:
-		case rpc_event::RPC_ID_STOP_RECORDING:
-			m_authorizedEvents[rpc_event::RPC_ID_RECORDING_STATUS_CHANGED_SUBSCRIBE] = !value;
-			break;
-			
-		case rpc_event::RPC_ID_FETCH_COLLECTIONS_SCHEMA:
-			m_authorizedEvents[rpc_event::RPC_ID_COLLECTION_ADDED_SUBSCRIBE] = !value;
-			m_authorizedEvents[rpc_event::RPC_ID_COLLECTION_REMOVED_SUBSCRIBE] = !value;
-			m_authorizedEvents[rpc_event::RPC_ID_COLLECTION_UPDATED_SUBSCRIBE] = !value;
-			m_authorizedEvents[rpc_event::RPC_ID_COLLECTION_SWITCHED_SUBSCRIBE] = !value;
-			m_authorizedEvents[rpc_event::RPC_ID_GET_ACTIVE_COLLECTION] = !value;
-			m_authorizedEvents[rpc_event::RPC_ID_MAKE_COLLECTION_ACTIVE] = !value;
-			m_authorizedEvents[rpc_event::RPC_ID_GET_SCENES] = !value;
+		case rpc_event::STOP_STREAMING:
+			m_authorizedEvents[rpc_event::STOP_STREAMING] = EVENT_WRITE;
+			m_authorizedEvents[rpc_event::STREAMING_STATUS_CHANGED_SUBSCRIBE] = 0x0;
 			break;
 
-		case rpc_event::RPC_ID_GET_COLLECTIONS:
-			m_authorizedEvents[rpc_event::RPC_ID_COLLECTION_ADDED_SUBSCRIBE] = value;
-			m_authorizedEvents[rpc_event::RPC_ID_COLLECTION_REMOVED_SUBSCRIBE] = value;
-			m_authorizedEvents[rpc_event::RPC_ID_COLLECTION_UPDATED_SUBSCRIBE] = value;
-			m_authorizedEvents[rpc_event::RPC_ID_COLLECTION_SWITCHED_SUBSCRIBE] = value;
-			m_authorizedEvents[rpc_event::RPC_ID_GET_ACTIVE_COLLECTION] = value;
-			m_authorizedEvents[rpc_event::RPC_ID_MAKE_COLLECTION_ACTIVE] = value;
-			m_authorizedEvents[rpc_event::RPC_ID_GET_SCENES] = value;
+		default:
+			break;
+	}
+}
+
+void
+Streamdeck::unlockEventAuthorizations(const rpc_event event) {
+	switch(event) {
+		case rpc_event::START_STREAMING:
+			m_authorizedEvents[rpc_event::START_STREAMING] = EVENT_READ_WRITE;
+			m_authorizedEvents[rpc_event::STREAMING_STATUS_CHANGED_SUBSCRIBE] = EVENT_READ_WRITE;
+			break;
+
+		case rpc_event::STOP_STREAMING:
+			m_authorizedEvents[rpc_event::STOP_STREAMING] = EVENT_READ_WRITE;
+			m_authorizedEvents[rpc_event::STREAMING_STATUS_CHANGED_SUBSCRIBE] = EVENT_READ_WRITE;
 			break;
 
 		default:
@@ -238,69 +231,61 @@ Streamdeck::updateEventAuthorizations(const rpc_event event, bool value) {
 }
 
 bool
-Streamdeck::sendSubscriptionMessage(const rpc_event event, const std::string& resourceId) {
-	
-	log_custom(LOG_STREAMDECK) << "Event Resource subscribed.";
-
+Streamdeck::sendSubscription(const rpc_event event, const std::string& resourceId) {
 	m_subscribedResources[event] = resourceId;
 	QJsonObject response = buildJsonResult(event, QString::fromStdString(resourceId));
-	bool result = false;
+
+	log_custom(LOG_STREAMDECK) << QString("Subscription to resource : %1.")
+		.arg(resourceId.c_str())
+		.toStdString();
+
 	emit write(QJsonDocument(response));
 	return true;
 }
 
 bool
-Streamdeck::sendStatusMessage(const rpc_event event, const std::string& status) {
+Streamdeck::sendEvent(const rpc_event event) {
 	if(m_subscribedResources.find(event) == m_subscribedResources.end())
 		return false;
 
-	if(m_authorizedEvents[event] == false) 
-		return true;
+	QJsonObject response = buildJsonResult(
+		rpc_event::NO_EVENT,
+		QString::fromStdString(m_subscribedResources[event])
+	);
 
-	log_custom(LOG_STREAMDECK) << "Event Message sent.";
+	log_custom(LOG_STREAMDECK) << QString("Send Event Message to %1.")
+		.arg(m_subscribedResources[event].c_str())
+		.toStdString();
 
-	QJsonObject response = buildJsonResult(rpc_event::RPC_ID_NO_EVENT, 
-		QString::fromStdString(m_subscribedResources[event]));
-	addToJsonObject(response["result"], "data", status.c_str());
-	bool result = false;
 	emit write(QJsonDocument(response));
-	updateEventAuthorizations(event, true);
 	return true;
 }
 
 bool
-Streamdeck::sendStatusMessage(const rpc_event event) {
-	if(m_authorizedEvents[event] == false)
-		return true;
-
-	if(m_subscribedResources.find(event) == m_subscribedResources.end())
+Streamdeck::sendRecordStreamState(
+	const rpc_event event,
+	const std::string& resourceId,
+	const std::string& streaming,
+	const std::string& recording
+) {
+	if(event != rpc_event::GET_RECORD_STREAM_STATE)
 		return false;
 
-	log_custom(LOG_STREAMDECK) << "Event Message sent.";
+	QJsonObject response = buildJsonResult(
+		rpc_event::GET_RECORD_STREAM_STATE,
+		QString::fromStdString(resourceId)
+	);
 
-	QJsonObject response = buildJsonResult(rpc_event::RPC_ID_NO_EVENT,
-		QString::fromStdString(m_subscribedResources[event]));
-	bool result = false;
-	emit write(QJsonDocument(response));
-	updateEventAuthorizations(event, true);
-	return true;
-}
-
-bool
-Streamdeck::sendRecordStreamState(const rpc_event event, const std::string& resourceId,
-		const std::string& streaming, const std::string& recording) {
-
-	log_custom(LOG_STREAMDECK) << "Recording and Streaming status sent.";
-
-	QJsonObject response = buildJsonResult(event, QString::fromStdString(resourceId));
 	addToJsonObject(response["result"], "streamingStatus", streaming.c_str());
 	addToJsonObject(response["result"], "recordingStatus", recording.c_str());
-	bool result = false;
+
+	log_custom(LOG_STREAMDECK) << QString("Send response to event %1").arg((int)event).toStdString();
+
 	emit write(QJsonDocument(response));
 	return true;
 }
 
-bool
+/*bool
 Streamdeck::sendErrorMessage(const rpc_event event, const std::string& resourceId, bool error) {
 	if(m_authorizedEvents[event] == false)
 		return true;
@@ -463,9 +448,9 @@ Streamdeck::sendCollectionsSchema(const rpc_event event, const Collections& coll
 	updateEventAuthorizations(rpc_event::RPC_ID_GET_COLLECTIONS, true);
 
 	return true;
-}
+}*/
 
-bool
+/*bool
 Streamdeck::sendScenesMessage(const rpc_event event, const std::string& resourceId,
 		const Collection* collection, const Scenes& scenes) {
 
@@ -505,7 +490,7 @@ Streamdeck::sendScenesMessage(const rpc_event event, const std::string& resource
 			addToJsonArray(items_json, item_json);
 		}
 
-		/* We can put it in "items" or "nodes" */
+		// We can put it in "items" or "nodes"
 		//addToJsonObject(scene_json, "nodes", items_json);
 		addToJsonObject(scene_json, "items", items_json);
 		addToJsonArray(data, scene_json);
@@ -518,7 +503,7 @@ Streamdeck::sendScenesMessage(const rpc_event event, const std::string& resource
 	updateEventAuthorizations(rpc_event::RPC_ID_GET_COLLECTIONS, true);
 
 	return true;
-}
+}*/
 
 /*
 ========================================================================================================
@@ -547,8 +532,8 @@ StreamdeckClient::read() {
 
 void
 StreamdeckClient::write(QJsonDocument document) {
-
 	log_custom(LOG_STREAMDECK_CLIENT) << QString("[Streamdeck Client] Write message...").toStdString();
+
 	if(_isVerbose) {
 		std::string log = document.toJson(QJsonDocument::JsonFormat::Indented).toStdString();
 		log_custom(LOG_STREAMDECK_CLIENT) << log;
@@ -566,7 +551,6 @@ StreamdeckClient::write(QJsonDocument document) {
 
 void
 Streamdeck::read(QJsonDocument json_quest) {
-
 	if(!m_internalClient.isRunning())
 		return;
 
@@ -578,20 +562,30 @@ Streamdeck::read(QJsonDocument json_quest) {
 
 	this->parse(json_quest, event, service, method, args);
 
-	updateEventAuthorizations(event, true);
+	// This event is read-blocked, we skip the event
+	if((m_authorizedEvents[event] & EVENT_READ) == 0x0)
+		return;
+
+	lockEventAuthorizations(event);
+
 	bool error = true;
 	emit received(this, event, service, method, args, error);
-	if(error) close();
+	if(error)
+		close();
 }
 
 void
-Streamdeck::parse(const QJsonDocument& json_quest, Streamdeck::rpc_event& event, QString& service, 
-		QString& method, QVector<QVariant>& args) {
-
+Streamdeck::parse(
+	const QJsonDocument& json_quest,
+	Streamdeck::rpc_event& event,
+	QString& service, 
+	QString& method,
+	QVector<QVariant>& args
+) {
 	log_info << "[Streamdeck]Parsing message...";
 
-	event = (rpc_event)(json_quest["id"].isUndefined() ? rpc_event::RPC_ID_ERROR : 
-		json_quest["id"].toInt() >= (int)rpc_event::RPC_ID_COUNT ? rpc_event::RPC_ID_ERROR : 
+	event = (rpc_event)(json_quest["id"].isUndefined() ? rpc_event::ERROR : 
+		json_quest["id"].toInt() >= (int)rpc_event::COUNT ? rpc_event::ERROR : 
 		rpc_event(json_quest["id"].toInt()));
 
 	method = json_quest["method"].toString();
@@ -604,51 +598,19 @@ Streamdeck::parse(const QJsonDocument& json_quest, Streamdeck::rpc_event& event,
 		args = QVector<QVariant>::fromList(json_args.toVariantList());
 	}
 
-	switch(event) {
-		case rpc_event::RPC_ID_START_RECORDING:
-			log_custom(0x33ff02) << QString("Action START_RECORD (%1)").arg((int)event).toStdString();
-			break;
-		case rpc_event::RPC_ID_STOP_RECORDING:
-			log_custom(0x33ff02) << QString("Action STOP_RECORD (%1)").arg((int)event).toStdString();
-			break;
-		case rpc_event::RPC_ID_START_STREAMING:
-			log_custom(0x33ff02) << QString("Action START_STREAM (%1)").arg((int)event).toStdString();
-			break;
-		case rpc_event::RPC_ID_STOP_STREAMING:
-			log_custom(0x33ff02) << QString("Action STOP_STREAM (%1)").arg((int)event).toStdString();
-			break;
+	logEvent(event, json_quest);
+}
 
-		case rpc_event::RPC_ID_RECORDING_STATUS_CHANGED_SUBSCRIBE:
-		case rpc_event::RPC_ID_STREAMING_STATUS_CHANGED_SUBSCRIBE:
-		case rpc_event::RPC_ID_COLLECTION_ADDED_SUBSCRIBE:
-		case rpc_event::RPC_ID_COLLECTION_REMOVED_SUBSCRIBE:
-		case rpc_event::RPC_ID_COLLECTION_UPDATED_SUBSCRIBE:
-		case rpc_event::RPC_ID_COLLECTION_SWITCHED_SUBSCRIBE:
-			log_custom(0xffb520) << QString("Subscribe Event (%1)").arg((int)event).toStdString();
-			break;
+void
+Streamdeck::send(const rpc_event event, const QJsonDocument& json_quest) {
 
-		case rpc_event::RPC_ID_FETCH_COLLECTIONS_SCHEMA:
-			log_custom(0xffaa9d) << "Fetching collections schema";
-			break;
+	// This event is read only - skip the message
+	if((m_authorizedEvents[event] & EVENT_WRITE) == 0x0)
+		return;
 
-		case rpc_event::RPC_ID_GET_SCENES:
-			log_custom(0xebdcd9) << "Get scenes";
-			break;
+	unlockEventAuthorizations(event);
 
-		case rpc_event::RPC_ID_GET_RECORD_STREAM_STATE:
-			log_custom(0xed65e6) << "Get Recording and Streaming State";
-			break;
-
-		case rpc_event::RPC_ID_GET_ACTIVE_COLLECTION:
-			log_custom(0xab83f0) << "Get active collection";
-
-		case rpc_event::RPC_ID_ERROR:
-		default:
-			log_warn << "Unknown event: ";
-			std::string log = json_quest.toJson(QJsonDocument::JsonFormat::Indented).toStdString();
-			log_warn << log;
-			break;
-	}
+	emit write(json_quest);
 }
 
 /*
@@ -724,4 +686,59 @@ void
 Streamdeck::disconnected(int code) {
 	log_warn << "[Streamdeck] A streamdeck lost connection...";
 	emit clientDisconnected(this, code);
+}
+
+/*
+========================================================================================================
+	Logging
+========================================================================================================
+*/
+
+void
+Streamdeck::logEvent(const rpc_event event, const QJsonDocument& json_quest) {
+	switch(event) {
+		/*case rpc_event::RPC_ID_START_RECORDING:
+			log_custom(0x33ff02) << QString("Action START_RECORD (%1)").arg((int)event).toStdString();
+			break;
+		case rpc_event::RPC_ID_STOP_RECORDING:
+			log_custom(0x33ff02) << QString("Action STOP_RECORD (%1)").arg((int)event).toStdString();
+			break;
+		case rpc_event::RPC_ID_START_STREAMING:
+			log_custom(0x33ff02) << QString("Action START_STREAM (%1)").arg((int)event).toStdString();
+			break;
+		case rpc_event::RPC_ID_STOP_STREAMING:
+			log_custom(0x33ff02) << QString("Action STOP_STREAM (%1)").arg((int)event).toStdString();
+			break;*/
+
+		case rpc_event::RECORDING_STATUS_CHANGED_SUBSCRIBE:
+		case rpc_event::STREAMING_STATUS_CHANGED_SUBSCRIBE:
+		/*case rpc_event::RPC_ID_COLLECTION_ADDED_SUBSCRIBE:
+		case rpc_event::RPC_ID_COLLECTION_REMOVED_SUBSCRIBE:
+		case rpc_event::RPC_ID_COLLECTION_UPDATED_SUBSCRIBE:
+		case rpc_event::RPC_ID_COLLECTION_SWITCHED_SUBSCRIBE:*/
+			log_custom(0xffb520) << QString("Subscribe Event (%1)").arg((int)event).toStdString();
+			break;
+
+		/*case rpc_event::RPC_ID_FETCH_COLLECTIONS_SCHEMA:
+			log_custom(0xffaa9d) << "Fetching collections schema";
+			break;
+
+		case rpc_event::RPC_ID_GET_SCENES:
+			log_custom(0xebdcd9) << "Get scenes";
+			break;*/
+
+		case rpc_event::GET_RECORD_STREAM_STATE:
+			log_custom(0xed65e6) << "Get Recording and Streaming State";
+			break;
+
+		/*case rpc_event::RPC_ID_GET_ACTIVE_COLLECTION:
+			log_custom(0xab83f0) << "Get active collection";*/
+
+		case rpc_event::ERROR:
+		default:
+			log_warn << "Unknown event: ";
+			std::string log = json_quest.toJson(QJsonDocument::JsonFormat::Indented).toStdString();
+			log_warn << log;
+			break;
+	}
 }

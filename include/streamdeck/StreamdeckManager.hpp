@@ -14,7 +14,7 @@
 /*
  * Plugin Includes
  */
-#include "include/global.h"
+#include "include/common/Global.h"
 #include "include/events/EventObservable.hpp"
 #include "include/streamdeck/Streamdeck.hpp"
 #include "include/obs/Collection.hpp"
@@ -131,7 +131,7 @@ class StreamdeckManager : public QObject, public SafeEventObservable<Streamdeck:
 	*/
 	public:
 
-		StreamdeckManager(QObject* parent = NULL, short listenPort = OBS_PORT);
+		StreamdeckManager(short listenPort = OBS_PORT);
 		
 		~StreamdeckManager();
 
@@ -164,24 +164,28 @@ class StreamdeckManager : public QObject, public SafeEventObservable<Streamdeck:
 		);
 
 		bool
-		setRecordStreamState(
-			Streamdeck* client, 
-			const rpc_adv_response<std::tuple<std::string, std::string>>& response
-		);
-
-		bool
-		setError(
-			Streamdeck* client,
-			const rpc_adv_response<bool>& response
-		);
-
-		bool
 		setSubscription(
 			Streamdeck* client,
 			const rpc_adv_response<std::string>& reponse
 		);
 
+		template<typename T>
 		bool
+		setEvent(Streamdeck* client, const rpc_adv_response<T>& status);
+
+		bool
+		setRecordStreamState(
+			Streamdeck* client, 
+			const rpc_adv_response<std::pair<std::string, std::string>>& response
+		);
+
+		/*bool
+		setError(
+			Streamdeck* client,
+			const rpc_adv_response<bool>& response
+		);*/
+
+		/*bool
 		setCollections(
 			Streamdeck* client,
 			const rpc_adv_response<Collections>& response
@@ -211,17 +215,13 @@ class StreamdeckManager : public QObject, public SafeEventObservable<Streamdeck:
 			const rpc_adv_response<std::tuple<Collection*,Scenes>>& response
 		);
 
-		bool
-		setStatus(
-			Streamdeck* client,
-			const rpc_adv_response<std::string>& status
-		);
+		
 
 		bool
 		setStatus(
 			Streamdeck* client,
 			const rpc_adv_response<void>& status
-		);
+		);*/
 	
 	private:
 
@@ -255,5 +255,11 @@ class StreamdeckManager : public QObject, public SafeEventObservable<Streamdeck:
 		);
 
 };
+
+/*
+========================================================================================================
+	Template Definitions
+========================================================================================================
+*/
 
 #include "template/streamdeck/StreamdeckManager.tpp"

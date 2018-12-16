@@ -60,7 +60,7 @@ class RecordingService : public ServiceT<RecordingService> {
 	*/
 	public:
 
-		RecordingService(StreamdeckManager* streamdeckManager);
+		RecordingService();
 
 		virtual ~RecordingService();
 
@@ -70,6 +70,9 @@ class RecordingService : public ServiceT<RecordingService> {
 	====================================================================================================
 	*/
 	private:
+
+		bool
+		checkOutput(calldata_t* data) const;
 
 		bool
 		connectOutputHandler();
@@ -97,8 +100,5 @@ class RecordingService : public ServiceT<RecordingService> {
 
 		bool
 		subscribeRecordStatusChange(const rpc_event_data& data);
-
-		bool
-		checkOutput(calldata_t* data) const;
 
 };

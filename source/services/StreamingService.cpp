@@ -10,8 +10,8 @@
 ========================================================================================================
 */
 
-StreamingService::StreamingService(StreamdeckManager* streamdeckManager) : 
-	ServiceT("StreamingService", streamdeckManager),
+StreamingService::StreamingService() : 
+	ServiceT("StreamingService", "StreamingService"),
 	m_streamingOutput(nullptr) {
 	this->setupEvent(obs_frontend_event::OBS_FRONTEND_EVENT_STREAMING_STARTING,
 		&StreamingService::onStreamStarting);
@@ -29,16 +29,17 @@ StreamingService::StreamingService(StreamdeckManager* streamdeckManager) :
 		&StreamingService::onStreamStopped);
 
 	this->setupEvent<const rpc_event_data&>(
-		Streamdeck::rpc_event::RPC_ID_STREAMING_STATUS_CHANGED_SUBSCRIBE,
-		&StreamingService::subscribeStreamStatusChange);
+		Streamdeck::rpc_event::STREAMING_STATUS_CHANGED_SUBSCRIBE,
+		&StreamingService::subscribeStreamStatusChange
+	);
 
-	this->setupEvent<const rpc_event_data&>(
+	/*this->setupEvent<const rpc_event_data&>(
 		Streamdeck::rpc_event::RPC_ID_START_STREAMING,
 		&StreamingService::startStreaming);
 
 	this->setupEvent<const rpc_event_data&>(
 		Streamdeck::rpc_event::RPC_ID_STOP_STREAMING,
-		&StreamingService::stopStreaming);
+		&StreamingService::stopStreaming);*/
 }
 
 StreamingService::~StreamingService() {
@@ -52,6 +53,31 @@ StreamingService::~StreamingService() {
 */
 
 bool
+StreamingService::subscribeStreamStatusChange(const rpc_event_data& data) {
+	rpc_adv_response<std::string> response = response_string(&data, "subscribeStreamStatusChange");
+	if(data.event == Streamdeck::rpc_event::STREAMING_STATUS_CHANGED_SUBSCRIBE) {
+		response.event = Streamdeck::rpc_event::STREAMING_STATUS_CHANGED_SUBSCRIBE;
+		logInfo("Subscription to streaming event required.");
+
+		if(!checkResource(&data, QRegExp("(.+)"))) {
+			// This streamdeck doesn't provide any resource to warn on stream state change
+			logError("Streamdeck didn't provide resourceId to subscribe.");
+			return false;
+		}
+
+		response.data = QString("%1.%2")
+			.arg(data.serviceName.c_str())
+			.arg(data.method.c_str())
+			.toStdString();
+
+		return streamdeckManager()->commit_to(response, &StreamdeckManager::setSubscription);
+	}
+
+	logError("subscribeStreamStatusChange not called by STREAMING_STATUS_CHANGED_SUBSCRIBED");
+	return false;
+}
+
+/*bool
 StreamingService::startStreaming(const rpc_event_data& data) {
 	rpc_adv_response<bool> response = response_bool(&data, "startStreaming");
 	if(data.event == Streamdeck::rpc_event::RPC_ID_START_STREAMING) {
@@ -95,26 +121,7 @@ StreamingService::stopStreaming(const rpc_event_data& data) {
 	}
 
 	return streamdeckManager()->commit_to(response, &StreamdeckManager::setError);
-}
-
-bool
-StreamingService::subscribeStreamStatusChange(const rpc_event_data& data) {
-	rpc_adv_response<std::string> response = response_string(&data, "subscribeStreamStatusChange");
-	if(data.event == Streamdeck::rpc_event::RPC_ID_STREAMING_STATUS_CHANGED_SUBSCRIBE) {
-		response.event = Streamdeck::rpc_event::RPC_ID_STREAMING_STATUS_CHANGED_SUBSCRIBE;
-		logger("Subscription to streaming event required");
-		if(data.serviceName.empty() || data.method.empty()) {
-			// This streamdeck doesn't provide any resource to warn on stream state change
-			return false;
-		}
-		response.data = QString("%1.%2")
-			.arg(data.serviceName.c_str())
-			.arg(data.method.c_str())
-			.toStdString();
-	}
-
-	return streamdeckManager()->commit_to(response, &StreamdeckManager::setSubscription);
-}
+}*/
 
 /*
 ========================================================================================================
@@ -175,7 +182,8 @@ StreamingService::checkOutput(calldata_t* data) const {
 	obs_output_t* output = nullptr;
 	calldata_get_ptr(data, "output", &output);
 	if(output != m_streamingOutput) {
-		logger("Error: StreamingOutput received by the callback is different from the registered one.");
+		logError("Error: StreamingOutput received by the callback is different from "
+			"the registered one.");
 		obs_frontend_streaming_stop();
 		return false;
 	}
@@ -191,18 +199,19 @@ StreamingService::checkOutput(calldata_t* data) const {
 
 bool
 StreamingService::onStreamLaunching() {
-	logger("OBS Output is ready. OBS is launching stream.");
+	logInfo("OBS output is ready. OBS is launching stream.");
+
 	if(connectOutputHandler())
 		return true;
-	else
-		logger("Error: Output is NULL.");
+
+	logError("Error: Output is NULL.");
 	obs_frontend_streaming_stop();
 	return false;
 }
 
 bool
 StreamingService::onStreamStarting() {
-	logger("OBS is starting stream.");
+	logInfo("OBS is starting stream.");
 	return true;
 }
 
@@ -212,16 +221,16 @@ StreamingService::onStreamStarting(void* streamingService, calldata_t* data) {
 
 	if(!service->checkOutput(data)) return;
 
-	service->logger("OBS output is starting stream.");
+	service->logInfo("OBS output is starting stream.");
 	rpc_adv_response<std::string> response = service->response_string(nullptr, "onStreamingStarting");
-	response.event = Streamdeck::rpc_event::RPC_ID_STREAMING_STATUS_CHANGED_SUBSCRIBE;
+	response.event = Streamdeck::rpc_event::STREAMING_STATUS_CHANGED_SUBSCRIBE;
 	response.data = "starting";
-	service->streamdeckManager()->commit_all(response, &StreamdeckManager::setStatus);
+	service->streamdeckManager()->commit_all(response, &StreamdeckManager::setEvent);
 }
 
 bool
 StreamingService::onStreamStarted() {
-	logger("OBS has started stream.");
+	logInfo("OBS has started stream.");
 	return true;
 }
 
@@ -231,21 +240,21 @@ StreamingService::onStreamStarted(void* streamingService, calldata_t* data) {
 
 	if(!service->checkOutput(data)) return;
 
-	service->logger("OBS output has started stream");
+	service->logInfo("OBS output has started stream");
 	rpc_adv_response<std::string> response = service->response_string(nullptr, "onStreamingStarted");
-	response.event = Streamdeck::rpc_event::RPC_ID_STREAMING_STATUS_CHANGED_SUBSCRIBE;
+	response.event = Streamdeck::rpc_event::STREAMING_STATUS_CHANGED_SUBSCRIBE;
 	response.data = "live";
-	service->streamdeckManager()->commit_all(response, &StreamdeckManager::setStatus);
+	service->streamdeckManager()->commit_all(response, &StreamdeckManager::setEvent);
 
-	rpc_adv_response<bool> action = service->response_bool(nullptr, "onStreamingStarted");
-	action.event = Streamdeck::rpc_event::RPC_ID_START_STREAMING;
+	/*rpc_adv_response<bool> action = service->response_bool(nullptr, "onStreamingStarted");
+	action.event = Streamdeck::rpc_event::START_STREAMING;
 	action.data = false;
-	service->streamdeckManager()->commit_all(action, &StreamdeckManager::setError);
+	service->streamdeckManager()->commit_all(action, &StreamdeckManager::setEvent);*/
 }
 
 bool
 StreamingService::onStreamStopping() {
-	logger("OBS is stopping stream.");
+	logInfo("OBS is stopping stream.");
 	return true;
 }
 
@@ -255,16 +264,16 @@ StreamingService::onStreamStopping(void* streamingService, calldata_t* data) {
 
 	if(!service->checkOutput(data)) return;
 
-	service->logger("OBS output is stopping stream");
+	service->logInfo("OBS output is stopping stream");
 	rpc_adv_response<std::string> response = service->response_string(nullptr, "onStreamingStopping");
-	response.event = Streamdeck::rpc_event::RPC_ID_STREAMING_STATUS_CHANGED_SUBSCRIBE;
+	response.event = Streamdeck::rpc_event::STREAMING_STATUS_CHANGED_SUBSCRIBE;
 	response.data = "ending";
-	service->streamdeckManager()->commit_all(response, &StreamdeckManager::setStatus);
+	service->streamdeckManager()->commit_all(response, &StreamdeckManager::setEvent);
 }
 
 bool
 StreamingService::onStreamStopped() {
-	logger("OBS has stopped stream.");
+	logInfo("OBS has stopped stream.");
 	return true;
 }
 
@@ -279,13 +288,13 @@ StreamingService::onStreamStopped(void* streamingService, calldata_t* data) {
 	long long code = -1;
 	calldata_get_int(data, "code", &code);
 
-	service->logger("OBS output has stopped stream.");
+	service->logInfo("OBS output has stopped stream.");
 	rpc_adv_response<std::string> response = service->response_string(nullptr, "onStreamingStopped");
-	response.event = Streamdeck::rpc_event::RPC_ID_STREAMING_STATUS_CHANGED_SUBSCRIBE;
+	response.event = Streamdeck::rpc_event::STREAMING_STATUS_CHANGED_SUBSCRIBE;
 	response.data = "offline";
-	service->streamdeckManager()->commit_all(response, &StreamdeckManager::setStatus);
+	service->streamdeckManager()->commit_all(response, &StreamdeckManager::setEvent);
 
-	rpc_adv_response<bool> action = service->response_bool(nullptr, "onStreamingStopped");
+	/*rpc_adv_response<bool> action = service->response_bool(nullptr, "onStreamingStopped");
 	if(code == 0) {
 		action.event = Streamdeck::rpc_event::RPC_ID_STOP_STREAMING;
 		action.data = false;
@@ -294,7 +303,7 @@ StreamingService::onStreamStopped(void* streamingService, calldata_t* data) {
 		action.event = Streamdeck::rpc_event::RPC_ID_START_STREAMING;
 		action.data = true;
 	}
-	service->streamdeckManager()->commit_all(action, &StreamdeckManager::setError);
+	service->streamdeckManager()->commit_all(action, &StreamdeckManager::setError);*/
 }
 
 void
@@ -303,11 +312,11 @@ StreamingService::onStreamReconnecting(void* streamingService, calldata_t* data)
 
 	if(!service->checkOutput(data)) return;
 
-	service->logger("OBS output is reconnecting stream");
+	service->logInfo("OBS output is reconnecting stream");
 	rpc_adv_response<std::string> response = service->response_string(nullptr, "onStreamingReconnecting");
-	response.event = Streamdeck::rpc_event::RPC_ID_STREAMING_STATUS_CHANGED_SUBSCRIBE;
+	response.event = Streamdeck::rpc_event::STREAMING_STATUS_CHANGED_SUBSCRIBE;
 	response.data = "reconnecting";
-	service->streamdeckManager()->commit_all(response, &StreamdeckManager::setStatus);
+	service->streamdeckManager()->commit_all(response, &StreamdeckManager::setEvent);
 }
 
 void
@@ -316,9 +325,9 @@ StreamingService::onStreamReconnected(void* streamingService, calldata_t* data) 
 
 	if(!service->checkOutput(data)) return;
 
-	service->logger("OBS output has reconnected stream");
+	service->logInfo("OBS output has reconnected stream");
 	rpc_adv_response<std::string> response = service->response_string(nullptr, "onStreamingReconnected");
-	response.event = Streamdeck::rpc_event::RPC_ID_STREAMING_STATUS_CHANGED_SUBSCRIBE;
+	response.event = Streamdeck::rpc_event::STREAMING_STATUS_CHANGED_SUBSCRIBE;
 	response.data = "live";
-	service->streamdeckManager()->commit_all(response, &StreamdeckManager::setStatus);
+	service->streamdeckManager()->commit_all(response, &StreamdeckManager::setEvent);
 }

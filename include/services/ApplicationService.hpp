@@ -72,13 +72,11 @@ class ApplicationService : public ServiceT<ApplicationService> {
 	*/
 	private:
 
-		InfoDialog m_dialog;
+		InfoDialog* m_dialog;
 
 		std::string m_streamingState;
 
 		std::string m_recordingState;
-
-		CollectionManager* m_collectionManager;
 
 		obs_output_t* m_streamOutput;
 
@@ -91,11 +89,7 @@ class ApplicationService : public ServiceT<ApplicationService> {
 	*/
 	public:
 
-		ApplicationService(
-			QMainWindow* parent,
-			StreamdeckManager*streamdeckManager,
-			CollectionManager* collectionManager
-		);
+		ApplicationService(QMainWindow* parent);
 
 		virtual ~ApplicationService();
 

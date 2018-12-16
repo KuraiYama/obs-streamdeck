@@ -66,7 +66,7 @@ class StreamingService : public ServiceT<StreamingService> {
 	*/
 	public:
 
-		StreamingService(StreamdeckManager* streamdeckManager);
+		StreamingService();
 
 		virtual ~StreamingService();
 
@@ -76,6 +76,9 @@ class StreamingService : public ServiceT<StreamingService> {
 	====================================================================================================
 	*/
 	private:
+
+		bool
+		checkOutput(calldata_t* data) const;
 
 		bool
 		connectOutputHandler();
@@ -98,16 +101,13 @@ class StreamingService : public ServiceT<StreamingService> {
 		bool
 		onStreamStopped();
 
-		bool
+		/*bool
 		startStreaming(const rpc_event_data& data);
 
 		bool
-		stopStreaming(const rpc_event_data& data);
+		stopStreaming(const rpc_event_data& data);*/
 
 		bool
 		subscribeStreamStatusChange(const rpc_event_data& data);
-
-		bool
-		checkOutput(calldata_t* data) const;
 
 };

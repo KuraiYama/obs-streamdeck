@@ -10,6 +10,24 @@
 
 /*
 ========================================================================================================
+	Streamdeck Management
+========================================================================================================
+*/
+
+template<typename T>
+bool
+StreamdeckManager::setEvent(Streamdeck* client, const rpc_adv_response<T>& response) {
+	return client->sendEvent(response.event, response.data);
+}
+
+template<>
+inline bool
+StreamdeckManager::setEvent(Streamdeck* client, const rpc_adv_response<void>& response) {
+	return client->sendEvent(response.event);
+}
+
+/*
+========================================================================================================
 	Messages Handling
 ========================================================================================================
 */

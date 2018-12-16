@@ -10,14 +10,9 @@
 ========================================================================================================
 */
 
-ApplicationService::ApplicationService(
-	QMainWindow* parent,
-	StreamdeckManager* streamdeckManager,
-	CollectionManager* collectionManager
-) :
-	ServiceT("ApplicationService", streamdeckManager),
-	m_collectionManager(collectionManager),
-	m_dialog(parent),
+ApplicationService::ApplicationService(QMainWindow* parent) :
+	ServiceT("ApplicationService", ""),
+	m_dialog(new InfoDialog(parent)),
 	m_streamOutput(nullptr),
 	m_recordOutput(nullptr) {
 	m_streamingState = "offline";
@@ -28,13 +23,15 @@ ApplicationService::ApplicationService(
 	this->setupEvent(OBS_FRONTEND_EVENT_STREAMING_LAUNCHING, &ApplicationService::onStreamLaunching);
 	this->setupEvent(OBS_FRONTEND_EVENT_RECORDING_STARTING, &ApplicationService::onRecordStarting);
 
-	this->setupEvent<const rpc_event_data&>(Streamdeck::rpc_event::RPC_ID_GET_RECORD_STREAM_STATE,
+	this->setupEvent<const rpc_event_data&>(Streamdeck::rpc_event::GET_RECORD_STREAM_STATE,
 		&ApplicationService::onGetRecordStreamState);
 }
 
 ApplicationService::~ApplicationService() {
 	disconnectStreamOutputHandler();
 	disconnectRecordOutputHandler();
+
+	m_dialog->deleteLater();
 }
 
 /*
@@ -237,7 +234,7 @@ ApplicationService::onApplicationLoaded() {
 	QAction* action = (QAction*)obs_frontend_add_tools_menu_qaction(label);
 
 	// Connect the new action to the pop dialog
-	InfoDialog& dialog = m_dialog;
+	InfoDialog& dialog = *m_dialog;
 	if(action != nullptr) {
 		std::function<void (void)> f = [&dialog] {
 			obs_frontend_push_ui_translation(obs_module_get_string);
@@ -247,13 +244,13 @@ ApplicationService::onApplicationLoaded() {
 		action->connect(action, &QAction::triggered, f );
 	}
 
-	Logger::instance().setOutput(dialog.get_logger());
+	Logger::instance().output(dialog.logger());
 
 	dialog.open();
 
-	m_collectionManager->buildCollections();
+	//m_collectionManager->buildCollections();
 
-	logger("Application Loaded.");
+	logInfo("Application Loaded.");
 
 	return true;
 }
@@ -281,19 +278,22 @@ ApplicationService::onGetRecordStreamState(const rpc_event_data& data) {
 	connectRecordOutputHandler();
 	connectStreamOutputHandler();
 
-	rpc_adv_response<std::tuple<std::string,std::string>> response = 
+	rpc_adv_response<std::pair<std::string,std::string>> response =
 		response_string2(&data, "getRecordStreamState");
 
-	if(data.event == Streamdeck::rpc_event::RPC_ID_GET_RECORD_STREAM_STATE) {
-		response.event = Streamdeck::rpc_event::RPC_ID_GET_RECORD_STREAM_STATE;
-		logger("Streamdeck has required record and stream state...");
+	if(data.event == Streamdeck::rpc_event::GET_RECORD_STREAM_STATE) {
+		response.event = Streamdeck::rpc_event::GET_RECORD_STREAM_STATE;
+		logInfo("Streamdeck has required record and stream state...");
+
 		if(data.serviceName.compare("StreamingService") == 0 && data.method.compare("getModel") == 0) {
-			response.data = std::tie<std::string,std::string>(m_streamingState, m_recordingState);
+			response.data = std::make_pair(m_streamingState, m_recordingState);
 			return streamdeckManager()->commit_to(response, &StreamdeckManager::setRecordStreamState);
 		}
-		logger("Error : RecordingService::stopRecording not called by Streamdeck. "
-			"Stopping record aborted.");
+
+		logWarning("GetRecordStreamState - Unknown RPC Service");
+		return true;
 	}
 
+	logError("GetRecordStreamState not called by GET_RCORD_STREAM_STATE.");
 	return false;
 }

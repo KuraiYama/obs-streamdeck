@@ -39,6 +39,8 @@ class Streamdeck;
 ========================================================================================================
 */
 
+typedef char byte;
+
 class StreamdeckClient : public QThread {
 
 	friend class Streamdeck;
@@ -144,46 +146,59 @@ class Streamdeck : public QObject {
 	public:
 
 		enum class rpc_event {
-			RPC_ID_ERROR = -1,
-			RPC_ID_NO_EVENT = 0,
-			RPC_ID_START_STREAMING = 1,
-			RPC_ID_STOP_STREAMING = 2,
-			RPC_ID_START_RECORDING = 3,
-			RPC_ID_STOP_RECORDING = 4,
-			RPC_ID_GET_COLLECTIONS = 5,
-			RPC_ID_MAKE_COLLECTION_ACTIVE = 6,
+			ERROR = -1,
+			NO_EVENT = 0,
+			START_STREAMING = 1,
+			STOP_STREAMING = 2,
+			START_RECORDING = 3,
+			STOP_RECORDING = 4,
+			GET_COLLECTIONS = 5,
+			MAKE_COLLECTION_ACTIVE = 6,
 
-			RPC_ID_MISSING_NO = 7,
+			MISSING_NO = 7,
 
-			RPC_ID_FETCH_COLLECTIONS_SCHEMA = 8,
-			RPC_ID_GET_SCENES = 9,
-			RPC_ID_GET_SOURCES = 10,
-			RPC_ID_MAKE_SCENE_ACTIVE = 11,
-			RPC_ID_GET_ACTIVE_SCENE = 12,
-			RPC_ID_MUTE_AUDIO_SOURCE = 13,
-			RPC_ID_UNMUTE_AUDIO_SOURCE = 14,
-			RPC_ID_HIDE_ITEM = 15,
-			RPC_ID_SHOW_ITEM = 16,
-			RPC_ID_SCENE_SWITCHED_SUBSCRIBE = 17,
-			RPC_ID_SCENE_ADDED_SUBSCRIBE = 18,
-			RPC_ID_SCENE_REMOVED_SUBSCRIBE = 19,
-			RPC_ID_SOURCE_ADDED_SUBSCRIBE = 20,
-			RPC_ID_SOURCE_REMOVED_SUBSCRIBE = 21,
-			RPC_ID_SOURCE_UPDATED_SUBSCRIBE = 22,
-			RPC_ID_ITEM_ADDED_SUBSCRIBED = 23,
-			RPC_ID_ITEM_REMOVED_SUBSCRIBE = 24,
-			RPC_ID_ITEM_UPDATED_SUBSCRIBE = 25,
-			RPC_ID_STREAMING_STATUS_CHANGED_SUBSCRIBE = 26,
-			RPC_ID_GET_ACTIVE_COLLECTION = 27,
-			RPC_ID_COLLECTION_ADDED_SUBSCRIBE = 28,
-			RPC_ID_COLLECTION_REMOVED_SUBSCRIBE = 29,
-			RPC_ID_COLLECTION_SWITCHED_SUBSCRIBE = 30,
-			RPC_ID_GET_RECORD_STREAM_STATE = 31,
-			RPC_ID_COLLECTION_UPDATED_SUBSCRIBE = 32,
-			RPC_ID_RECORDING_STATUS_CHANGED_SUBSCRIBE = 33,
+			FETCH_COLLECTIONS_SCHEMA = 8,
+			GET_SCENES = 9,
+			GET_SOURCES = 10,
+			MAKE_SCENE_ACTIVE = 11,
+			GET_ACTIVE_SCENE = 12,
+			MUTE_AUDIO_SOURCE = 13,
+			UNMUTE_AUDIO_SOURCE = 14,
+			HIDE_ITEM = 15,
+			SHOW_ITEM = 16,
+			SCENE_SWITCHED_SUBSCRIBE = 17,
+			SCENE_ADDED_SUBSCRIBE = 18,
+			SCENE_REMOVED_SUBSCRIBE = 19,
+			SOURCE_ADDED_SUBSCRIBE = 20,
+			SOURCE_REMOVED_SUBSCRIBE = 21,
+			SOURCE_UPDATED_SUBSCRIBE = 22,
+			ITEM_ADDED_SUBSCRIBED = 23,
+			ITEM_REMOVED_SUBSCRIBE = 24,
+			ITEM_UPDATED_SUBSCRIBE = 25,
+			STREAMING_STATUS_CHANGED_SUBSCRIBE = 26,
+			GET_ACTIVE_COLLECTION = 27,
+			COLLECTION_ADDED_SUBSCRIBE = 28,
+			COLLECTION_REMOVED_SUBSCRIBE = 29,
+			COLLECTION_SWITCHED_SUBSCRIBE = 30,
+			GET_RECORD_STREAM_STATE = 31,
+			COLLECTION_UPDATED_SUBSCRIBE = 32,
+			RECORDING_STATUS_CHANGED_SUBSCRIBE = 33,
 
-			RPC_ID_COUNT,
+			COUNT,
 		};
+
+	/*
+	====================================================================================================
+		Static Class Constants
+	====================================================================================================
+	*/
+	private:
+
+		static const byte EVENT_READ = 0x01;
+
+		static const byte EVENT_WRITE = 0x02;
+
+		static const byte EVENT_READ_WRITE = EVENT_READ & EVENT_WRITE;
 
 	/*
 	====================================================================================================
@@ -204,7 +219,7 @@ class Streamdeck : public QObject {
 
 		std::map<rpc_event, std::string> m_subscribedResources;
 
-		std::map<rpc_event, bool> m_authorizedEvents;
+		std::map<rpc_event, byte> m_authorizedEvents;
 
 		StreamdeckClient& m_internalClient;
 
@@ -238,14 +253,18 @@ class Streamdeck : public QObject {
 			QVector<QVariant>& args
 		);
 
-		bool
-		sendSubscriptionMessage(const rpc_event event, const std::string& resourceId);
+		void
+		send(const rpc_event event, const QJsonDocument& json_quest);
 
 		bool
-		sendStatusMessage(const rpc_event event, const std::string& status);
+		sendSubscription(const rpc_event event, const std::string& resourceId);
+
+		template<typename T>
+		bool
+		sendEvent(const rpc_event event, const T& data);
 
 		bool
-		sendStatusMessage(const rpc_event event);
+		sendEvent(const rpc_event event);
 
 		bool
 		sendRecordStreamState(
@@ -255,7 +274,7 @@ class Streamdeck : public QObject {
 			const std::string& recording
 		);
 
-		bool
+		/*bool
 		sendErrorMessage(const rpc_event event, const std::string& resourceId, bool error);
 
 		bool
@@ -287,12 +306,18 @@ class Streamdeck : public QObject {
 			const std::string& resourceId,
 			const Collection* collection,
 			const Scenes& scenes
-		);
+		);*/
 
 		void
-		updateEventAuthorizations(const rpc_event event, bool value);
+		lockEventAuthorizations(const rpc_event event);
+
+		void
+		unlockEventAuthorizations(const rpc_event event);
 
 	private:
+
+		void
+		logEvent(const rpc_event event, const QJsonDocument& json_quest);
 
 		QJsonObject
 		buildJsonResponse(const rpc_event event, const QString& resourceId) const;
@@ -358,3 +383,11 @@ class Streamdeck : public QObject {
 		write(QJsonDocument data);
 
 };
+
+/*
+========================================================================================================
+	Template Definitions
+========================================================================================================
+*/
+
+#include "template/streamdeck/Streamdeck.tpp"

@@ -9,6 +9,7 @@
  * Qt Includes
  */
 #include <QMap>
+#include <QRegexp>
 
 /*
  * OBS Includes
@@ -19,6 +20,7 @@
  * Plugin Includes
  */
 #include "include/events/EventObservable.hpp"
+#include "include/obs/OBSManager.hpp"
 #include "include/streamdeck/StreamDeckManager.hpp"
 
 /*
@@ -33,6 +35,17 @@ class Service {
 
 	/*
 	====================================================================================================
+		Static Class Attributes
+	====================================================================================================
+	*/
+	public:
+
+		static StreamdeckManager* _streamdeckManager;
+
+		static OBSManager* _obsManager;
+
+	/*
+	====================================================================================================
 		Static Class Methods
 	====================================================================================================
 	*/
@@ -41,9 +54,6 @@ class Service {
 		static void
 		OnObsFrontendEvent(obs_frontend_event event, void* service);
 
-		static void
-		OnObsSaveEvent(obs_data_t* save_data, bool saving, void* service);
-
 	/*
 	====================================================================================================
 		Instance Data Members
@@ -51,15 +61,13 @@ class Service {
 	*/
 	protected:
 
-		const char* m_name;
+		const char* m_localName;
 
-		StreamdeckManager* m_streamdeckManager;
+		const char* m_remoteName;
 
 	protected:
 
 		UnsafeEventObservable<obs_frontend_event> m_frontendEvent;
-
-		UnsafeEventObservable<obs_save_event> m_saveEvent;
 
 	/*
 	====================================================================================================
@@ -72,24 +80,14 @@ class Service {
 
 	protected:
 
-		Service(const char* name, StreamdeckManager* streamdeckManager = nullptr);
-
-	/*
-	====================================================================================================
-		Instance methods
-	====================================================================================================
-	*/
-	protected:
-
-		virtual void
-		logger(const std::string& message) const;
+		Service(const char* local_name, const char* remote_name);
 
 };
 
 template<typename T>
 class ServiceT : private Service, 
-		private EventObserver<T, obs_frontend_event>, 
-		private EventObserver<T, obs_save_event>  {
+	private EventObserver<T, obs_frontend_event>, 
+	private EventObserver<T, obs_save_event>  {
 
 	/*
 	====================================================================================================
@@ -133,7 +131,7 @@ class ServiceT : private Service,
 	*/
 	protected:
 
-		ServiceT(const char* name, StreamdeckManager* streamdeckManager = nullptr);
+		ServiceT(const char* local_name, const char* remote_name);
 
 		virtual ~ServiceT() = 0;
 
@@ -153,23 +151,20 @@ class ServiceT : private Service,
 		rpc_adv_response<bool>
 		response_bool(const rpc_event_data* data, const char* method) const;
 
-		rpc_adv_response<std::tuple<std::string, std::string>>
+		rpc_adv_response<std::pair<std::string, std::string>>
 		response_string2(const rpc_event_data* data, const char* method) const;
 
-		rpc_adv_response<Collections>
+		/*rpc_adv_response<Collections>
 		response_collections(const rpc_event_data* data, const char* method) const;
 
 		rpc_adv_response<Collection*>
 		response_collection(const rpc_event_data* data, const char* method) const;
 
-		rpc_adv_response<std::tuple<Collection*, Scenes>>
-		response_scenes(const rpc_event_data* data, const char* method) const;
+		rpc_adv_response<std::pair<Collection*, Scenes>>
+		response_scenes(const rpc_event_data* data, const char* method) const;*/
 
 		void
 		setupEvent(obs_frontend_event event, obs_frontend_callback handler);
-
-		void
-		setupEvent(obs_save_event event, obs_save_callback handler);
 
 		void
 		setupEvent(
@@ -184,14 +179,26 @@ class ServiceT : private Service,
 			typename RPCHandler::template FuncWrapperB<B>::Callback handler
 		);
 
-		void
-		logger(const std::string& message) const override;
+		bool
+		checkResource(const rpc_event_data* data, const QRegExp& regex) const;
 
-		const char*
+		void
+		logInfo(const std::string& message) const;
+
+		void
+		logError(const std::string& message) const;
+
+		void
+		logWarning(const std::string& message) const;
+
+		inline const char*
 		name() const;
 
-		StreamdeckManager*
+		inline StreamdeckManager*
 		streamdeckManager() const;
+
+		inline OBSManager*
+		obsManager() const;
 
 	/*
 	====================================================================================================

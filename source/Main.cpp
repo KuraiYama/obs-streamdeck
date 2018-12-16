@@ -30,8 +30,8 @@
 #include "include/services/ApplicationService.hpp"
 #include "include/services/StreamingService.hpp"
 #include "include/services/RecordingService.hpp"
-#include "include/services/CollectionsService.hpp"
-#include "include/services/ScenesService.hpp"
+/*#include "include/services/CollectionsService.hpp"
+#include "include/services/ScenesService.hpp"*/
 
 /*
 ========================================================================================================
@@ -50,7 +50,7 @@ OBS_MODULE_USE_DEFAULT_LOCALE("frontend-tools", "en-US")
 
 QVector<Service*> services;
 StreamdeckManager* streamdeckManager;
-CollectionManager* collectionManager;
+OBSManager* collectionManager;
 
 /*
 ========================================================================================================
@@ -62,12 +62,12 @@ bool
 obs_module_load(void) {
 	QMainWindow *parent = (QMainWindow*)obs_frontend_get_main_window();
 
-	streamdeckManager = new StreamdeckManager(parent);
-	collectionManager = new CollectionManager();
+	Service::_streamdeckManager = new StreamdeckManager();
+	Service::_obsManager = new OBSManager();
 
-	services.push_back((Service*)new ApplicationService(parent, streamdeckManager, collectionManager));
-	//services.push_back((Service*)new StreamingService(streamdeckManager));
-	//services.push_back((Service*)new RecordingService(streamdeckManager));
+	services.push_back((Service*)new ApplicationService(parent));
+	services.push_back((Service*)new StreamingService());
+	services.push_back((Service*)new RecordingService());
 	//services.push_back((Service*)new CollectionsService(streamdeckManager, collectionManager));
 	//services.push_back((Service*)new ScenesService(streamdeckManager, collectionManager));
 
@@ -76,12 +76,12 @@ obs_module_load(void) {
 
 void
 obs_module_unload(void) {
-
-	delete streamdeckManager;
-	delete collectionManager;
+	delete Service::_streamdeckManager;
+	delete Service::_obsManager;
 
 	for(auto i = services.begin(); i != services.end(); i++)
 		delete *i;
+
 	services.clear();
 }
 
