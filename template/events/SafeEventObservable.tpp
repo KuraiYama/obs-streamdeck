@@ -2,7 +2,6 @@
  * Plugin Includes
  */
 #include "include/events/EventObservable.hpp"
-#include "include/global.h"
 
 /*
 ========================================================================================================
@@ -67,6 +66,7 @@ bool
 SafeEventObservable<T>::notifyEvent(const T& event) const {
 	bool result = m_eventHandlers.contains(event);
 	if(result) {
+		result = m_eventHandlers[event].count() == 0;
 		for(auto i = m_eventHandlers[event].begin(); i != m_eventHandlers[event].end(); i++)
 			result |= (*i)->call(event);
 	}
@@ -79,6 +79,7 @@ bool
 SafeEventObservable<T>::notifyEvent(const T& event, const B& data) const {
 	bool result = m_eventHandlers.contains(event);
 	if(result) {
+		result = m_eventHandlers[event].count() == 0;
 		for(auto i = m_eventHandlers[event].begin(); i != m_eventHandlers[event].end(); i++)
 			result |= (*i)->call<B>(event, data);
 	}

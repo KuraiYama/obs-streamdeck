@@ -2,7 +2,6 @@
  * Plugin Includes
  */
 #include "include/events/EventObserver.hpp"
-#include "include/global.h"
 
 /*
 ========================================================================================================
