@@ -10,9 +10,11 @@
 ========================================================================================================
 */
 
-CollectionsService::CollectionsService(StreamdeckManager* streamdeckManager, 
-		CollectionManager* collectionManager) : ServiceT("CollectionsService", streamdeckManager) {
-
+CollectionsService::CollectionsService(
+	StreamdeckManager* streamdeckManager, 
+	CollectionManager* collectionManager
+) :
+	ServiceT("CollectionsService", streamdeckManager) {
 	m_collectionManager = collectionManager;
 
 	/*this->setupEvent(obs_frontend_event::OBS_FRONTEND_EVENT_SCENE_COLLECTION_LIST_CHANGED,
@@ -55,7 +57,8 @@ CollectionsService::~CollectionsService() {
 ========================================================================================================
 */
 
-bool CollectionsService::onCollectionsListChanged() {
+bool
+CollectionsService::onCollectionsListChanged() {
 	CollectionManager::obs_collection_event evt = m_collectionManager->buildCollections();
 
 	switch(evt) {
@@ -78,7 +81,8 @@ bool CollectionsService::onCollectionsListChanged() {
 	return false;
 }
 
-bool CollectionsService::onCollectionSwitched() {
+bool
+CollectionsService::onCollectionSwitched() {
 
 	// Switch during collections building is normal
 	// We don't notify streamdecks
@@ -90,21 +94,24 @@ bool CollectionsService::onCollectionSwitched() {
 	return true;// streamdeckManager()->commit_all(response, &StreamdeckManager::setCollectionSwitched);
 }
 
-bool CollectionsService::onCollectionAdded() {
+bool
+CollectionsService::onCollectionAdded() {
 	rpc_adv_response<void> response = response_void(nullptr, "onCollectionAdded");
 	response.event = Streamdeck::rpc_event::RPC_ID_COLLECTION_ADDED_SUBSCRIBE;
 
 	return true;// streamdeckManager()->commit_all(response, &StreamdeckManager::setStatus);
 }
 
-bool CollectionsService::onCollectionRemoved() {
+bool
+CollectionsService::onCollectionRemoved() {
 	rpc_adv_response<void> response = response_void(nullptr, "onCollectionRemoved");
 	response.event = Streamdeck::rpc_event::RPC_ID_COLLECTION_REMOVED_SUBSCRIBE;
 
 	return true;// streamdeckManager()->commit_all(response, &StreamdeckManager::setStatus);
 }
 
-bool CollectionsService::onCollectionUpdated() {
+bool
+CollectionsService::onCollectionUpdated() {
 	rpc_adv_response<Collections> response = response_collections(nullptr, "onCollectionUpdated");
 	response.event = Streamdeck::rpc_event::RPC_ID_COLLECTION_UPDATED_SUBSCRIBE;
 	response.data = m_collectionManager->collections();
@@ -118,7 +125,8 @@ bool CollectionsService::onCollectionUpdated() {
 ========================================================================================================
 */
 
-bool CollectionsService::subscribeCollectionChange(const rpc_event_data& data) {
+bool
+CollectionsService::subscribeCollectionChange(const rpc_event_data& data) {
 	rpc_adv_response<std::string> response = response_string(&data, "subscribeCollectionChange");
 	if(data.event == Streamdeck::rpc_event::RPC_ID_COLLECTION_ADDED_SUBSCRIBE ||
 		data.event == Streamdeck::rpc_event::RPC_ID_COLLECTION_REMOVED_SUBSCRIBE || 
@@ -139,7 +147,8 @@ bool CollectionsService::subscribeCollectionChange(const rpc_event_data& data) {
 	return streamdeckManager()->commit_to(response, &StreamdeckManager::setSubscription);
 }
 
-bool CollectionsService::onFetchCollectionsSchema(const rpc_event_data& data) {
+bool
+CollectionsService::onFetchCollectionsSchema(const rpc_event_data& data) {
 	rpc_adv_response<std::string> response = response_string(&data, "onFetchCollectionsSchema");
 	if(data.event == Streamdeck::rpc_event::RPC_ID_FETCH_COLLECTIONS_SCHEMA) {
 		response.event = Streamdeck::rpc_event::RPC_ID_FETCH_COLLECTIONS_SCHEMA;
@@ -158,7 +167,8 @@ bool CollectionsService::onFetchCollectionsSchema(const rpc_event_data& data) {
 		this->onGetCollections(data);*/
 }
 
-bool CollectionsService::onGetCollections(const rpc_event_data& data) {
+bool
+CollectionsService::onGetCollections(const rpc_event_data& data) {
 	
 	rpc_adv_response<Collections> response =
 		response_collections(&data, "onGetCollections");
@@ -180,7 +190,8 @@ bool CollectionsService::onGetCollections(const rpc_event_data& data) {
 	return result;
 }
 
-bool CollectionsService::onGetActiveCollection(const rpc_event_data& data) {
+bool
+CollectionsService::onGetActiveCollection(const rpc_event_data& data) {
 	rpc_adv_response<Collection*> response = response_collection(&data, "onGetActiveCollection");
 	if(data.event == Streamdeck::rpc_event::RPC_ID_GET_ACTIVE_COLLECTION) {
 		response.event = Streamdeck::rpc_event::RPC_ID_GET_ACTIVE_COLLECTION;
@@ -194,7 +205,8 @@ bool CollectionsService::onGetActiveCollection(const rpc_event_data& data) {
 	return false;
 }
 
-bool CollectionsService::onMakeCollectionActive(const rpc_event_data& data) {
+bool
+CollectionsService::onMakeCollectionActive(const rpc_event_data& data) {
 	rpc_adv_response<bool> response = response_bool(&data, "onMakeCollectionActive");
 	if(data.event == Streamdeck::rpc_event::RPC_ID_MAKE_COLLECTION_ACTIVE) {
 		response.event = Streamdeck::rpc_event::RPC_ID_MAKE_COLLECTION_ACTIVE;

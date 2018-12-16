@@ -15,7 +15,8 @@
 
 class SharedVariablesManager;
 
-template<typename...> class SharedVariableT;
+template<typename...>
+class SharedVariableT;
 
 /*
 ========================================================================================================
@@ -45,13 +46,16 @@ class SharedVariable {
 	*/
 	protected:
 
-		SharedVariable() : m_mutex() {};
+		SharedVariable() :
+			m_mutex() {
+		};
 
 		SharedVariable(const SharedVariable&) = delete;
 
 		SharedVariable(SharedVariable&&) = delete;
 
-		virtual ~SharedVariable() = 0 { }
+		virtual ~SharedVariable() = 0 {
+		}
 
 };
 
@@ -83,15 +87,21 @@ class SharedVariableT<T> : public SharedVariable {
 	*/
 	public:
 
-		SharedVariableT() : SharedVariable() {};
+		SharedVariableT() :
+			SharedVariable() {
+		};
 
-		SharedVariableT(T& value) : SharedVariable(), m_internalVariable(value) {};
+		SharedVariableT(T& value) :
+			SharedVariable(),
+			m_internalVariable(value) {
+		};
 
 		SharedVariableT(const SharedVariableT<T>&) = delete;
 
 		SharedVariableT(SharedVariableT<T>&&) = delete;
 
-		virtual ~SharedVariableT() { }
+		virtual ~SharedVariableT() {
+		}
 
 	/*
 	====================================================================================================
@@ -100,12 +110,14 @@ class SharedVariableT<T> : public SharedVariable {
 	*/
 	public:
 
-		void wait(Predicate p) {
+		void
+		wait(Predicate p) {
 			std::unique_lock<std::mutex> lock(m_mutex);
 			m_condition.wait(lock, [p, this]() { return p(this->m_internalVariable); });
 		}
 
-		void set(T value) {
+		void
+		set(T value) {
 			{
 				std::lock_guard<std::mutex> lock(m_mutex);
 				m_internalVariable = value;
@@ -113,7 +125,8 @@ class SharedVariableT<T> : public SharedVariable {
 			m_condition.notify_all();
 		}
 
-		T get() const {
+		T
+		get() const {
 			return m_internalVariable;
 		}
 
@@ -124,11 +137,14 @@ class SharedVariableT<T> : public SharedVariable {
 	*/
 	public:
 
-		SharedVariableT<T>& operator=(const SharedVariableT<T>&) = delete;
+		SharedVariableT<T>&
+		operator=(const SharedVariableT<T>&) = delete;
 
-		SharedVariableT<T>& operator=(SharedVariableT<T>&&) = delete;
+		SharedVariableT<T>&
+		operator=(SharedVariableT<T>&&) = delete;
 
-		SharedVariableT<T>& operator=(const T& value) {
+		SharedVariableT<T>&
+		operator=(const T& value) {
 			this->set(value);
 			return *this;
 		}

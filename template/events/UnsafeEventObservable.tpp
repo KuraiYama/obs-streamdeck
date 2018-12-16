@@ -27,7 +27,8 @@ UnsafeEventObservable<T>::~UnsafeEventObservable() {
 */
 
 template<typename T>
-void UnsafeEventObservable<T>::addEventHandler(const T& event, const EventObserver<T>* eventHandler) {
+void
+UnsafeEventObservable<T>::addEventHandler(const T& event, const EventObserver<T>* eventHandler) {
 	EventObserver<T>::FuncWrapper* callback = eventHandler->callback(event);
 	if(callback != nullptr && 
 			m_eventHandlers.contains(event) && !m_eventHandlers[event].contains(callback))
@@ -35,7 +36,8 @@ void UnsafeEventObservable<T>::addEventHandler(const T& event, const EventObserv
 }
 
 template<typename T>
-void UnsafeEventObservable<T>::remEventHandler(const T& event, const EventObserver<T>* eventHandler) {
+void
+UnsafeEventObservable<T>::remEventHandler(const T& event, const EventObserver<T>* eventHandler) {
 	EventObserver<T>::FuncWrapper* callback = eventHandler->callback(event);
 	if(callback != nullptr && 
 			m_eventHandlers.contains(event) && m_eventHandlers[event].contains(callback))
@@ -49,20 +51,23 @@ void UnsafeEventObservable<T>::remEventHandler(const T& event, const EventObserv
 */
 
 template<typename T>
-void UnsafeEventObservable<T>::addEvent(const T& event) {
+void
+UnsafeEventObservable<T>::addEvent(const T& event) {
 	if(!m_eventHandlers.contains(event))
 		m_eventHandlers[event] = QSet<EventObserver<T>::FuncWrapper*>();
 }
 
 template<typename T>
-void UnsafeEventObservable<T>::removeEvent(const T& event) {
+void
+UnsafeEventObservable<T>::removeEvent(const T& event) {
 	if(m_eventHandlers.contains(event)) {
 		m_eventHandlers.remove(event);
 	}
 }
 
 template<typename T>
-bool UnsafeEventObservable<T>::notifyEvent(const T& event) const {
+bool
+UnsafeEventObservable<T>::notifyEvent(const T& event) const {
 	bool result = m_eventHandlers.contains(event);
 	if(result) {
 		for(auto i = m_eventHandlers[event].begin(); i != m_eventHandlers[event].end(); i++)
@@ -73,7 +78,8 @@ bool UnsafeEventObservable<T>::notifyEvent(const T& event) const {
 
 template<typename T>
 template<typename B>
-bool UnsafeEventObservable<T>::notifyEvent(const T& event, const B& data) const {
+bool
+UnsafeEventObservable<T>::notifyEvent(const T& event, const B& data) const {
 	bool result = m_eventHandlers.contains(event);
 	if(result) {
 		for(auto i = m_eventHandlers[event].begin(); i != m_eventHandlers[event].end(); i++)

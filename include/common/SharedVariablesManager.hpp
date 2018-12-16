@@ -28,7 +28,8 @@ class SharedVariablesManager {
 	*/
 	public:
 
-		static SharedVariablesManager& instance() {
+		static SharedVariablesManager&
+		instance() {
 			static SharedVariablesManager _instance;
 			return _instance;
 		}
@@ -58,7 +59,6 @@ class SharedVariablesManager {
 		SharedVariablesManager(SharedVariablesManager&) = delete;
 
 		~SharedVariablesManager() {
-			
 			for(auto i = m_variables.begin(); i != m_variables.end(); i++)
 				delete (*i).second;
 		}
@@ -71,7 +71,8 @@ class SharedVariablesManager {
 	public:
 
 		template<typename T>
-		SharedVariableT<T>* getVariable(std::string name) {
+		SharedVariableT<T>*
+		getVariable(std::string name) {
 			static std::string message = "Typecast Exception : Impossible convertion between "
 				"shared variables.";
 
@@ -110,9 +111,11 @@ class SharedVariablesManager {
 	*/
 	private:
 		
-		SharedVariablesManager operator=(const SharedVariablesManager&) = delete;
+		SharedVariablesManager
+		operator=(const SharedVariablesManager&) = delete;
 
-		SharedVariablesManager& operator=(SharedVariablesManager&&) = delete;
+		SharedVariablesManager&
+		operator=(SharedVariablesManager&&) = delete;
 
 };
 
@@ -123,7 +126,8 @@ class SharedVariablesManager {
 */
 
 template<typename T>
-SharedVariableT<T>& shared_variable(std::string name) {
+SharedVariableT<T>&
+shared_variable(std::string name) {
 	SharedVariableT<T>* var = SharedVariablesManager::instance().getVariable<T>(name);
 	if(var == nullptr) {
 		throw std::exception("SharedVariable Exception: Try to dereference a nullptr value.");
@@ -132,7 +136,8 @@ SharedVariableT<T>& shared_variable(std::string name) {
 }
 
 template<typename T>
-SharedVariableT<T>& shared_variable(std::string name, const T& value) {
+SharedVariableT<T>&
+shared_variable(std::string name, const T& value) {
 	SharedVariableT<T>* var = SharedVariablesManager::instance().getVariable<T>(name);
 	if(var == nullptr) {
 		throw std::exception("SharedVariable Exception: Try to dereference a nullptr value.");

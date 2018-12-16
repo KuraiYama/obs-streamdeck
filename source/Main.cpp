@@ -58,22 +58,24 @@ CollectionManager* collectionManager;
 ========================================================================================================
 */
 
-bool obs_module_load(void) {
+bool
+obs_module_load(void) {
 	QMainWindow *parent = (QMainWindow*)obs_frontend_get_main_window();
 
 	streamdeckManager = new StreamdeckManager(parent);
 	collectionManager = new CollectionManager();
 
 	services.push_back((Service*)new ApplicationService(parent, streamdeckManager, collectionManager));
-	services.push_back((Service*)new StreamingService(streamdeckManager));
-	services.push_back((Service*)new RecordingService(streamdeckManager));
-	services.push_back((Service*)new CollectionsService(streamdeckManager, collectionManager));
-	services.push_back((Service*)new ScenesService(streamdeckManager, collectionManager));
+	//services.push_back((Service*)new StreamingService(streamdeckManager));
+	//services.push_back((Service*)new RecordingService(streamdeckManager));
+	//services.push_back((Service*)new CollectionsService(streamdeckManager, collectionManager));
+	//services.push_back((Service*)new ScenesService(streamdeckManager, collectionManager));
 
 	return true;
 }
 
-void obs_module_unload(void) {
+void
+obs_module_unload(void) {
 
 	delete streamdeckManager;
 	delete collectionManager;
@@ -89,10 +91,12 @@ void obs_module_unload(void) {
 ========================================================================================================
 */
 
-std::string ptr_to_string(void* ptr) {
+std::string
+ptr_to_string(void* ptr) {
 	return std::to_string(reinterpret_cast<unsigned long long>(ptr));
 }
 
-void* string_to_ptr(const char* str) {
+void*
+string_to_ptr(const char* str) {
 	return reinterpret_cast<void*>(std::atoll(str));
 }

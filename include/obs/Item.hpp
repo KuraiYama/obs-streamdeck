@@ -70,14 +70,19 @@ class Item {
 	*/
 	public:
 
-		std::string name() const;
+		std::string
+		name() const;
 
-		std::string completeName() const;
+		std::string
+		completeName() const;
 
-		virtual const char* type() const;
+		virtual const char*
+		type() const;
 
-		int64_t id() const;
+		int64_t
+		id() const;
 
-		bool visible() const;
+		bool
+		visible() const;
 
 };

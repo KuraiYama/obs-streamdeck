@@ -32,13 +32,17 @@ class RecordingService : public ServiceT<RecordingService> {
 	*/
 	private:
 
-		static void onRecordStarting(void* streamingService, calldata_t* data);
+		static void
+		onRecordStarting(void* streamingService, calldata_t* data);
 
-		static void onRecordStarted(void* streamingService, calldata_t* data);
+		static void
+		onRecordStarted(void* streamingService, calldata_t* data);
 
-		static void onRecordStopping(void* streamingService, calldata_t* data);
+		static void
+		onRecordStopping(void* streamingService, calldata_t* data);
 
-		static void onRecordStopped(void* streamingService, calldata_t* data);
+		static void
+		onRecordStopped(void* streamingService, calldata_t* data);
 
 	/*
 	====================================================================================================
@@ -46,8 +50,6 @@ class RecordingService : public ServiceT<RecordingService> {
 	====================================================================================================
 	*/
 	private:
-
-		EventObserver<RecordingService, Streamdeck::rpc_event> m_rpcEvent;
 
 		obs_output_t* m_recordingOutput;
 
@@ -69,24 +71,34 @@ class RecordingService : public ServiceT<RecordingService> {
 	*/
 	private:
 
-		bool connectOutputHandler();
+		bool
+		connectOutputHandler();
 
-		void disconnectOutputHandler();
+		void
+		disconnectOutputHandler();
 
-		bool onRecordStarting();
+		bool
+		onRecordStarting();
 
-		bool onRecordStarted();
+		bool
+		onRecordStarted();
 
-		bool onRecordStopping();
+		bool
+		onRecordStopping();
 
-		bool onRecordStopped();
+		bool
+		onRecordStopped();
 
-		bool startRecording(const rpc_event_data& data);
+		bool
+		startRecording(const rpc_event_data& data);
 
-		bool stopRecording(const rpc_event_data& data);
+		bool
+		stopRecording(const rpc_event_data& data);
 
-		bool subscribeRecordStatusChange(const rpc_event_data& data);
+		bool
+		subscribeRecordStatusChange(const rpc_event_data& data);
 
-		bool checkOutput(calldata_t* data) const;
+		bool
+		checkOutput(calldata_t* data) const;
 
 };

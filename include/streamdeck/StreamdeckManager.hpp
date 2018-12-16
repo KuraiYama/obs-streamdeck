@@ -21,6 +21,14 @@
 
 /*
 ========================================================================================================
+	Defines
+========================================================================================================
+*/
+
+#define OBS_PORT 28195
+
+/*
+========================================================================================================
 	Types Predeclarations
 ========================================================================================================
 */
@@ -91,11 +99,13 @@ class StreamdeckServer : private QTcpServer {
 	*/
 	private:
 
-		void incomingConnection(qintptr socketDescriptor) override final;
+		void
+		incomingConnection(qintptr socketDescriptor) override final;
 
 	public:
 
-		StreamdeckClient* nextPendingClient();
+		StreamdeckClient*
+		nextPendingClient();
 
 };
 
@@ -133,52 +143,93 @@ class StreamdeckManager : public QObject, public SafeEventObservable<Streamdeck:
 	public:
 
 		template<typename T>
-		bool commit_to(rpc_adv_response<T>& response,
-			bool(StreamdeckManager::*functor)(Streamdeck*, const rpc_adv_response<T>&));
+		bool
+		commit_to(
+			rpc_adv_response<T>& response,
+			bool(StreamdeckManager::*functor)(Streamdeck*, const rpc_adv_response<T>&)
+		);
 
 		template<typename T>
-		bool commit_all(rpc_adv_response<T>& response,
-			bool(StreamdeckManager::*functor)(Streamdeck*, const rpc_adv_response<T>&));
+		bool
+		commit_all(
+			rpc_adv_response<T>& response,
+			bool(StreamdeckManager::*functor)(Streamdeck*, const rpc_adv_response<T>&)
+		);
 
 		template<typename T>
-		bool commit_any(rpc_adv_response<T>& response,
-			bool(StreamdeckManager::*functor)(Streamdeck*, const rpc_adv_response<T>&));
+		bool
+		commit_any(
+			rpc_adv_response<T>& response,
+			bool(StreamdeckManager::*functor)(Streamdeck*, const rpc_adv_response<T>&)
+		);
 
-		bool setRecordStreamState(Streamdeck* client, 
-			const rpc_adv_response<std::tuple<std::string, std::string>>& response);
+		bool
+		setRecordStreamState(
+			Streamdeck* client, 
+			const rpc_adv_response<std::tuple<std::string, std::string>>& response
+		);
 
-		bool setError(Streamdeck* client,
-			const rpc_adv_response<bool>& response);
+		bool
+		setError(
+			Streamdeck* client,
+			const rpc_adv_response<bool>& response
+		);
 
-		bool setSubscription(Streamdeck* client,
-			const rpc_adv_response<std::string>& reponse);
+		bool
+		setSubscription(
+			Streamdeck* client,
+			const rpc_adv_response<std::string>& reponse
+		);
 
-		bool setCollections(Streamdeck* client,
-			const rpc_adv_response<Collections>& response);
+		bool
+		setCollections(
+			Streamdeck* client,
+			const rpc_adv_response<Collections>& response
+		);
 
-		bool fetchCollections(Streamdeck* client,
-			const rpc_adv_response<Collections>& response);
+		bool
+		fetchCollections(
+			Streamdeck* client,
+			const rpc_adv_response<Collections>& response
+		);
 
-		bool setActiveCollection(Streamdeck* client,
-			const rpc_adv_response<Collection*>& response);
+		bool
+		setActiveCollection(
+			Streamdeck* client,
+			const rpc_adv_response<Collection*>& response
+		);
 
-		bool setCollectionSwitched(Streamdeck* client,
-			const rpc_adv_response<Collection*>& response);
+		bool
+		setCollectionSwitched(
+			Streamdeck* client,
+			const rpc_adv_response<Collection*>& response
+		);
 
-		bool setScenes(Streamdeck* client,
-			const rpc_adv_response<std::tuple<Collection*,Scenes>>& response);
+		bool
+		setScenes(
+			Streamdeck* client,
+			const rpc_adv_response<std::tuple<Collection*,Scenes>>& response
+		);
 
-		bool setStatus(Streamdeck* client,
-			const rpc_adv_response<std::string>& status);
+		bool
+		setStatus(
+			Streamdeck* client,
+			const rpc_adv_response<std::string>& status
+		);
 
-		bool setStatus(Streamdeck* client,
-			const rpc_adv_response<void>& status);
+		bool
+		setStatus(
+			Streamdeck* client,
+			const rpc_adv_response<void>& status
+		);
 	
 	private:
 
-		void close(Streamdeck* streamdeck);
+		void
+		close(Streamdeck* streamdeck);
 
-		bool validate(rpc_response& response);
+		bool
+		validate(rpc_response& response);
 
 	/*
 	====================================================================================================
@@ -187,18 +238,21 @@ class StreamdeckManager : public QObject, public SafeEventObservable<Streamdeck:
 	*/
 	private slots:
 
-		void onClientConnected();
+		void
+		onClientConnected();
 
-		void onClientDisconnected(Streamdeck* streamdeck, int code);
+		void
+		onClientDisconnected(Streamdeck* streamdeck, int code);
 
-		void receiveMessage(Streamdeck* streamdeck, Streamdeck::rpc_event event, QString service, 
-			QString method, QVector<QVariant> args, bool& error);
-
-	/*
-	====================================================================================================
-		Signals
-	====================================================================================================
-	*/
+		void
+		receiveMessage(
+			Streamdeck* streamdeck,
+			Streamdeck::rpc_event event,
+			QString service, 
+			QString method,
+			QVector<QVariant> args,
+			bool& error
+		);
 
 };
 

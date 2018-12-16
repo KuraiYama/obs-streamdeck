@@ -77,14 +77,19 @@ class Scene {
 	*/
 	public:
 
-		void buildItems();
+		void
+		buildItems();
 
-		std::string name() const;
+		std::string
+		name() const;
 
-		std::string id() const;
+		std::string
+		id() const;
 
-		obs_scene_t* scene() const;
+		obs_scene_t*
+		scene() const;
 
-		Items items() const;
+		Items
+		items() const;
 
 };

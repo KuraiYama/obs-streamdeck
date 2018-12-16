@@ -15,7 +15,9 @@ Collection::Collection(std::string name) : m_name(name) {
 Collection::~Collection() {
 }
 
-CollectionManager::CollectionManager() : m_activeCollection(nullptr), m_isBuildingCollections(false) {
+CollectionManager::CollectionManager() :
+	m_activeCollection(nullptr),
+	m_isBuildingCollections(false) {
 }
 
 CollectionManager::~CollectionManager() {
@@ -27,7 +29,8 @@ CollectionManager::~CollectionManager() {
 ========================================================================================================
 */
 
-void Collection::buildScenes() {
+void
+Collection::buildScenes() {
 	obs_frontend_set_current_scene_collection(m_name.c_str());
 
 	obs_frontend_source_list scenes = {};
@@ -51,8 +54,8 @@ void Collection::buildScenes() {
 ========================================================================================================
 */
 
-CollectionManager::obs_collection_event CollectionManager::buildCollections() {
-
+CollectionManager::obs_collection_event
+CollectionManager::buildCollections() {
 	obs_collection_event event = obs_collection_event::OBS_COLLECTIONS_LIST_BUILD;
 
 	m_isBuildingCollections = true;
@@ -101,7 +104,8 @@ CollectionManager::obs_collection_event CollectionManager::buildCollections() {
 	return event;
 }
 
-Collection* CollectionManager::getCollectionByName(const std::string& name) {
+Collection*
+CollectionManager::getCollectionByName(const std::string& name) {
 	Collection* collection = nullptr;
 	if(m_collections.find(name) != m_collections.end()) {
 		collection = &m_collections[name];
@@ -115,29 +119,34 @@ Collection* CollectionManager::getCollectionByName(const std::string& name) {
 ========================================================================================================
 */
 
-std::string Collection::name() const {
+std::string
+Collection::name() const {
 	return m_name;
 }
 
-std::string Collection::id() const {
+std::string
+Collection::id() const {
 	return m_name;
 }
 
-Scenes Collection::scenes() const {
+Scenes
+Collection::scenes() const {
 	Scenes scenes;
 	for(auto iter = m_scenes.begin(); iter != m_scenes.end(); iter++)
 		scenes.push_back(const_cast<Scene*>(&(iter->second)));
 	return scenes;
 }
 
-Collections CollectionManager::collections() const {
+Collections
+CollectionManager::collections() const {
 	Collections collections;
 	for(auto iter = m_collections.begin(); iter != m_collections.end(); iter++)
 		collections.push_back(const_cast<Collection*>(&(iter->second)));
 	return collections;
 }
 
-Collection* CollectionManager::activeCollection() const {
+Collection*
+CollectionManager::activeCollection() const {
 	const char* current_collection = obs_frontend_get_current_scene_collection();
 	if(m_activeCollection->name().compare(current_collection) != 0) {
 		m_activeCollection = (Collection*)&m_collections.find(current_collection)->second;
@@ -145,6 +154,7 @@ Collection* CollectionManager::activeCollection() const {
 	return m_activeCollection;
 }
 
-bool CollectionManager::isBuildingCollections() const {
+bool
+CollectionManager::isBuildingCollections() const {
 	return m_isBuildingCollections;
 }

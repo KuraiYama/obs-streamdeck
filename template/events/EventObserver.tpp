@@ -19,7 +19,8 @@ EventObserver<E>::~EventObserver() {
 }
 
 template<typename T, typename E>
-EventObserver<T, E>::EventObserver() : EventObserver<E>() {
+EventObserver<T, E>::EventObserver() :
+	EventObserver<E>() {
 }
 
 template<typename T, typename E>
@@ -33,29 +34,39 @@ EventObserver<T, E>::~EventObserver() {
 */
 
 template<typename E>
-typename EventObserver<E>::FuncWrapper* EventObserver<E>::callback(const E& event) const {
+typename EventObserver<E>::FuncWrapper*
+EventObserver<E>::callback(const E& event) const {
 	return m_eventHandlers.contains(event) ? m_eventHandlers[event] : nullptr;
 }
 
 template<typename T, typename E>
 template<typename B>
-void EventObserver<T, E>::registerCallback(const E& event, 
-		typename FuncWrapperB<B>::Callback handler, T* caller) {
+void
+EventObserver<T, E>::registerCallback(
+	const E& event, 
+	typename FuncWrapperB<B>::Callback handler,
+	T* caller
+) {
 	if(!m_eventHandlers.contains(event)) {
 		m_eventHandlers[event] = new FuncWrapperB<B>(handler, caller, this);
 	}
 }
 
 template<typename T, typename E>
-void EventObserver<T, E>::registerCallback(const E& event, 
-		typename FuncWrapperB<void>::Callback handler, T* caller) {
+void
+EventObserver<T, E>::registerCallback(
+	const E& event, 
+	typename FuncWrapperB<void>::Callback handler,
+	T* caller
+) {
 	if(!m_eventHandlers.contains(event)) {
 		m_eventHandlers[event] = new FuncWrapperB<void>(handler, caller, this);
 	}
 }
 
 template<typename T, typename E>
-void EventObserver<T, E>::unregisterCallback(const E& event) {
+void
+EventObserver<T, E>::unregisterCallback(const E& event) {
 	if(m_eventHandlers.contains(event)) {
 		delete m_eventHandlers[event];
 		m_eventHandlers.remove(event);
@@ -70,7 +81,8 @@ void EventObserver<T, E>::unregisterCallback(const E& event) {
 
 template<typename E>
 template<typename B>
-bool EventObserver<E>::call(const E& event, const B& data) const {
+bool
+EventObserver<E>::call(const E& event, const B& data) const {
 	QMap<E, FuncWrapper*>::const_iterator handler = m_eventHandlers.find(event);
 	if(handler != m_eventHandlers.end()) {
 		return (*handler)->call<B>(data);
@@ -80,7 +92,8 @@ bool EventObserver<E>::call(const E& event, const B& data) const {
 }
 
 template<typename E>
-bool EventObserver<E>::call(const E& event) const {
+bool
+EventObserver<E>::call(const E& event) const {
 	QMap<E, FuncWrapper*>::const_iterator handler = m_eventHandlers.find(event);
 	if(handler != m_eventHandlers.end()) {
 		return (*handler)->call();

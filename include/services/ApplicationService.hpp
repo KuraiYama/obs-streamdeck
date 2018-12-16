@@ -35,25 +35,35 @@ class ApplicationService : public ServiceT<ApplicationService> {
 	*/
 	private:
 
-		static void onRecordStarting(void* streamingService, calldata_t* data);
+		static void
+		onRecordStarting(void* streamingService, calldata_t* data);
 
-		static void onRecordStarted(void* streamingService, calldata_t* data);
+		static void
+		onRecordStarted(void* streamingService, calldata_t* data);
 
-		static void onRecordStopping(void* streamingService, calldata_t* data);
+		static void
+		onRecordStopping(void* streamingService, calldata_t* data);
 
-		static void onRecordStopped(void* streamingService, calldata_t* data);
+		static void
+		onRecordStopped(void* streamingService, calldata_t* data);
 
-		static void onStreamStarting(void* streamingService, calldata_t* data);
+		static void
+		onStreamStarting(void* streamingService, calldata_t* data);
 
-		static void onStreamStarted(void* streamingService, calldata_t* data);
+		static void
+		onStreamStarted(void* streamingService, calldata_t* data);
 
-		static void onStreamStopping(void* streamingService, calldata_t* data);
+		static void
+		onStreamStopping(void* streamingService, calldata_t* data);
 
-		static void onStreamStopped(void* streamingService, calldata_t* data);
+		static void
+		onStreamStopped(void* streamingService, calldata_t* data);
 
-		static void onStreamReconnecting(void* streamingService, calldata_t* data);
+		static void
+		onStreamReconnecting(void* streamingService, calldata_t* data);
 
-		static void onStreamReconnected(void* streamingService, calldata_t* data);
+		static void
+		onStreamReconnected(void* streamingService, calldata_t* data);
 
 	/*
 	====================================================================================================
@@ -81,8 +91,11 @@ class ApplicationService : public ServiceT<ApplicationService> {
 	*/
 	public:
 
-		ApplicationService(QMainWindow* parent, StreamdeckManager* streamdeckManager,
-			CollectionManager* collectionManager);
+		ApplicationService(
+			QMainWindow* parent,
+			StreamdeckManager*streamdeckManager,
+			CollectionManager* collectionManager
+		);
 
 		virtual ~ApplicationService();
 
@@ -93,22 +106,31 @@ class ApplicationService : public ServiceT<ApplicationService> {
 	*/
 	private:
 
-		bool connectStreamOutputHandler();
+		bool
+		connectStreamOutputHandler();
 
-		bool connectRecordOutputHandler();
+		bool
+		connectRecordOutputHandler();
 
-		void disconnectStreamOutputHandler();
+		void
+		disconnectStreamOutputHandler();
 
-		void disconnectRecordOutputHandler();
+		void
+		disconnectRecordOutputHandler();
 
-		bool checkOutput(calldata_t* data, obs_output_t* output2) const;
+		bool
+		checkOutput(calldata_t* data, obs_output_t* output2) const;
 
-		bool onApplicationLoaded();
+		bool
+		onApplicationLoaded();
 
-		bool onStreamLaunching();
+		bool
+		onStreamLaunching();
 		
-		bool onRecordStarting();
+		bool
+		onRecordStarting();
 
-		bool onGetRecordStreamState(const rpc_event_data& data);
+		bool
+		onGetRecordStreamState(const rpc_event_data& data);
 
 };

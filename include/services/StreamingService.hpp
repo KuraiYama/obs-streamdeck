@@ -32,17 +32,23 @@ class StreamingService : public ServiceT<StreamingService> {
 	*/
 	private:
 
-		static void onStreamStarting(void* streamingService, calldata_t* data);
+		static void
+		onStreamStarting(void* streamingService, calldata_t* data);
 
-		static void onStreamStarted(void* streamingService, calldata_t* data);
+		static void
+		onStreamStarted(void* streamingService, calldata_t* data);
 
-		static void onStreamStopping(void* streamingService, calldata_t* data);
+		static void
+		onStreamStopping(void* streamingService, calldata_t* data);
 
-		static void onStreamStopped(void* streamingService, calldata_t* data);
+		static void
+		onStreamStopped(void* streamingService, calldata_t* data);
 
-		static void onStreamReconnecting(void* streamingService, calldata_t* data);
+		static void
+		onStreamReconnecting(void* streamingService, calldata_t* data);
 
-		static void onStreamReconnected(void* streamingService, calldata_t* data);
+		static void
+		onStreamReconnected(void* streamingService, calldata_t* data);
 
 	/*
 	====================================================================================================
@@ -50,8 +56,6 @@ class StreamingService : public ServiceT<StreamingService> {
 	====================================================================================================
 	*/
 	private:
-
-		EventObserver<StreamingService, Streamdeck::rpc_event> m_rpcEvent;
 
 		obs_output_t* m_streamingOutput;
 
@@ -73,26 +77,37 @@ class StreamingService : public ServiceT<StreamingService> {
 	*/
 	private:
 
-		bool connectOutputHandler();
+		bool
+		connectOutputHandler();
 
-		void disconnectOutputHandler();
+		void
+		disconnectOutputHandler();
 
-		bool onStreamStarting();
+		bool
+		onStreamStarting();
 
-		bool onStreamLaunching();
+		bool
+		onStreamLaunching();
 
-		bool onStreamStarted();
+		bool
+		onStreamStarted();
 
-		bool onStreamStopping();
+		bool
+		onStreamStopping();
 
-		bool onStreamStopped();
+		bool
+		onStreamStopped();
 
-		bool startStreaming(const rpc_event_data& data);
+		bool
+		startStreaming(const rpc_event_data& data);
 
-		bool stopStreaming(const rpc_event_data& data);
+		bool
+		stopStreaming(const rpc_event_data& data);
 
-		bool subscribeStreamStatusChange(const rpc_event_data& data);
+		bool
+		subscribeStreamStatusChange(const rpc_event_data& data);
 
-		bool checkOutput(calldata_t* data) const;
+		bool
+		checkOutput(calldata_t* data) const;
 
 };

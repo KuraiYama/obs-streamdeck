@@ -12,7 +12,7 @@
 
 template<typename T>
 ServiceT<T>::ServiceT(const char* name, StreamdeckManager* streamdeckManager) : 
-		Service(name, streamdeckManager) {
+	Service(name, streamdeckManager) {
 	static_assert(std::is_base_of<ServiceT<T>, T>::value);
 }
 
@@ -27,7 +27,8 @@ ServiceT<T>::~ServiceT() {
 */
 
 template<typename T>
-void ServiceT<T>::setupEvent(obs_frontend_event event, obs_frontend_callback handler) {
+void
+ServiceT<T>::setupEvent(obs_frontend_event event, obs_frontend_callback handler) {
 	m_frontendEvent.addEvent(event);
 	this->EventObserver<T, obs_frontend_event>::registerCallback(event, (obs_frontend_callback)handler, 
 		reinterpret_cast<T*>(this));
@@ -35,7 +36,8 @@ void ServiceT<T>::setupEvent(obs_frontend_event event, obs_frontend_callback han
 }
 
 template<typename T>
-void ServiceT<T>::setupEvent(obs_save_event event, obs_save_callback handler) {
+void
+ServiceT<T>::setupEvent(obs_save_event event, obs_save_callback handler) {
 	m_saveEvent.addEvent(event);
 	this->EventObserver<T, obs_save_event>::registerCallback<const obs_data_t*>(event, 
 		(obs_save_callback)handler, reinterpret_cast<T*>(this));
@@ -43,7 +45,8 @@ void ServiceT<T>::setupEvent(obs_save_event event, obs_save_callback handler) {
 }
 
 template<typename T>
-void ServiceT<T>::setupEvent(Streamdeck::rpc_event event, 
+void
+ServiceT<T>::setupEvent(Streamdeck::rpc_event event, 
 		typename RPCHandler::template FuncWrapperB<void>::Callback handler) {
 
 	if(m_streamdeckManager == nullptr)
@@ -56,7 +59,8 @@ void ServiceT<T>::setupEvent(Streamdeck::rpc_event event,
 
 template<typename T>
 template<typename B>
-void ServiceT<T>::setupEvent(Streamdeck::rpc_event event, 
+void
+ServiceT<T>::setupEvent(Streamdeck::rpc_event event, 
 		typename RPCHandler::template FuncWrapperB<B>::Callback handler) {
 
 	if(m_streamdeckManager == nullptr)
@@ -74,7 +78,8 @@ void ServiceT<T>::setupEvent(Streamdeck::rpc_event event,
 */
 
 template<typename T>
-void ServiceT<T>::logger(const std::string& message) const {
+void
+ServiceT<T>::logger(const std::string& message) const {
 	Service::logger(message);
 }
 
@@ -160,12 +165,14 @@ ServiceT<T>::response_scenes(const rpc_event_data* data, const char* method) con
 */
 
 template<typename T>
-const char* ServiceT<T>::name() const {
+const char*
+ServiceT<T>::name() const {
 	return m_name;
 }
 
 template<typename T>
-StreamdeckManager* ServiceT<T>::streamdeckManager() const {
+StreamdeckManager*
+ServiceT<T>::streamdeckManager() const {
 	return m_streamdeckManager;
 }
 

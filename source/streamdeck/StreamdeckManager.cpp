@@ -12,7 +12,7 @@
 */
 
 StreamdeckServer::StreamdeckServer(QObject* parent) :
-		QTcpServer(parent) {
+	QTcpServer(parent) {
 	log_info << "[Streamdeck Server] Ready.";
 }
 
@@ -22,8 +22,7 @@ StreamdeckServer::~StreamdeckServer() {
 }
 
 StreamdeckManager::StreamdeckManager(QObject* parent, short listenPort) : 
-		m_internalServer(this) {
-
+	m_internalServer(this) {
 	for(int i = 1; i < (int)Streamdeck::rpc_event::RPC_ID_COUNT; i++)
 		this->addEvent((Streamdeck::rpc_event)i);
 	
@@ -36,7 +35,6 @@ StreamdeckManager::StreamdeckManager(QObject* parent, short listenPort) :
 }
 
 StreamdeckManager::~StreamdeckManager() {
-
 	for(int i = 1; i < (int)Streamdeck::rpc_event::RPC_ID_COUNT; i++)
 		this->removeEvent((Streamdeck::rpc_event)i);
 
@@ -60,7 +58,8 @@ StreamdeckManager::~StreamdeckManager() {
 ========================================================================================================
 */
 
-void StreamdeckServer::incomingConnection(qintptr socketDescriptor) {
+void
+StreamdeckServer::incomingConnection(qintptr socketDescriptor) {
 	log_info << "[Streamdeck Server] New incoming connection.";
 	StreamdeckClient* client = Streamdeck::createClient(socketDescriptor);
 	if(client != nullptr) {
@@ -71,8 +70,8 @@ void StreamdeckServer::incomingConnection(qintptr socketDescriptor) {
 	}
 }
 
-StreamdeckClient* StreamdeckServer::nextPendingClient() {
-	
+StreamdeckClient*
+StreamdeckServer::nextPendingClient() {
 	if(!this->hasPendingConnections())
 		return nullptr;
 
@@ -81,7 +80,8 @@ StreamdeckClient* StreamdeckServer::nextPendingClient() {
 	return client_info != m_pendingClients.end() ? client_info.value() : nullptr;
 }
 
-void StreamdeckManager::onClientConnected() {
+void
+StreamdeckManager::onClientConnected() {
 	StreamdeckClient* client = m_internalServer.nextPendingClient();
 	
 	if(client != nullptr) {
@@ -98,7 +98,8 @@ void StreamdeckManager::onClientConnected() {
 	}
 }
 
-void StreamdeckManager::onClientDisconnected(Streamdeck* streamdeck, int code) {
+void
+StreamdeckManager::onClientDisconnected(Streamdeck* streamdeck, int code) {
 	log_warn << QString("[Streamdeck Manager] Streamdeck disconnected (%1). Deleting it.")
 		.arg(code).toStdString();
 	m_streamdecks.remove(streamdeck);
@@ -115,24 +116,29 @@ void StreamdeckManager::onClientDisconnected(Streamdeck* streamdeck, int code) {
 ========================================================================================================
 */
 
-void StreamdeckManager::close(Streamdeck* streamdeck) {
+void
+StreamdeckManager::close(Streamdeck* streamdeck) {
 	streamdeck->close();
 }
 
-bool StreamdeckManager::setRecordStreamState(Streamdeck* client, 
-		const rpc_adv_response<std::tuple<std::string, std::string>>& response) {
-	
+bool
+StreamdeckManager::setRecordStreamState(
+	Streamdeck* client, 
+	const rpc_adv_response<std::tuple<std::string, std::string>>& response
+) {
 	QString resource = QString("%1.%2")
 		.arg(response.request->serviceName.c_str())
 		.arg(response.request->method.c_str());
 
-	return client->sendRecordStreamState(response.event, resource.toStdString(),
-		std::get<0>(response.data), std::get<1>(response.data));
+	return client->sendRecordStreamState(
+		response.event, resource.toStdString(),
+		std::get<0>(response.data),
+		std::get<1>(response.data)
+	);
 }
 
-bool StreamdeckManager::setError(Streamdeck* client,
-		const rpc_adv_response<bool>& response) {
-
+bool
+StreamdeckManager::setError(Streamdeck* client, const rpc_adv_response<bool>& response) {
 	QString resource = response.request != nullptr ?
 		QString("%1.%2")
 		.arg(response.request->serviceName.c_str())
@@ -144,15 +150,16 @@ bool StreamdeckManager::setError(Streamdeck* client,
 	return client->sendErrorMessage(response.event, resource.toStdString(), response.data);
 }
 
-bool StreamdeckManager::setSubscription(Streamdeck* client,
-		const rpc_adv_response<std::string>& response) {
-
+bool
+StreamdeckManager::setSubscription(Streamdeck* client, const rpc_adv_response<std::string>& response) {
 	return client->sendSubscriptionMessage(response.event, response.data);
 }
 
-bool StreamdeckManager::setActiveCollection(Streamdeck* client,
-		const rpc_adv_response<Collection*>& response) {
-
+bool
+StreamdeckManager::setActiveCollection(
+	Streamdeck* client,
+	const rpc_adv_response<Collection*>& response
+) {
 	QString resource = response.request != nullptr ?
 		QString("%1.%2")
 		.arg(response.request->serviceName.c_str())
@@ -164,15 +171,15 @@ bool StreamdeckManager::setActiveCollection(Streamdeck* client,
 	return client->sendActiveCollectionMessage(response.event, resource.toStdString(), response.data);
 }
 
-bool StreamdeckManager::setCollectionSwitched(Streamdeck* client,
-		const rpc_adv_response<Collection*>& response) {
-
+bool StreamdeckManager::setCollectionSwitched(
+	Streamdeck* client,
+	const rpc_adv_response<Collection*>& response
+) {
 	return client->sendCollectionSwitchMessage(response.event, response.data);
 }
 
-bool StreamdeckManager::setCollections(Streamdeck* client,
-		const rpc_adv_response<Collections>& response) {
-
+bool
+StreamdeckManager::setCollections(Streamdeck* client, const rpc_adv_response<Collections>& response) {
 	QString resource = response.request != nullptr ?
 		QString("%1.%2")
 		.arg(response.request->serviceName.c_str())
@@ -184,15 +191,16 @@ bool StreamdeckManager::setCollections(Streamdeck* client,
 	return client->sendCollectionsMessage(response.event, resource.toStdString(), response.data);
 }
 
-bool StreamdeckManager::fetchCollections(Streamdeck* client,
-		const rpc_adv_response<Collections>& response) {
-
+bool
+StreamdeckManager::fetchCollections(Streamdeck* client, const rpc_adv_response<Collections>& response) {
 	return client->sendCollectionsSchema(response.event, response.data);
 }
 
-bool StreamdeckManager::setScenes(Streamdeck* client,
-		const rpc_adv_response<std::tuple<Collection*, Scenes>>& response) {
-
+bool
+StreamdeckManager::setScenes(
+	Streamdeck* client,
+	const rpc_adv_response<std::tuple<Collection*,Scenes>>& response
+) {
 	QString resource = response.request != nullptr ?
 		QString("%1.%2")
 		.arg(response.request->serviceName.c_str())
@@ -205,15 +213,13 @@ bool StreamdeckManager::setScenes(Streamdeck* client,
 		std::get<0>(response.data), std::get<1>(response.data));
 }
 
-bool StreamdeckManager::setStatus(Streamdeck* client,
-		const rpc_adv_response<void>& response) {
-
+bool
+StreamdeckManager::setStatus(Streamdeck* client, const rpc_adv_response<void>& response) {
 	return client->sendStatusMessage(response.event);
 }
 
-bool StreamdeckManager::setStatus(Streamdeck* client,
-		const rpc_adv_response<std::string>& response) {
-
+bool
+StreamdeckManager::setStatus(Streamdeck* client, const rpc_adv_response<std::string>& response) {
 	return client->sendStatusMessage(response.event, response.data);
 }
 
@@ -223,8 +229,8 @@ bool StreamdeckManager::setStatus(Streamdeck* client,
 ========================================================================================================
 */
 
-bool StreamdeckManager::validate(rpc_response& response) {
-
+bool
+StreamdeckManager::validate(rpc_response& response) {
 	bool result = (response.request == nullptr) ||
 		(response.request != nullptr && response.event == response.request->event);
 	if(!result) {
@@ -238,9 +244,15 @@ bool StreamdeckManager::validate(rpc_response& response) {
 	return result;
 }
 
-void StreamdeckManager::receiveMessage(Streamdeck* streamdeck, Streamdeck::rpc_event event, 
-		QString service, QString method, QVector<QVariant> args, bool& error) {
-
+void
+StreamdeckManager::receiveMessage(
+	Streamdeck* streamdeck,
+	Streamdeck::rpc_event event, 
+	QString service,
+	QString method,
+	QVector<QVariant> args,
+	bool& error
+) {
 	if(!m_streamdecks.contains(streamdeck))
 		return;
 

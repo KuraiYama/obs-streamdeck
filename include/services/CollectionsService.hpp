@@ -56,24 +56,34 @@ class CollectionsService : public ServiceT<CollectionsService> {
 	*/
 	private:
 
-		bool onCollectionsListChanged();
+		bool
+		onCollectionsListChanged();
 
-		bool onCollectionAdded();
+		bool
+		onCollectionAdded();
 
-		bool onCollectionRemoved();
+		bool
+		onCollectionRemoved();
 
-		bool onCollectionUpdated();
+		bool
+		onCollectionUpdated();
 
-		bool onCollectionSwitched();
+		bool
+		onCollectionSwitched();
 
-		bool subscribeCollectionChange(const rpc_event_data& data);
+		bool
+		subscribeCollectionChange(const rpc_event_data& data);
 
-		bool onFetchCollectionsSchema(const rpc_event_data& data);
+		bool
+		onFetchCollectionsSchema(const rpc_event_data& data);
 
-		bool onGetCollections(const rpc_event_data& data);
+		bool
+		onGetCollections(const rpc_event_data& data);
 
-		bool onGetActiveCollection(const rpc_event_data& data);
+		bool
+		onGetActiveCollection(const rpc_event_data& data);
 
-		bool onMakeCollectionActive(const rpc_event_data& data);
+		bool
+		onMakeCollectionActive(const rpc_event_data& data);
 
 };

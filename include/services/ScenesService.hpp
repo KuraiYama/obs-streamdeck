@@ -56,6 +56,7 @@ class ScenesService : public ServiceT<ScenesService> {
 	*/
 	private:
 
-		bool onGetScenes(const rpc_event_data& data);
+		bool
+		onGetScenes(const rpc_event_data& data);
 
 };

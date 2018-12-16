@@ -10,9 +10,11 @@
 ========================================================================================================
 */
 
-ScenesService::ScenesService(StreamdeckManager* streamdeckManager, CollectionManager* collectionManager) : 
-		ServiceT("ScenesService", streamdeckManager) {
-
+ScenesService::ScenesService(
+	StreamdeckManager* streamdeckManager,
+	CollectionManager* collectionManager
+) : 
+	ServiceT("ScenesService", streamdeckManager) {
 	m_collectionManager = collectionManager;
 
 	/*this->setupEvent<const rpc_event_data&>(Streamdeck::rpc_event::RPC_ID_GET_SCENES,
@@ -28,7 +30,8 @@ ScenesService::~ScenesService() {
 ========================================================================================================
 */
 
-/*bool ScenesService::onScenesListChanged() {
+/*bool
+ScenesService::onScenesListChanged() {
 	CollectionManager::obs_collection_event evt = m_collectionManager->buildCollections();
 
 	switch(evt) {
@@ -51,16 +54,20 @@ ScenesService::~ScenesService() {
 	return false;
 }
 
-bool ScenesService::onSceneSwitched() {
+bool
+ScenesService::onSceneSwitched() {
 }
 
-bool ScenesService::onSceneAdded() {
+bool
+ScenesService::onSceneAdded() {
 }
 
-bool ScenesService::onSceneRemoved() {
+bool
+ScenesService::onSceneRemoved() {
 }
 
-bool ScenesService::onSceneUpdated() {
+bool
+ScenesService::onSceneUpdated() {
 }*/
 
 /*
@@ -69,7 +76,8 @@ bool ScenesService::onSceneUpdated() {
 ========================================================================================================
 */
 
-bool ScenesService::onGetScenes(const rpc_event_data& data) {
+bool
+ScenesService::onGetScenes(const rpc_event_data& data) {
 
 	rpc_adv_response<std::tuple<Collection*,Scenes>> response = response_scenes(&data, "onGetScenes");
 

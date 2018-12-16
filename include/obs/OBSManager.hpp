@@ -3,21 +3,23 @@
 /*
  * Qt Includes
  */
-#include <QDialog>
-#include <QMainWindow>
-#include <QPlainTextEdit>
+#include <map>
+#include <vector>
 
 /*
-========================================================================================================
-	Types Predeclarations
-========================================================================================================
-*/
+ * OBS Includes
+ */
+#include <obs.h>
+#include <obs-frontend-api/obs-frontend-api.h>
+#include <obs-module.h>
 
-namespace Ui {
-
-	class InfoDialog;
-
-}
+/*
+ * Plugin Includes
+ */
+#include "include/obs/OBSEvents.hpp"
+#include "include/obs/Collection.hpp"
+#include "include/obs/Scene.hpp"
+#include "include/obs/Item.hpp"
 
 /*
 ========================================================================================================
@@ -25,9 +27,7 @@ namespace Ui {
 ========================================================================================================
 */
 
-class InfoDialog : public QDialog {
-
-    Q_OBJECT
+class OBSManager {
 
 	/*
 	====================================================================================================
@@ -36,7 +36,11 @@ class InfoDialog : public QDialog {
 	*/
 	private:
 
-		Ui::InfoDialog *ui;
+		std::map<std::string, Collection> m_collections;
+
+		mutable Collection* m_activeCollection;
+
+		bool m_isBuildingCollections;
 
 	/*
 	====================================================================================================
@@ -45,9 +49,9 @@ class InfoDialog : public QDialog {
 	*/
 	public:
 
-		explicit InfoDialog(QWidget *parent = 0);
+		OBSManager();
 
-		~InfoDialog();
+		~OBSManager();
 
 	/*
 	====================================================================================================
@@ -56,10 +60,19 @@ class InfoDialog : public QDialog {
 	*/
 	public:
 
-		void
-		write(QString string);
+		obs::collection_event
+		buildCollections();
 
-		QTextEdit*
-		logger() const;
+		Collection*
+		getCollectionByName(const std::string& name);
+
+		Collections
+		collections() const;
+
+		Collection*
+		activeCollection() const;
+
+		bool
+		isBuildingCollections() const;
 
 };

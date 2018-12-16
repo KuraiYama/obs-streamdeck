@@ -4,15 +4,15 @@
 #include "include/services/RecordingService.hpp"
 #include "include/common/Logger.hpp"
 
- /*
- ========================================================================================================
-	 Constructors / Destructor
- ========================================================================================================
- */
+/*
+========================================================================================================
+	Constructors / Destructor
+========================================================================================================
+*/
 
 RecordingService::RecordingService(StreamdeckManager* streamdeckManager) :
-	ServiceT("RecordingService", streamdeckManager), m_recordingOutput(nullptr) {
-
+	ServiceT("RecordingService", streamdeckManager),
+	m_recordingOutput(nullptr) {
 	this->setupEvent(obs_frontend_event::OBS_FRONTEND_EVENT_RECORDING_STARTING,
 		&RecordingService::onRecordStarting);
 
@@ -48,7 +48,8 @@ RecordingService::~RecordingService() {
 ========================================================================================================
 */
 
-bool RecordingService::startRecording(const rpc_event_data& data) {
+bool
+RecordingService::startRecording(const rpc_event_data& data) {
 	rpc_adv_response<bool> response = response_bool(&data, "startRecording");
 	if(data.event == Streamdeck::rpc_event::RPC_ID_START_RECORDING) {
 		response.event = Streamdeck::rpc_event::RPC_ID_START_RECORDING;
@@ -70,7 +71,8 @@ bool RecordingService::startRecording(const rpc_event_data& data) {
 	return streamdeckManager()->commit_to(response, &StreamdeckManager::setError);
 }
 
-bool RecordingService::stopRecording(const rpc_event_data& data) {
+bool
+RecordingService::stopRecording(const rpc_event_data& data) {
 	rpc_adv_response<bool> response = response_bool(&data, "stopRecording");
 	if(data.event == Streamdeck::rpc_event::RPC_ID_STOP_RECORDING) {
 		response.event = Streamdeck::rpc_event::RPC_ID_STOP_RECORDING;
@@ -92,7 +94,8 @@ bool RecordingService::stopRecording(const rpc_event_data& data) {
 	return streamdeckManager()->commit_to(response, &StreamdeckManager::setError);
 }
 
-bool RecordingService::subscribeRecordStatusChange(const rpc_event_data& data) {
+bool
+RecordingService::subscribeRecordStatusChange(const rpc_event_data& data) {
 	rpc_adv_response<std::string> response = response_string(&data, "subscribeRecordStatusChange");
 	if(data.event == Streamdeck::rpc_event::RPC_ID_RECORDING_STATUS_CHANGED_SUBSCRIBE) {
 		response.event = Streamdeck::rpc_event::RPC_ID_RECORDING_STATUS_CHANGED_SUBSCRIBE;
@@ -116,7 +119,8 @@ bool RecordingService::subscribeRecordStatusChange(const rpc_event_data& data) {
 ========================================================================================================
 */
 
-bool RecordingService::connectOutputHandler() {
+bool
+RecordingService::connectOutputHandler() {
 	if(m_recordingOutput != nullptr)
 		disconnectOutputHandler();
 	m_recordingOutput = obs_frontend_get_recording_output();
@@ -137,7 +141,8 @@ bool RecordingService::connectOutputHandler() {
 	return false;
 }
 
-void RecordingService::disconnectOutputHandler() {
+void
+RecordingService::disconnectOutputHandler() {
 	if(m_recordingOutput != nullptr) {
 		signal_handler_t* signal_handler = obs_output_get_signal_handler(m_recordingOutput);
 		if(signal_handler != nullptr) {
@@ -154,7 +159,8 @@ void RecordingService::disconnectOutputHandler() {
 	}
 }
 
-bool RecordingService::checkOutput(calldata_t* data) const {
+bool
+RecordingService::checkOutput(calldata_t* data) const {
 	obs_output_t* output = nullptr;
 	calldata_get_ptr(data, "output", &output);
 	if(output != m_recordingOutput) {
@@ -172,7 +178,8 @@ bool RecordingService::checkOutput(calldata_t* data) const {
 ========================================================================================================
 */
 
-bool RecordingService::onRecordStarting() {
+bool
+RecordingService::onRecordStarting() {
 	logger("OBS Output is ready. OBS is launching record.");
 	if(connectOutputHandler()) {
 		return true;
@@ -183,7 +190,8 @@ bool RecordingService::onRecordStarting() {
 	return false;
 }
 
-void RecordingService::onRecordStarting(void* recordingService, calldata_t* data) {
+void
+RecordingService::onRecordStarting(void* recordingService, calldata_t* data) {
 	RecordingService* service = reinterpret_cast<RecordingService*>(recordingService);
 
 	if(!service->checkOutput(data)) return;
@@ -200,12 +208,14 @@ void RecordingService::onRecordStarting(void* recordingService, calldata_t* data
 	service->streamdeckManager()->commit_all(action, &StreamdeckManager::setError);
 }
 
-bool RecordingService::onRecordStarted() {
+bool
+RecordingService::onRecordStarted() {
 	logger("OBS has started record.");
 	return true;
 }
 
-void RecordingService::onRecordStarted(void* recordingService, calldata_t* data) {
+void
+RecordingService::onRecordStarted(void* recordingService, calldata_t* data) {
 	RecordingService* service = reinterpret_cast<RecordingService*>(recordingService);
 
 	if(!service->checkOutput(data)) return;
@@ -217,12 +227,14 @@ void RecordingService::onRecordStarted(void* recordingService, calldata_t* data)
 	service->streamdeckManager()->commit_all(response, &StreamdeckManager::setStatus);
 }
 
-bool RecordingService::onRecordStopping() {
+bool
+RecordingService::onRecordStopping() {
 	logger("OBS is stopping record.");
 	return true;
 }
 
-void RecordingService::onRecordStopping(void* recordingService, calldata_t* data) {
+void
+RecordingService::onRecordStopping(void* recordingService, calldata_t* data) {
 	RecordingService* service = reinterpret_cast<RecordingService*>(recordingService);
 
 	if(!service->checkOutput(data)) return;
@@ -234,12 +246,14 @@ void RecordingService::onRecordStopping(void* recordingService, calldata_t* data
 	service->streamdeckManager()->commit_all(response, &StreamdeckManager::setStatus);
 }
 
-bool RecordingService::onRecordStopped() {
+bool
+RecordingService::onRecordStopped() {
 	logger("OBS has stopped record.");
 	return true;
 }
 
-void RecordingService::onRecordStopped(void* recordingService, calldata_t* data) {
+void
+RecordingService::onRecordStopped(void* recordingService, calldata_t* data) {
 	RecordingService* service = reinterpret_cast<RecordingService*>(recordingService);
 
 	if(!service->checkOutput(data)) return;

@@ -28,15 +28,13 @@ class Logger {
 	*/
 	public:
 
-		static Logger& instance() {
-			static Logger _instance;
-			return _instance;
-		}
+		static Logger&
+		instance();
 	
 	/*
-	====================================================================================================
+	================================================================================================
 		Instance Data Members
-	====================================================================================================
+	================================================================================================
 	*/
 	private:
 
@@ -53,7 +51,7 @@ class Logger {
 	*/
 	private:
 
-		Logger() : m_editOutput(nullptr) {};
+		Logger();
 
 		Logger(Logger&&) = delete;
 
@@ -68,37 +66,20 @@ class Logger {
 	*/
 	public:
 
-		void setOutput(QTextEdit* output) {
-			m_editOutput = output;
-		}
+		void
+		output(QTextEdit* output);
 
-		Logger& color_info() {
-			std::lock_guard<std::mutex> lock(m_mutex);
-			m_internalColor = QColor("#ffffff");
+		Logger&
+		colorInfo();
 
-			return *this;
-		}
+		Logger&
+		colorError();
 
-		Logger& color_error() {
-			std::lock_guard<std::mutex> lock(m_mutex);
-			m_internalColor = QColor("#a11526");
+		Logger&
+		colorWarning();
 
-			return *this;
-		}
-
-		Logger& color_warning() {
-			std::lock_guard<std::mutex> lock(m_mutex);
-			m_internalColor = QColor("#ff760d");
-
-			return *this;
-		}
-
-		Logger& color_custom(unsigned int color) {
-			std::lock_guard<std::mutex> lock(m_mutex);
-			m_internalColor = QColor(color);
-
-			return *this;
-		}
+		Logger&
+		colorCustom(unsigned int color);
 
 	/*
 	====================================================================================================
@@ -107,17 +88,22 @@ class Logger {
 	*/
 	public:
 
-		friend Logger& operator<<(Logger&, const std::string&);
+		friend Logger&
+		operator<<(Logger&, const std::string&);
 
-		friend Logger& operator<<(Logger&, const std::string&&);
+		friend Logger&
+		operator<<(Logger&, const std::string&&);
 
-		friend Logger& operator<<(Logger&, Logger&);
+		friend Logger&
+		operator<<(Logger&, Logger&);
 
 	private:
 
-		Logger operator=(const Logger&) = delete;
+		Logger
+		operator=(const Logger&) = delete;
 
-		Logger& operator=(Logger&&) = delete;
+		Logger&
+		operator=(Logger&&) = delete;
 };
 
 /*
@@ -126,17 +112,16 @@ class Logger {
 ========================================================================================================
 */
 
-Logger& operator<<(Logger& logger, const std::string& str);
+Logger&
+operator<<(Logger& logger, const std::string& str);
 
-Logger& operator<<(Logger& logger, const std::string&& str);
+Logger&
+operator<<(Logger& logger, const std::string&& str);
 
-Logger& operator<<(Logger& logger, Logger&);
+Logger&
+operator<<(Logger& logger, Logger&);
 
-#define log_info Logger::instance() << Logger::instance().color_info()
-#define log_warn Logger::instance() << Logger::instance().color_warning()
-#define log_error Logger::instance() << Logger::instance().color_error()
-#define log_custom(color) Logger::instance() << Logger::instance().color_custom(color)
-
-#define LOG_STREAMDECK_CLIENT 0xbbf5ff
-#define LOG_STREAMDECK 0xcaff9e
-#define LOG_STREAMDECK_MANAGER 0x7752ff
+#define log_info Logger::instance() << Logger::instance().colorInfo()
+#define log_warn Logger::instance() << Logger::instance().colorWarning()
+#define log_error Logger::instance() << Logger::instance().colorError()
+#define log_custom(color) Logger::instance() << Logger::instance().colorCustom(color)

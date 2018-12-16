@@ -15,9 +15,11 @@
 */
 
 template<typename T>
-bool StreamdeckManager::commit_to(rpc_adv_response<T>& response, 
-		bool(StreamdeckManager::*functor)(Streamdeck*, const rpc_adv_response<T>&)) {
-
+bool
+StreamdeckManager::commit_to(
+	rpc_adv_response<T>& response, 
+	bool(StreamdeckManager::*functor)(Streamdeck*, const rpc_adv_response<T>&)
+) {
 	if(response.request == nullptr ||
 		(response.request != nullptr && response.request->client == nullptr)) {
 
@@ -38,9 +40,11 @@ bool StreamdeckManager::commit_to(rpc_adv_response<T>& response,
 }
 
 template<typename T>
-bool StreamdeckManager::commit_all(rpc_adv_response<T>& response, 
-		bool(StreamdeckManager::*functor)(Streamdeck*, const rpc_adv_response<T>&)) {
-
+bool
+StreamdeckManager::commit_all(
+	rpc_adv_response<T>& response, 
+		bool(StreamdeckManager::*functor)(Streamdeck*, const rpc_adv_response<T>&)
+) {
 	bool result = this->validate(response);
 
 	auto commit_func = [this, &response, &result, &functor](Streamdeck* streamdeck) {
@@ -60,9 +64,11 @@ bool StreamdeckManager::commit_all(rpc_adv_response<T>& response,
 }
 
 template<typename T>
-bool StreamdeckManager::commit_any(rpc_adv_response<T>& response, 
-		bool(StreamdeckManager::*functor)(Streamdeck*, const rpc_adv_response<T>&)) {
-
+bool
+StreamdeckManager::commit_any(
+	rpc_adv_response<T>& response, 
+		bool(StreamdeckManager::*functor)(Streamdeck*, const rpc_adv_response<T>&)
+) {
 	bool result = this->validate(response);
 
 	auto commit_func = [this, &response, &result, &functor](Streamdeck* streamdeck) {

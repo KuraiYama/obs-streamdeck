@@ -11,8 +11,8 @@
 */
 
 StreamingService::StreamingService(StreamdeckManager* streamdeckManager) : 
-		ServiceT("StreamingService", streamdeckManager), m_streamingOutput(nullptr) {
-
+	ServiceT("StreamingService", streamdeckManager),
+	m_streamingOutput(nullptr) {
 	this->setupEvent(obs_frontend_event::OBS_FRONTEND_EVENT_STREAMING_STARTING,
 		&StreamingService::onStreamStarting);
 
@@ -51,7 +51,8 @@ StreamingService::~StreamingService() {
 ========================================================================================================
 */
 
-bool StreamingService::startStreaming(const rpc_event_data& data) {
+bool
+StreamingService::startStreaming(const rpc_event_data& data) {
 	rpc_adv_response<bool> response = response_bool(&data, "startStreaming");
 	if(data.event == Streamdeck::rpc_event::RPC_ID_START_STREAMING) {
 		response.event = Streamdeck::rpc_event::RPC_ID_START_STREAMING;
@@ -73,7 +74,8 @@ bool StreamingService::startStreaming(const rpc_event_data& data) {
 	return streamdeckManager()->commit_to(response, &StreamdeckManager::setError);
 }
 
-bool StreamingService::stopStreaming(const rpc_event_data& data) {
+bool
+StreamingService::stopStreaming(const rpc_event_data& data) {
 	rpc_adv_response<bool> response = response_bool(&data, "stopStreaming");
 	if(data.event == Streamdeck::rpc_event::RPC_ID_STOP_STREAMING) {
 		response.event = Streamdeck::rpc_event::RPC_ID_STOP_STREAMING;
@@ -95,7 +97,8 @@ bool StreamingService::stopStreaming(const rpc_event_data& data) {
 	return streamdeckManager()->commit_to(response, &StreamdeckManager::setError);
 }
 
-bool StreamingService::subscribeStreamStatusChange(const rpc_event_data& data) {
+bool
+StreamingService::subscribeStreamStatusChange(const rpc_event_data& data) {
 	rpc_adv_response<std::string> response = response_string(&data, "subscribeStreamStatusChange");
 	if(data.event == Streamdeck::rpc_event::RPC_ID_STREAMING_STATUS_CHANGED_SUBSCRIBE) {
 		response.event = Streamdeck::rpc_event::RPC_ID_STREAMING_STATUS_CHANGED_SUBSCRIBE;
@@ -119,7 +122,8 @@ bool StreamingService::subscribeStreamStatusChange(const rpc_event_data& data) {
 ========================================================================================================
 */
 
-bool StreamingService::connectOutputHandler() {
+bool
+StreamingService::connectOutputHandler() {
 	if(m_streamingOutput != nullptr)
 		disconnectOutputHandler();
 	m_streamingOutput = obs_frontend_get_streaming_output();
@@ -144,7 +148,8 @@ bool StreamingService::connectOutputHandler() {
 	return false;
 }
 
-void StreamingService::disconnectOutputHandler() {
+void
+StreamingService::disconnectOutputHandler() {
 	if(m_streamingOutput != nullptr) {
 		signal_handler_t* signal_handler = obs_output_get_signal_handler(m_streamingOutput);
 		if(signal_handler != nullptr) {
@@ -165,7 +170,8 @@ void StreamingService::disconnectOutputHandler() {
 	}
 }
 
-bool StreamingService::checkOutput(calldata_t* data) const {
+bool
+StreamingService::checkOutput(calldata_t* data) const {
 	obs_output_t* output = nullptr;
 	calldata_get_ptr(data, "output", &output);
 	if(output != m_streamingOutput) {
@@ -183,7 +189,8 @@ bool StreamingService::checkOutput(calldata_t* data) const {
 ========================================================================================================
 */
 
-bool StreamingService::onStreamLaunching() {
+bool
+StreamingService::onStreamLaunching() {
 	logger("OBS Output is ready. OBS is launching stream.");
 	if(connectOutputHandler())
 		return true;
@@ -193,12 +200,14 @@ bool StreamingService::onStreamLaunching() {
 	return false;
 }
 
-bool StreamingService::onStreamStarting() {
+bool
+StreamingService::onStreamStarting() {
 	logger("OBS is starting stream.");
 	return true;
 }
 
-void StreamingService::onStreamStarting(void* streamingService, calldata_t* data) {
+void
+StreamingService::onStreamStarting(void* streamingService, calldata_t* data) {
 	StreamingService* service = reinterpret_cast<StreamingService*>(streamingService);
 
 	if(!service->checkOutput(data)) return;
@@ -210,12 +219,14 @@ void StreamingService::onStreamStarting(void* streamingService, calldata_t* data
 	service->streamdeckManager()->commit_all(response, &StreamdeckManager::setStatus);
 }
 
-bool StreamingService::onStreamStarted() {
+bool
+StreamingService::onStreamStarted() {
 	logger("OBS has started stream.");
 	return true;
 }
 
-void StreamingService::onStreamStarted(void* streamingService, calldata_t* data) {
+void
+StreamingService::onStreamStarted(void* streamingService, calldata_t* data) {
 	StreamingService* service = reinterpret_cast<StreamingService*>(streamingService);
 
 	if(!service->checkOutput(data)) return;
@@ -232,12 +243,14 @@ void StreamingService::onStreamStarted(void* streamingService, calldata_t* data)
 	service->streamdeckManager()->commit_all(action, &StreamdeckManager::setError);
 }
 
-bool StreamingService::onStreamStopping() {
+bool
+StreamingService::onStreamStopping() {
 	logger("OBS is stopping stream.");
 	return true;
 }
 
-void StreamingService::onStreamStopping(void* streamingService, calldata_t* data) {
+void
+StreamingService::onStreamStopping(void* streamingService, calldata_t* data) {
 	StreamingService* service = reinterpret_cast<StreamingService*>(streamingService);
 
 	if(!service->checkOutput(data)) return;
@@ -249,12 +262,14 @@ void StreamingService::onStreamStopping(void* streamingService, calldata_t* data
 	service->streamdeckManager()->commit_all(response, &StreamdeckManager::setStatus);
 }
 
-bool StreamingService::onStreamStopped() {
+bool
+StreamingService::onStreamStopped() {
 	logger("OBS has stopped stream.");
 	return true;
 }
 
-void StreamingService::onStreamStopped(void* streamingService, calldata_t* data) {
+void
+StreamingService::onStreamStopped(void* streamingService, calldata_t* data) {
 	StreamingService* service = reinterpret_cast<StreamingService*>(streamingService);
 
 	if(!service->checkOutput(data)) return;
@@ -282,7 +297,8 @@ void StreamingService::onStreamStopped(void* streamingService, calldata_t* data)
 	service->streamdeckManager()->commit_all(action, &StreamdeckManager::setError);
 }
 
-void StreamingService::onStreamReconnecting(void* streamingService, calldata_t* data) {
+void
+StreamingService::onStreamReconnecting(void* streamingService, calldata_t* data) {
 	StreamingService* service = reinterpret_cast<StreamingService*>(streamingService);
 
 	if(!service->checkOutput(data)) return;
@@ -294,7 +310,8 @@ void StreamingService::onStreamReconnecting(void* streamingService, calldata_t* 
 	service->streamdeckManager()->commit_all(response, &StreamdeckManager::setStatus);
 }
 
-void StreamingService::onStreamReconnected(void* streamingService, calldata_t* data) {
+void
+StreamingService::onStreamReconnected(void* streamingService, calldata_t* data) {
 	StreamingService* service = reinterpret_cast<StreamingService*>(streamingService);
 
 	if(!service->checkOutput(data)) return;

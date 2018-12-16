@@ -1,11 +1,20 @@
-// InfoDialog Include
+/*
+ * Plugin Includes
+ */
 #include "include/ui/infodialog.h"
 #include "ui/ui_infodialog.h"
+
+/*
+========================================================================================================
+	Constructors / Destructor
+========================================================================================================
+*/
 
 InfoDialog::InfoDialog(QWidget *parent) : QDialog(parent), ui(new Ui::InfoDialog)
 {
     ui->setupUi(this);
-	QString label = QString("Elgato Remote Control for OBS Studio - Plugin Version: %1").arg(VERSION_STR);
+	QString label = QString("Elgato Remote Control for OBS Studio - "
+		"Plugin Version: %1").arg(VERSION_STR);
     setWindowTitle(label);
 
 	show();
@@ -16,10 +25,18 @@ InfoDialog::~InfoDialog()
     delete ui;
 }
 
-void InfoDialog::write(QString str) {
-	ui->logger->append(str);
+/*
+========================================================================================================
+	Log Handling
+========================================================================================================
+*/
+
+void
+InfoDialog::write(QString str) {
+	ui->_logger->append(str);
 }
 
-QTextEdit* InfoDialog::get_logger() const {
-	return ui->logger;
+QTextEdit*
+InfoDialog::logger() const {
+	return ui->_logger;
 }

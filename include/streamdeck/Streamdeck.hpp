@@ -65,9 +65,7 @@ class StreamdeckClient : public QThread {
 
 		qintptr m_socketDescriptor;
 
-		bool m_startExecution;
-
-		bool m_isClosing = false;
+		volatile bool m_startExecution;
 
 	/*
 	====================================================================================================
@@ -87,13 +85,16 @@ class StreamdeckClient : public QThread {
 	*/
 	public:
 
-		QTcpSocket* socket() const;
+		QTcpSocket*
+		socket() const;
 
-		void ready();
+		void
+		ready();
 
 	protected:
 
-		void run() override final;
+		void
+		run() override final;
 
 	/*
 	====================================================================================================
@@ -102,13 +103,17 @@ class StreamdeckClient : public QThread {
 	*/
 	private slots:
 
-		void close();
+		void
+		close();
 
-		void disconnected();
+		void
+		disconnected();
 
-		void read();
+		void
+		read();
 
-		void write(QJsonDocument data);
+		void
+		write(QJsonDocument data);
 
 	/*
 	====================================================================================================
@@ -117,11 +122,13 @@ class StreamdeckClient : public QThread {
 	*/
 	signals:
 
-		void disconnected(int code);
+		void
+		disconnected(int code);
 
 	signals:
 
-		void read(QJsonDocument data);
+		void
+		read(QJsonDocument data);
 
 };
 
@@ -185,7 +192,8 @@ class Streamdeck : public QObject {
 	*/
 	public:
 
-		static StreamdeckClient* createClient(qintptr socketDescriptor);
+		static StreamdeckClient*
+		createClient(qintptr socketDescriptor);
 
 	/*
 	====================================================================================================
@@ -218,50 +226,91 @@ class Streamdeck : public QObject {
 	*/
 	public:
 
-		void close();
+		void
+		close();
 
-		void parse(const QJsonDocument& json_quest, Streamdeck::rpc_event& event, QString& service,
-			QString& method, QVector<QVariant>& args);
+		void
+		parse(
+			const QJsonDocument& json_quest,
+			Streamdeck::rpc_event& event,
+			QString& service,
+			QString& method,
+			QVector<QVariant>& args
+		);
 
-		bool sendSubscriptionMessage(const rpc_event event, const std::string& resourceId);
+		bool
+		sendSubscriptionMessage(const rpc_event event, const std::string& resourceId);
 
-		bool sendStatusMessage(const rpc_event event, const std::string& status);
+		bool
+		sendStatusMessage(const rpc_event event, const std::string& status);
 
-		bool sendStatusMessage(const rpc_event event);
+		bool
+		sendStatusMessage(const rpc_event event);
 
-		bool sendRecordStreamState(const rpc_event event, const std::string& resourceId,
-			const std::string& streaming, const std::string& recording);
+		bool
+		sendRecordStreamState(
+			const rpc_event event,
+			const std::string& resourceId,
+			const std::string& streaming,
+			const std::string& recording
+		);
 
-		bool sendErrorMessage(const rpc_event event, const std::string& resourceId, bool error);
+		bool
+		sendErrorMessage(const rpc_event event, const std::string& resourceId, bool error);
 
-		bool sendActiveCollectionMessage(const rpc_event event, const std::string& resourceId,
-			const Collection* collection);
+		bool
+		sendActiveCollectionMessage(
+			const rpc_event event,
+			const std::string& resourceId,
+			const Collection* collection
+		);
 
-		bool sendCollectionSwitchMessage(const rpc_event event, const Collection* collection);
+		bool
+		sendCollectionSwitchMessage(const rpc_event event, const Collection* collection);
 
-		bool sendCollectionsMessage(const rpc_event event, const std::string& resourceId,
-			const Collections& collections);
+		bool
+		sendCollectionsMessage(
+			const rpc_event event,
+			const std::string& resourceId,
+			const Collections& collections
+		);
 
-		bool sendCollectionsSchema(const rpc_event event, const Collections& collections);
+		bool
+		sendCollectionsSchema(
+			const rpc_event event,
+			const Collections& collections
+		);
 
-		bool sendScenesMessage(const rpc_event event, const std::string& resourceId,
-			const Collection* collection, const Scenes& scenes);
+		bool
+		sendScenesMessage(
+			const rpc_event event,
+			const std::string& resourceId,
+			const Collection* collection,
+			const Scenes& scenes
+		);
 
-		void updateEventAuthorizations(const rpc_event event, bool value);
+		void
+		updateEventAuthorizations(const rpc_event event, bool value);
 
 	private:
 
-		QJsonObject buildJsonResponse(const rpc_event event, const QString& resourceId) const;
+		QJsonObject
+		buildJsonResponse(const rpc_event event, const QString& resourceId) const;
 
-		QJsonObject buildJsonResult(const rpc_event event, const QString& resourceId) const;
+		QJsonObject
+		buildJsonResult(const rpc_event event, const QString& resourceId) const;
 
-		void addToJsonObject(QJsonObject& json_object, QString key, QJsonValue&& value) const;
+		void
+		addToJsonObject(QJsonObject& json_object, QString key, QJsonValue&& value) const;
 
-		void addToJsonObject(QJsonValueRef&& json_object, QString key, QJsonValue&& value) const;
+		void
+		addToJsonObject(QJsonValueRef&& json_object, QString key, QJsonValue&& value) const;
 
-		void addToJsonArray(QJsonArray& json_array, QJsonValue&& value) const;
+		void
+		addToJsonArray(QJsonArray& json_array, QJsonValue&& value) const;
 
-		void addToJsonArray(QJsonValueRef&& json_array, QJsonValue&& value) const;
+		void
+		addToJsonArray(QJsonValueRef&& json_array, QJsonValue&& value) const;
 
 	/*
 	====================================================================================================
@@ -270,8 +319,11 @@ class Streamdeck : public QObject {
 	*/
 	public slots:
 
-		void disconnected(int code);
-		void read(QJsonDocument data);
+		void
+		disconnected(int code);
+
+		void
+		read(QJsonDocument data);
 	
 	/*
 	====================================================================================================
@@ -280,19 +332,29 @@ class Streamdeck : public QObject {
 	*/
 	signals:
 
-		void close_client();
+		void
+		close_client();
 
 	signals:
 
-		void clientDisconnected(Streamdeck*, int);
+		void
+		clientDisconnected(Streamdeck*, int);
 
 	signals:
 
-		void received(Streamdeck* client, rpc_event event, QString service, QString method, 
-			QVector<QVariant>, bool& error);
+		void
+		received(
+			Streamdeck* client,
+			rpc_event event,
+			QString service,
+			QString method, 
+			QVector<QVariant>,
+			bool& error
+		);
 
 	signals:
 
-		void write(QJsonDocument data);
+		void
+		write(QJsonDocument data);
 
 };

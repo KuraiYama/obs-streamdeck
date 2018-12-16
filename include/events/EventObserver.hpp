@@ -26,9 +26,11 @@
 ========================================================================================================
 */
 
-template<typename...> class EventObserver;
+template<typename...>
+class EventObserver;
 
-template<typename...> class EventObservable;
+template<typename...>
+class EventObservable;
 
 /*
 ========================================================================================================
@@ -66,7 +68,8 @@ class EventObserver<E> {
 			*/
 			protected:
 
-				FuncWrapper(EventObserver<E>* handler) : m_handler(handler) {
+				FuncWrapper(EventObserver<E>* handler) :
+					m_handler(handler) {
 				};
 
 				virtual ~FuncWrapper() {
@@ -79,7 +82,8 @@ class EventObserver<E> {
 			*/
 			protected:
 				
-				virtual void* getClassAddress() const = 0;
+				virtual void*
+				getClassAddress() const = 0;
 
 			/*
 			============================================================================================
@@ -89,7 +93,8 @@ class EventObserver<E> {
 			public:
 				
 				template<typename B>
-				bool call(const B& data) const {
+				bool
+				call(const B& data) const {
 					if(this->getClassAddress() == FuncWrapperA<B>::classAddress()) {
 						FuncWrapperA<B>* ptr = (FuncWrapperA<B>*)const_cast<FuncWrapper*>(this);
 						return FuncWrapperA<B>::invoke(const_cast<const FuncWrapperA<B>*>(ptr), data);
@@ -97,7 +102,8 @@ class EventObserver<E> {
 					return false;
 				}
 
-				bool call() const {
+				bool
+				call() const {
 					if(this->getClassAddress() == FuncWrapperA<void>::classAddress()) {
 						FuncWrapperA<void>* ptr = (FuncWrapperA<void>*)const_cast<FuncWrapper*>(this);
 						return FuncWrapperA<void>::invoke(const_cast<const FuncWrapperA<void>*>(ptr));
@@ -121,16 +127,19 @@ class EventObserver<E> {
 			*/
 			protected:
 
-				static void _dummy() {
+				static void
+				_dummy() {
 				};
 
-				static bool invoke(const FuncWrapperA<A>* inst, const A& data) {
+				static bool
+				invoke(const FuncWrapperA<A>* inst, const A& data) {
 					return (*inst)(data);
 				}
 			
 			private:
 
-				static void* classAddress() {
+				static void*
+				classAddress() {
 					return FuncWrapperA<A>::_dummy;
 				}
 
@@ -141,7 +150,8 @@ class EventObserver<E> {
 			*/
 			protected:
 
-				FuncWrapperA(EventObserver<E>* handler) : FuncWrapper(handler) {
+				FuncWrapperA(EventObserver<E>* handler) :
+					FuncWrapper(handler) {
 				};
 
 				virtual ~FuncWrapperA() {
@@ -154,7 +164,8 @@ class EventObserver<E> {
 			*/
 			protected:
 
-				virtual bool operator()(const A& data) const = 0;
+				virtual bool
+				operator()(const A& data) const = 0;
 
 			/*
 			============================================================================================
@@ -163,7 +174,8 @@ class EventObserver<E> {
 			*/
 			private:
 
-				void* getClassAddress() const final {
+				void*
+				getClassAddress() const final {
 					return FuncWrapperA<A>::_dummy;
 				}
 
@@ -181,14 +193,17 @@ class EventObserver<E> {
 			*/
 			protected:
 
-				static void _dummy() {
+				static void
+				_dummy() {
 				};
 
-				static bool invoke(const FuncWrapperA<void>* inst) {
+				static bool
+				invoke(const FuncWrapperA<void>* inst) {
 					return (*inst)();
 				}
 
-				static void* classAddress() {
+				static void*
+				classAddress() {
 					return FuncWrapperA<void>::_dummy;
 				}
 
@@ -199,7 +214,8 @@ class EventObserver<E> {
 			*/
 			protected:
 
-				FuncWrapperA(EventObserver<E>* handler) : FuncWrapper(handler) {
+				FuncWrapperA(EventObserver<E>* handler) :
+					FuncWrapper(handler) {
 				};
 
 				virtual ~FuncWrapperA() {
@@ -212,7 +228,8 @@ class EventObserver<E> {
 			*/
 			protected:
 				
-				virtual bool operator()() const = 0;
+				virtual bool
+				operator()() const = 0;
 
 			/*
 			============================================================================================
@@ -221,7 +238,8 @@ class EventObserver<E> {
 			*/
 			protected:
 
-				void* getClassAddress() const final {
+				void*
+				getClassAddress() const final {
 					return FuncWrapperA<void>::_dummy;
 				}
 
@@ -253,11 +271,14 @@ class EventObserver<E> {
 	public:
 
 		template<typename B>
-		bool call(const E& event, const B& data) const;
+		bool
+		call(const E& event, const B& data) const;
 
-		bool call(const E& event) const;
+		bool
+		call(const E& event) const;
 
-		FuncWrapper* callback(const E& event) const;
+		FuncWrapper*
+		callback(const E& event) const;
 
 };
 
@@ -320,7 +341,8 @@ class EventObserver<T,E> : public EventObserver<E> {
 			*/
 			protected:
 
-				bool operator()(const B& data) const final {
+				bool
+				operator()(const B& data) const final {
 					return m_internalFunc(data);
 				}
 
@@ -373,7 +395,8 @@ class EventObserver<T,E> : public EventObserver<E> {
 			*/
 			protected:
 
-				bool operator()() const final {
+				bool
+				operator()() const final {
 					return m_internalFunc();
 				}
 
@@ -398,11 +421,14 @@ class EventObserver<T,E> : public EventObserver<E> {
 	public:
 
 		template<typename B>
-		void registerCallback(const E& event, typename FuncWrapperB<B>::Callback handler, T* caller);
+		void
+		registerCallback(const E& event, typename FuncWrapperB<B>::Callback handler, T* caller);
 
-		void registerCallback(const E& event, typename FuncWrapperB<void>::Callback, T* caller);
+		void
+		registerCallback(const E& event, typename FuncWrapperB<void>::Callback, T* caller);
 
-		void unregisterCallback(const E& event);
+		void
+		unregisterCallback(const E& event);
 
 };
 

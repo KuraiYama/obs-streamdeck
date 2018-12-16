@@ -50,17 +50,22 @@ class EventObservable<T> {
 	*/
 	public:
 
-		virtual void addEventHandler(const T& event, const EventObserver<T>* eventHandler) = 0;         
+		virtual void
+		addEventHandler(const T& event, const EventObserver<T>* eventHandler) = 0;         
 		
-		virtual void remEventHandler(const T& event, const EventObserver<T>* eventHandler) = 0;
+		virtual void
+		remEventHandler(const T& event, const EventObserver<T>* eventHandler) = 0;
 
 	protected:
 
-		virtual void addEvent(const T& event) = 0;
+		virtual void
+		addEvent(const T& event) = 0;
 		
-		virtual void removeEvent(const T& event) = 0;
+		virtual void
+		removeEvent(const T& event) = 0;
 		
-		virtual bool notifyEvent(const T& event) const = 0;
+		virtual bool
+		notifyEvent(const T& event) const = 0;
 
 };
 
@@ -94,18 +99,24 @@ class SafeEventObservable : protected EventObservable<T> {
 	*/
 	public:
 
-		virtual void addEventHandler(const T& event, const EventObserver<T>* eventHandler) override;
+		virtual void
+		addEventHandler(const T& event, const EventObserver<T>* eventHandler) override;
 
-		virtual void remEventHandler(const T& event, const EventObserver<T>* eventHandler) override;
+		virtual void
+		remEventHandler(const T& event, const EventObserver<T>* eventHandler) override;
 
-		virtual void addEvent(const T& event) override;
+		virtual void
+		addEvent(const T& event) override;
 
-		virtual void removeEvent(const T& event) override;
+		virtual void
+		removeEvent(const T& event) override;
 
-		virtual bool notifyEvent(const T& event) const override;
+		virtual bool
+		notifyEvent(const T& event) const override;
 
 		template<typename B> 
-		bool notifyEvent(const T& event, const B& data) const;
+		bool
+		notifyEvent(const T& event, const B& data) const;
 
 };
 
@@ -139,18 +150,24 @@ class UnsafeEventObservable : public EventObservable<T> {
 	*/
 	public:
 
-		virtual void addEventHandler(const T& event, const EventObserver<T>* eventHandler) override;
+		virtual void
+		addEventHandler(const T& event, const EventObserver<T>* eventHandler) override;
 
-		virtual void remEventHandler(const T& event, const EventObserver<T>* eventHandler) override;
+		virtual void
+		remEventHandler(const T& event, const EventObserver<T>* eventHandler) override;
 
-		virtual void addEvent(const T& event) override;
+		virtual void
+		addEvent(const T& event) override;
 
-		virtual void removeEvent(const T& event) override;
+		virtual void
+		removeEvent(const T& event) override;
 
-		virtual bool notifyEvent(const T& event) const override;
+		virtual bool
+		notifyEvent(const T& event) const override;
 
 		template<typename B>
-		bool notifyEvent(const T& event, const B& data) const;
+		bool
+		notifyEvent(const T& event, const B& data) const;
 
 };
 

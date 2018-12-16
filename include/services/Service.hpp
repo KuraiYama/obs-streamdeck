@@ -38,9 +38,11 @@ class Service {
 	*/
 	private:
 	
-		static void OnObsFrontendEvent(obs_frontend_event event, void* service);
+		static void
+		OnObsFrontendEvent(obs_frontend_event event, void* service);
 
-		static void OnObsSaveEvent(obs_data_t* save_data, bool saving, void* service);
+		static void
+		OnObsSaveEvent(obs_data_t* save_data, bool saving, void* service);
 
 	/*
 	====================================================================================================
@@ -79,7 +81,8 @@ class Service {
 	*/
 	protected:
 
-		virtual void logger(const std::string& message) const;
+		virtual void
+		logger(const std::string& message) const;
 
 };
 
@@ -162,22 +165,33 @@ class ServiceT : private Service,
 		rpc_adv_response<std::tuple<Collection*, Scenes>>
 		response_scenes(const rpc_event_data* data, const char* method) const;
 
-		void setupEvent(obs_frontend_event event, obs_frontend_callback handler);
+		void
+		setupEvent(obs_frontend_event event, obs_frontend_callback handler);
 
-		void setupEvent(obs_save_event event, obs_save_callback handler);
+		void
+		setupEvent(obs_save_event event, obs_save_callback handler);
 
-		void setupEvent(Streamdeck::rpc_event event, 
-			typename RPCHandler::template FuncWrapperB<void>::Callback handler);
+		void
+		setupEvent(
+			Streamdeck::rpc_event event, 
+			typename RPCHandler::template FuncWrapperB<void>::Callback handler
+		);
 
 		template<typename B>
-		void setupEvent(Streamdeck::rpc_event event, 
-			typename RPCHandler::template FuncWrapperB<B>::Callback handler);
+		void
+		setupEvent(
+			Streamdeck::rpc_event event, 
+			typename RPCHandler::template FuncWrapperB<B>::Callback handler
+		);
 
-		void logger(const std::string& message) const override;
+		void
+		logger(const std::string& message) const override;
 
-		const char* name() const;
+		const char*
+		name() const;
 
-		StreamdeckManager* streamdeckManager() const;
+		StreamdeckManager*
+		streamdeckManager() const;
 
 	/*
 	====================================================================================================

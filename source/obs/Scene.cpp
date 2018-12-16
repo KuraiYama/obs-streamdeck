@@ -16,8 +16,8 @@
 */
 
 Scene::Scene(Collection* collection, obs_source_t* source) : 
-		m_parentCollection(collection), m_source(source) {
-
+	m_parentCollection(collection),
+	m_source(source) {
 	m_name = obs_source_get_name(m_source);
 	m_scene = obs_scene_from_source(m_source);
 }
@@ -47,8 +47,8 @@ Scene::~Scene() {
 ========================================================================================================
 */
 
-void Scene::buildItems() {
-
+void
+Scene::buildItems() {
 	auto add_item_func = [](obs_scene_t* scene, obs_sceneitem_t* item, void* param)->bool {
 		Scene& sceneObject = *reinterpret_cast<Scene*>(param);
 
@@ -70,21 +70,25 @@ void Scene::buildItems() {
 ========================================================================================================
 */
 
-std::string Scene::name() const {
+std::string
+Scene::name() const {
 	return m_name;
 }
 
-std::string Scene::id() const {
+std::string
+Scene::id() const {
 	return QString("%1.%2")
 		.arg(m_parentCollection->id().c_str())
 		.arg(m_name.c_str()).toStdString();
 }
 
-obs_scene_t* Scene::scene() const {
+obs_scene_t*
+Scene::scene() const {
 	return m_scene;
 }
 
-Items Scene::items() const {
+Items
+Scene::items() const {
 	Items items;
 	for(auto iter = m_items.begin(); iter != m_items.end(); iter++)
 		items.push_back(const_cast<Item*>(&(iter->second)));
