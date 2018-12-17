@@ -9,18 +9,70 @@
 ========================================================================================================
 */
 
-Collection::Collection(std::string name) : m_name(name) {
+Collection::Collection(long long id, std::string name) :
+	m_identifier(id),
+	m_name(name) {
 }
 
 Collection::~Collection() {
 }
 
-CollectionManager::CollectionManager() :
-	m_activeCollection(nullptr),
-	m_isBuildingCollections(false) {
+/*
+========================================================================================================
+	Builders
+========================================================================================================
+*/
+
+bool Collection::buildFromBuffer(Collection& collection, char* buffer, size_t size) {
+
+	char* start_buf = buffer;
+	char* end_buf = buffer + size;
+
+	// Extract id
+	long long identifier = -1;
+	memcpy(&identifier, buffer, sizeof(long long));
+
+	// Extract name length
+	buffer += sizeof(long long);
+	if(buffer == end_buf) return false;
+	size_t nameSz = 0;
+	memcpy(&nameSz, buffer, sizeof(size_t));
+
+	// Extract name
+	buffer += sizeof(size_t);
+	if(buffer == end_buf) return false;
+	char* name = new char[nameSz];
+	memcpy(name, buffer, nameSz);
+
+	collection.m_identifier = identifier;
+	collection.m_name.assign(name);
+
+	// Clean memory
+	delete [] name;
+	delete [] start_buf;
+
+	return buffer == end_buf;
 }
 
-CollectionManager::~CollectionManager() {
+/*
+========================================================================================================
+	Serialization
+========================================================================================================
+*/
+
+size_t
+Collection::toBytes(char** buffer) const {
+	if(buffer == nullptr)
+		return 0;
+
+	size_t name_len = m_name.length();
+	size_t total_size = sizeof(long long) + sizeof(size_t) + name_len;
+	*buffer = new char[total_size];
+	memcpy(*buffer, &m_identifier, sizeof(long long));
+	memcpy(*buffer+sizeof(long long), &name_len, sizeof(size_t));
+	memcpy(*buffer+sizeof(long long)+sizeof(size_t), m_name.c_str(), name_len);
+
+	return total_size;
 }
 
 /*
@@ -29,7 +81,7 @@ CollectionManager::~CollectionManager() {
 ========================================================================================================
 */
 
-void
+/*void
 Collection::buildScenes() {
 	obs_frontend_set_current_scene_collection(m_name.c_str());
 
@@ -46,72 +98,7 @@ Collection::buildScenes() {
 	}
 
 	obs_frontend_source_list_free(&scenes);
-}
-
-/*
-========================================================================================================
-	Collections Management
-========================================================================================================
-*/
-
-CollectionManager::obs_collection_event
-CollectionManager::buildCollections() {
-	obs_collection_event event = obs_collection_event::OBS_COLLECTIONS_LIST_BUILD;
-
-	m_isBuildingCollections = true;
-
-	char** collections = obs_frontend_get_scene_collections();
-	char* active_collection = obs_frontend_get_current_scene_collection();
-	m_activeCollection = nullptr;
-	int i = 0;
-
-	size_t old_count = m_collections.size();
-	m_collections.clear();
-
-	while(collections[i] != NULL) {
-		bool active = strcmp(collections[i], active_collection) == 0;
-		
-		Collection collection(collections[i]);
-		Collection& collection_inserted = m_collections
-			.insert(std::map<std::string, Collection>::value_type(collections[i], collection))
-			.first->second;
-
-		if(active) m_activeCollection = &collection_inserted;
-
-		collection_inserted.buildScenes();
-
-		++i;
-	}
-
-	bfree(collections);
-	
-	size_t new_count = m_collections.size();
-
-	if(old_count < new_count) {
-		event = obs_collection_event::OBS_COLLECTION_EVENT_ADDED;
-	}
-	else if(old_count == new_count) {
-		event = obs_collection_event::OBS_COLLECTION_EVENT_UPDATED;
-	}
-	else if(old_count > new_count) {
-		event = obs_collection_event::OBS_COLLECTION_EVENT_REMOVED;
-	}
-
-	obs_frontend_set_current_scene_collection(active_collection);
-
-	m_isBuildingCollections = false;
-
-	return event;
-}
-
-Collection*
-CollectionManager::getCollectionByName(const std::string& name) {
-	Collection* collection = nullptr;
-	if(m_collections.find(name) != m_collections.end()) {
-		collection = &m_collections[name];
-	}
-	return collection;
-}
+}*/
 
 /*
 ========================================================================================================
@@ -124,37 +111,15 @@ Collection::name() const {
 	return m_name;
 }
 
-std::string
+long long
 Collection::id() const {
-	return m_name;
+	return m_identifier;
 }
 
-Scenes
+/*Scenes
 Collection::scenes() const {
 	Scenes scenes;
 	for(auto iter = m_scenes.begin(); iter != m_scenes.end(); iter++)
 		scenes.push_back(const_cast<Scene*>(&(iter->second)));
 	return scenes;
-}
-
-Collections
-CollectionManager::collections() const {
-	Collections collections;
-	for(auto iter = m_collections.begin(); iter != m_collections.end(); iter++)
-		collections.push_back(const_cast<Collection*>(&(iter->second)));
-	return collections;
-}
-
-Collection*
-CollectionManager::activeCollection() const {
-	const char* current_collection = obs_frontend_get_current_scene_collection();
-	if(m_activeCollection->name().compare(current_collection) != 0) {
-		m_activeCollection = (Collection*)&m_collections.find(current_collection)->second;
-	}
-	return m_activeCollection;
-}
-
-bool
-CollectionManager::isBuildingCollections() const {
-	return m_isBuildingCollections;
-}
+}*/

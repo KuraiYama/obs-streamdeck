@@ -119,6 +119,9 @@ class ApplicationService : public ServiceT<ApplicationService> {
 		onApplicationLoaded();
 
 		bool
+		onApplicationExit();
+
+		bool
 		onStreamLaunching();
 		
 		bool

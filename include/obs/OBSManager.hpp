@@ -18,8 +18,8 @@
  */
 #include "include/obs/OBSEvents.hpp"
 #include "include/obs/Collection.hpp"
-#include "include/obs/Scene.hpp"
-#include "include/obs/Item.hpp"
+//#include "include/obs/Scene.hpp"
+//#include "include/obs/Item.hpp"
 
 /*
 ========================================================================================================
@@ -31,16 +31,21 @@ class OBSManager {
 
 	/*
 	====================================================================================================
+		Static Class Attributes
+	====================================================================================================
+	*/
+	private:
+
+		static unsigned long long _last_registered_id;
+
+	/*
+	====================================================================================================
 		Instance Data Members
 	====================================================================================================
 	*/
 	private:
 
-		std::map<std::string, Collection> m_collections;
-
-		mutable Collection* m_activeCollection;
-
-		bool m_isBuildingCollections;
+		std::map<unsigned long long, Collection> m_collections;
 
 	/*
 	====================================================================================================
@@ -60,19 +65,15 @@ class OBSManager {
 	*/
 	public:
 
-		obs::collection_event
-		buildCollections();
+		void
+		loadCollections();
 
-		Collection*
-		getCollectionByName(const std::string& name);
+		void
+		saveCollections();
 
-		Collections
-		collections() const;
+	private:
 
-		Collection*
-		activeCollection() const;
-
-		bool
-		isBuildingCollections() const;
+		void
+		extractFromOBSCollections(std::map<std::string, Collection>& collections);
 
 };

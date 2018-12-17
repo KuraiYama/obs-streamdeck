@@ -11,7 +11,7 @@
 ========================================================================================================
 */
 
-thread_local QColor Logger::m_internalColor = QColor(255, 255, 255);
+thread_local QColor Logger::_internal_color = QColor(255, 255, 255);
 
 /*
 ========================================================================================================
@@ -63,7 +63,7 @@ Logger::output(QTextEdit* output) {
 Logger&
 Logger::colorInfo() {
 	std::lock_guard<std::mutex> lock(m_mutex);
-	m_internalColor = QColor("#ffffff");
+	_internal_color = QColor("#ffffff");
 
 	return *this;
 }
@@ -71,7 +71,7 @@ Logger::colorInfo() {
 Logger&
 Logger::colorError() {
 	std::lock_guard<std::mutex> lock(m_mutex);
-	m_internalColor = QColor("#a11526");
+	_internal_color = QColor("#a11526");
 
 	return *this;
 }
@@ -79,7 +79,7 @@ Logger::colorError() {
 Logger&
 Logger::colorWarning() {
 	std::lock_guard<std::mutex> lock(m_mutex);
-	m_internalColor = QColor("#ff760d");
+	_internal_color = QColor("#ff760d");
 
 	return *this;
 }
@@ -87,7 +87,7 @@ Logger::colorWarning() {
 Logger&
 Logger::colorCustom(unsigned int color) {
 	std::lock_guard<std::mutex> lock(m_mutex);
-	m_internalColor = QColor(color);
+	_internal_color = QColor(color);
 
 	return *this;
 }
@@ -116,7 +116,7 @@ operator<<(Logger& logger, const std::string& str) {
 		try {
 			logger.insertHtml(QString("<font color=\"%1\">%2 "
 				"(<font color=\"#ffd359\">%3</font>)</font><br />")
-				.arg(logger.m_internalColor.name(QColor::HexArgb))
+				.arg(logger._internal_color.name(QColor::HexArgb))
 				.arg(QString::fromStdString(str))
 				.arg((quint64)QThread::currentThreadId()));
 		}
@@ -136,7 +136,7 @@ operator<<(Logger& logger, const std::string&& str) {
 		try {
 			logger.insertHtml(QString("<font color=\"%1\">%2 "
 				"(<font color=\"#ffd359\">%3</font>)</font><br />")
-				.arg(logger.m_internalColor.name(QColor::HexArgb))
+				.arg(logger._internal_color.name(QColor::HexArgb))
 				.arg(QString::fromStdString(str))
 				.arg((quint64)QThread::currentThreadId()));
 		}

@@ -16,7 +16,7 @@
 /*
  * Plugin Includes
  */
-#include "include/obs/Scene.hpp"
+//#include "include/obs/Scene.hpp"
 
 /*
 ========================================================================================================
@@ -38,14 +38,25 @@ class Collection {
 
 	/*
 	====================================================================================================
+		Static Class Functions
+	====================================================================================================
+	*/
+	public:
+
+		static bool buildFromBuffer(Collection& collection, char* buffer, size_t size);
+
+	/*
+	====================================================================================================
 		Instance Data Members
 	====================================================================================================
 	*/
 	private:
 
-		std::map<std::string, Scene> m_scenes;
+		//std::map<std::string, Scene> m_scenes;
 
 		std::string m_name;
+
+		long long m_identifier;
 
 	/*
 	====================================================================================================
@@ -54,7 +65,7 @@ class Collection {
 	*/
 	public:
 
-		Collection(std::string name = "");
+		Collection(long long id = -1, std::string name = "");
 
 		~Collection();
 
@@ -65,16 +76,16 @@ class Collection {
 	*/
 	public:
 
-		void
-		buildScenes();
+		size_t
+		toBytes(char** buffer) const;
 
-		std::string
+		long long
 		id() const;
 
 		std::string
 		name() const;
 
-		Scenes
-		scenes() const;
+		/*Scenes
+		scenes() const;*/
 
 };

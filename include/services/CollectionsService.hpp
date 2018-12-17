@@ -31,21 +31,12 @@ class CollectionsService : public ServiceT<CollectionsService> {
 
 	/*
 	====================================================================================================
-		Instance Data Members
-	====================================================================================================
-	*/
-	private:
-
-		CollectionManager* m_collectionManager;
-
-	/*
-	====================================================================================================
 		Constructors / Destructor
 	====================================================================================================
 	*/
 	public:
 
-		CollectionsService(StreamdeckManager* streamdeckManager, CollectionManager* collectionManager);
+		CollectionsService();
 
 		virtual ~CollectionsService();
 
@@ -56,7 +47,7 @@ class CollectionsService : public ServiceT<CollectionsService> {
 	*/
 	private:
 
-		bool
+		/*bool
 		onCollectionsListChanged();
 
 		bool
@@ -84,6 +75,6 @@ class CollectionsService : public ServiceT<CollectionsService> {
 		onGetActiveCollection(const rpc_event_data& data);
 
 		bool
-		onMakeCollectionActive(const rpc_event_data& data);
+		onMakeCollectionActive(const rpc_event_data& data);*/
 
 };

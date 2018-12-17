@@ -10,12 +10,7 @@
 ========================================================================================================
 */
 
-CollectionsService::CollectionsService(
-	StreamdeckManager* streamdeckManager, 
-	CollectionManager* collectionManager
-) :
-	ServiceT("CollectionsService", streamdeckManager) {
-	m_collectionManager = collectionManager;
+CollectionsService::CollectionsService() : ServiceT("CollectionsService", "SceneCollectionsService") {
 
 	/*this->setupEvent(obs_frontend_event::OBS_FRONTEND_EVENT_SCENE_COLLECTION_LIST_CHANGED,
 		&CollectionsService::onCollectionsListChanged);
@@ -23,7 +18,7 @@ CollectionsService::CollectionsService(
 	this->setupEvent(obs_frontend_event::OBS_FRONTEND_EVENT_SCENE_COLLECTION_CHANGED,
 		&CollectionsService::onCollectionSwitched);*/
 
-	this->setupEvent<const rpc_event_data&>(Streamdeck::rpc_event::RPC_ID_FETCH_COLLECTIONS_SCHEMA,
+	/*this->setupEvent<const rpc_event_data&>(Streamdeck::rpc_event::RPC_ID_FETCH_COLLECTIONS_SCHEMA,
 		&CollectionsService::onFetchCollectionsSchema);
 
 	this->setupEvent<const rpc_event_data&>(Streamdeck::rpc_event::RPC_ID_GET_COLLECTIONS,
@@ -45,7 +40,7 @@ CollectionsService::CollectionsService(
 		&CollectionsService::subscribeCollectionChange);
 
 	this->setupEvent<const rpc_event_data&>(Streamdeck::rpc_event::RPC_ID_COLLECTION_SWITCHED_SUBSCRIBE,
-		&CollectionsService::subscribeCollectionChange);
+		&CollectionsService::subscribeCollectionChange);*/
 }
 
 CollectionsService::~CollectionsService() {
@@ -57,7 +52,7 @@ CollectionsService::~CollectionsService() {
 ========================================================================================================
 */
 
-bool
+/*bool
 CollectionsService::onCollectionsListChanged() {
 	CollectionManager::obs_collection_event evt = m_collectionManager->buildCollections();
 
@@ -117,7 +112,7 @@ CollectionsService::onCollectionUpdated() {
 	response.data = m_collectionManager->collections();
 
 	return true;// streamdeckManager()->commit_all(response, &StreamdeckManager::setCollections);
-}
+}*/
 
 /*
 ========================================================================================================
@@ -125,7 +120,7 @@ CollectionsService::onCollectionUpdated() {
 ========================================================================================================
 */
 
-bool
+/*bool
 CollectionsService::subscribeCollectionChange(const rpc_event_data& data) {
 	rpc_adv_response<std::string> response = response_string(&data, "subscribeCollectionChange");
 	if(data.event == Streamdeck::rpc_event::RPC_ID_COLLECTION_ADDED_SUBSCRIBE ||
@@ -163,8 +158,8 @@ CollectionsService::onFetchCollectionsSchema(const rpc_event_data& data) {
 			.toStdString();
 	}
 
-	return streamdeckManager()->commit_to(response, &StreamdeckManager::setSubscription);/* &&
-		this->onGetCollections(data);*/
+	return streamdeckManager()->commit_to(response, &StreamdeckManager::setSubscription);// &&
+		//this->onGetCollections(data);
 }
 
 bool
@@ -213,7 +208,7 @@ CollectionsService::onMakeCollectionActive(const rpc_event_data& data) {
 		if(data.serviceName.compare("SceneCollectionsService") == 0
 				&& data.method.compare("activeCollection") == 0) {
 
-			/* TODO */
+			// TODO
 
 			response.data = false;
 			return streamdeckManager()->commit_to(response, &StreamdeckManager::setError);
@@ -221,4 +216,4 @@ CollectionsService::onMakeCollectionActive(const rpc_event_data& data) {
 	}
 
 	return streamdeckManager()->commit_to(response, &StreamdeckManager::setError);
-}
+}*/

@@ -53,7 +53,7 @@ class Logger {
 	*/
 	private:
 
-		thread_local static QColor m_internalColor;
+		thread_local static QColor _internal_color;
 
 	/*
 	====================================================================================================

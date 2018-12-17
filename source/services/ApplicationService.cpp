@@ -20,6 +20,7 @@ ApplicationService::ApplicationService(QMainWindow* parent) :
 
 	/* OBS fully loaded event */
 	this->setupEvent(OBS_FRONTEND_EVENT_FINISHED_LOADING, &ApplicationService::onApplicationLoaded);
+	this->setupEvent(OBS_FRONTEND_EVENT_EXIT, &ApplicationService::onApplicationExit);
 	this->setupEvent(OBS_FRONTEND_EVENT_STREAMING_LAUNCHING, &ApplicationService::onStreamLaunching);
 	this->setupEvent(OBS_FRONTEND_EVENT_RECORDING_STARTING, &ApplicationService::onRecordStarting);
 
@@ -248,10 +249,16 @@ ApplicationService::onApplicationLoaded() {
 
 	dialog.open();
 
-	//m_collectionManager->buildCollections();
+	obsManager()->loadCollections();
 
 	logInfo("Application Loaded.");
 
+	return true;
+}
+
+bool
+ApplicationService::onApplicationExit() {
+	obsManager()->saveCollections();
 	return true;
 }
 
