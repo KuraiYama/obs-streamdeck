@@ -101,11 +101,11 @@ class StreamingService : public ServiceT<StreamingService> {
 		bool
 		onStreamStopped();
 
-		/*bool
+		bool
 		startStreaming(const rpc_event_data& data);
 
 		bool
-		stopStreaming(const rpc_event_data& data);*/
+		stopStreaming(const rpc_event_data& data);
 
 		bool
 		subscribeStreamStatusChange(const rpc_event_data& data);

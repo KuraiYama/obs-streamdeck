@@ -37,6 +37,6 @@ Streamdeck::sendEvent(const rpc_event event, const std::string& data) {
 		.arg(m_subscribedResources[event].c_str())
 		.toStdString();
 
-	emit write(QJsonDocument(response));
+	send(event, QJsonDocument(response));
 	return true;
 }

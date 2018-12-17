@@ -179,11 +179,11 @@ class StreamdeckManager : public QObject, public SafeEventObservable<Streamdeck:
 			const rpc_adv_response<std::pair<std::string, std::string>>& response
 		);
 
-		/*bool
+		bool
 		setError(
 			Streamdeck* client,
 			const rpc_adv_response<bool>& response
-		);*/
+		);
 
 		/*bool
 		setCollections(

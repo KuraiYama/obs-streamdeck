@@ -39,7 +39,7 @@ class Streamdeck;
 ========================================================================================================
 */
 
-typedef char byte;
+typedef unsigned char byte;
 
 class StreamdeckClient : public QThread {
 
@@ -198,7 +198,7 @@ class Streamdeck : public QObject {
 
 		static const byte EVENT_WRITE = 0x02;
 
-		static const byte EVENT_READ_WRITE = EVENT_READ & EVENT_WRITE;
+		static const byte EVENT_READ_WRITE = EVENT_READ | EVENT_WRITE;
 
 	/*
 	====================================================================================================
@@ -219,7 +219,7 @@ class Streamdeck : public QObject {
 
 		std::map<rpc_event, std::string> m_subscribedResources;
 
-		std::map<rpc_event, byte> m_authorizedEvents;
+		byte m_authorizedEvents[1+(((int)rpc_event::COUNT-1)*2/8)];
 
 		StreamdeckClient& m_internalClient;
 
@@ -274,10 +274,10 @@ class Streamdeck : public QObject {
 			const std::string& recording
 		);
 
-		/*bool
-		sendErrorMessage(const rpc_event event, const std::string& resourceId, bool error);
-
 		bool
+		sendError(const rpc_event event, const std::string& resourceId, bool error);
+
+		/*bool
 		sendActiveCollectionMessage(
 			const rpc_event event,
 			const std::string& resourceId,
@@ -307,6 +307,12 @@ class Streamdeck : public QObject {
 			const Collection* collection,
 			const Scenes& scenes
 		);*/
+
+		bool
+		checkEventAuthorizations(const rpc_event event, byte flag);
+
+		void
+		setEventAuthorizations(const rpc_event event, byte flag);
 
 		void
 		lockEventAuthorizations(const rpc_event event);

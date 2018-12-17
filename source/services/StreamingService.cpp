@@ -33,13 +33,13 @@ StreamingService::StreamingService() :
 		&StreamingService::subscribeStreamStatusChange
 	);
 
-	/*this->setupEvent<const rpc_event_data&>(
-		Streamdeck::rpc_event::RPC_ID_START_STREAMING,
+	this->setupEvent<const rpc_event_data&>(
+		Streamdeck::rpc_event::START_STREAMING,
 		&StreamingService::startStreaming);
 
 	this->setupEvent<const rpc_event_data&>(
-		Streamdeck::rpc_event::RPC_ID_STOP_STREAMING,
-		&StreamingService::stopStreaming);*/
+		Streamdeck::rpc_event::STOP_STREAMING,
+		&StreamingService::stopStreaming);
 }
 
 StreamingService::~StreamingService() {
@@ -77,14 +77,14 @@ StreamingService::subscribeStreamStatusChange(const rpc_event_data& data) {
 	return false;
 }
 
-/*bool
+bool
 StreamingService::startStreaming(const rpc_event_data& data) {
 	rpc_adv_response<bool> response = response_bool(&data, "startStreaming");
-	if(data.event == Streamdeck::rpc_event::RPC_ID_START_STREAMING) {
-		response.event = Streamdeck::rpc_event::RPC_ID_START_STREAMING;
-		logger("Streamdeck has required start streaming...");
-		if(data.serviceName.compare("StreamingService") == 0 
-				&& data.method.compare("startStreaming") == 0) {
+
+	if(data.event == Streamdeck::rpc_event::START_STREAMING) {
+		response.event = Streamdeck::rpc_event::START_STREAMING;
+		logInfo("Streamdeck has required start streaming...");
+		if(checkResource(&data, QRegExp("startStreaming"))) {
 			if(obs_frontend_streaming_active() == false) {
 				obs_frontend_streaming_start();
 				// OBS triggers an event when stream is started/stopped.
@@ -93,9 +93,11 @@ StreamingService::startStreaming(const rpc_event_data& data) {
 				return true;
 			}
 		}
-		logger("Error : StreamingService::startStreaming not called by StreamDeck. "
+		logError("Error : StreamingService::startStreaming not called by StreamDeck. "
 			"Starting stream aborted.");
 	}
+	else
+		logError("startStreaming not called by START_STREAMING");
 
 	return streamdeckManager()->commit_to(response, &StreamdeckManager::setError);
 }
@@ -103,11 +105,11 @@ StreamingService::startStreaming(const rpc_event_data& data) {
 bool
 StreamingService::stopStreaming(const rpc_event_data& data) {
 	rpc_adv_response<bool> response = response_bool(&data, "stopStreaming");
-	if(data.event == Streamdeck::rpc_event::RPC_ID_STOP_STREAMING) {
-		response.event = Streamdeck::rpc_event::RPC_ID_STOP_STREAMING;
-		logger("Streamdeck has required stop streaming...");
-		if(data.serviceName.compare("StreamingService") == 0
-				&& data.method.compare("stopStreaming") == 0) {
+
+	if(data.event == Streamdeck::rpc_event::STOP_STREAMING) {
+		response.event = Streamdeck::rpc_event::STOP_STREAMING;
+		logInfo("Streamdeck has required stop streaming...");
+		if(checkResource(&data, QRegExp("stopStreaming"))) {
 			if(obs_frontend_streaming_active() == true) {
 				obs_frontend_streaming_stop();
 				// OBS triggers an event when stream is started/stopped.
@@ -116,12 +118,14 @@ StreamingService::stopStreaming(const rpc_event_data& data) {
 				return true;
 			}
 		}
-		logger("Error : StreamingService::stopStreaming not called by StreamDeck. "
+		logError("Error : StreamingService::stopStreaming not called by StreamDeck. "
 			"Stopping stream aborted.");
 	}
+	else
+		logError("stopStreaming not called by STOP_STREAMING");
 
 	return streamdeckManager()->commit_to(response, &StreamdeckManager::setError);
-}*/
+}
 
 /*
 ========================================================================================================
@@ -246,10 +250,10 @@ StreamingService::onStreamStarted(void* streamingService, calldata_t* data) {
 	response.data = "live";
 	service->streamdeckManager()->commit_all(response, &StreamdeckManager::setEvent);
 
-	/*rpc_adv_response<bool> action = service->response_bool(nullptr, "onStreamingStarted");
+	rpc_adv_response<bool> action = service->response_bool(nullptr, "onStreamingStarted");
 	action.event = Streamdeck::rpc_event::START_STREAMING;
 	action.data = false;
-	service->streamdeckManager()->commit_all(action, &StreamdeckManager::setEvent);*/
+	service->streamdeckManager()->commit_all(action, &StreamdeckManager::setError);
 }
 
 bool
@@ -294,16 +298,16 @@ StreamingService::onStreamStopped(void* streamingService, calldata_t* data) {
 	response.data = "offline";
 	service->streamdeckManager()->commit_all(response, &StreamdeckManager::setEvent);
 
-	/*rpc_adv_response<bool> action = service->response_bool(nullptr, "onStreamingStopped");
+	rpc_adv_response<bool> action = service->response_bool(nullptr, "onStreamingStopped");
 	if(code == 0) {
-		action.event = Streamdeck::rpc_event::RPC_ID_STOP_STREAMING;
+		action.event = Streamdeck::rpc_event::STOP_STREAMING;
 		action.data = false;
 	}
 	else {
-		action.event = Streamdeck::rpc_event::RPC_ID_START_STREAMING;
+		action.event = Streamdeck::rpc_event::START_STREAMING;
 		action.data = true;
 	}
-	service->streamdeckManager()->commit_all(action, &StreamdeckManager::setError);*/
+	service->streamdeckManager()->commit_all(action, &StreamdeckManager::setError);
 }
 
 void

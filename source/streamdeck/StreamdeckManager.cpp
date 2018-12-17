@@ -127,6 +127,19 @@ StreamdeckManager::setSubscription(Streamdeck* client, const rpc_adv_response<st
 }
 
 bool
+StreamdeckManager::setError(Streamdeck* client, const rpc_adv_response<bool>& response) {
+	QString resource = response.request != nullptr ?
+		QString("%1.%2")
+			.arg(response.request->serviceName.c_str())
+			.arg(response.request->method.c_str()) :
+		QString("%1.%2")
+			.arg(response.serviceName)
+			.arg(response.method);
+
+	return client->sendError(response.event, resource.toStdString(), response.data);
+}
+
+bool
 StreamdeckManager::setRecordStreamState(
 	Streamdeck* client, 
 	const rpc_adv_response<std::pair<std::string, std::string>>& response
@@ -144,21 +157,6 @@ StreamdeckManager::setRecordStreamState(
 }
 
 /*bool
-StreamdeckManager::setError(Streamdeck* client, const rpc_adv_response<bool>& response) {
-	QString resource = response.request != nullptr ?
-		QString("%1.%2")
-		.arg(response.request->serviceName.c_str())
-		.arg(response.request->method.c_str()) :
-		QString("%1.%2")
-		.arg(response.serviceName)
-		.arg(response.method);
-
-	return client->sendErrorMessage(response.event, resource.toStdString(), response.data);
-}
-
-
-
-bool
 StreamdeckManager::setActiveCollection(
 	Streamdeck* client,
 	const rpc_adv_response<Collection*>& response
