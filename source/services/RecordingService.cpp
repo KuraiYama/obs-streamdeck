@@ -29,13 +29,13 @@ RecordingService::RecordingService() :
 		Streamdeck::rpc_event::RECORDING_STATUS_CHANGED_SUBSCRIBE,
 		&RecordingService::subscribeRecordStatusChange);
 
-	/*this->setupEvent<const rpc_event_data&>(
-		Streamdeck::rpc_event::RPC_ID_START_RECORDING,
+	this->setupEvent<const rpc_event_data&>(
+		Streamdeck::rpc_event::START_RECORDING,
 		&RecordingService::startRecording);
 
 	this->setupEvent<const rpc_event_data&>(
-		Streamdeck::rpc_event::RPC_ID_STOP_RECORDING,
-		&RecordingService::stopRecording);*/
+		Streamdeck::rpc_event::STOP_RECORDING,
+		&RecordingService::stopRecording);
 }
 
 RecordingService::~RecordingService() {
@@ -73,14 +73,14 @@ RecordingService::subscribeRecordStatusChange(const rpc_event_data& data) {
 	return false;
 }
 
-/*bool
+bool
 RecordingService::startRecording(const rpc_event_data& data) {
 	rpc_adv_response<bool> response = response_bool(&data, "startRecording");
-	if(data.event == Streamdeck::rpc_event::RPC_ID_START_RECORDING) {
-		response.event = Streamdeck::rpc_event::RPC_ID_START_RECORDING;
-		logger("Streamdeck has required start recording...");
-		if(data.serviceName.compare("StreamingService") == 0
-			&& data.method.compare("startRecording") == 0) {
+
+	if(data.event == Streamdeck::rpc_event::START_RECORDING) {
+		response.event = Streamdeck::rpc_event::START_RECORDING;
+		logInfo("Streamdeck has required start recording...");
+		if(checkResource(&data, QRegExp("startRecording"))) {
 			if(obs_frontend_recording_active() == false) {
 				obs_frontend_recording_start();
 				// OBS triggers an event when record is started/stopped.
@@ -89,9 +89,11 @@ RecordingService::startRecording(const rpc_event_data& data) {
 				return true;
 			}
 		}
-		logger("Error : RecordingService::startRecording not called by Streamdeck. "
+		logError("Error : RecordingService::startRecording not called by Streamdeck. "
 			"Starting record aborted.");
 	}
+	else
+		logError("startRecording not called by START_RECORDING");
 
 	return streamdeckManager()->commit_to(response, &StreamdeckManager::setError);
 }
@@ -99,11 +101,11 @@ RecordingService::startRecording(const rpc_event_data& data) {
 bool
 RecordingService::stopRecording(const rpc_event_data& data) {
 	rpc_adv_response<bool> response = response_bool(&data, "stopRecording");
-	if(data.event == Streamdeck::rpc_event::RPC_ID_STOP_RECORDING) {
-		response.event = Streamdeck::rpc_event::RPC_ID_STOP_RECORDING;
-		logger("Streamdeck has required stop recording...");
-		if(data.serviceName.compare("StreamingService") == 0
-			&& data.method.compare("stopRecording") == 0) {
+
+	if(data.event == Streamdeck::rpc_event::STOP_RECORDING) {
+		response.event = Streamdeck::rpc_event::STOP_RECORDING;
+		logInfo("Streamdeck has required stop recording...");
+		if(checkResource(&data, QRegExp("stopRecording"))) {
 			if(obs_frontend_recording_active() == true) {
 				obs_frontend_recording_stop();
 				// OBS triggers an event when record is started/stopped.
@@ -112,12 +114,14 @@ RecordingService::stopRecording(const rpc_event_data& data) {
 				return true;
 			}
 		}
-		logger("Error : RecordingService::stopRecording not called by Streamdeck. "
+		logError("Error : RecordingService::stopRecording not called by Streamdeck. "
 			"Stopping record aborted.");
 	}
+	else
+		logError("stopRecording not called by STOP_RECORDING");
 
 	return streamdeckManager()->commit_to(response, &StreamdeckManager::setError);
-}*/
+}
 
 /*
 ========================================================================================================
@@ -209,10 +213,10 @@ RecordingService::onRecordStarting(void* recordingService, calldata_t* data) {
 	response.data = "recording";
 	service->streamdeckManager()->commit_all(response, &StreamdeckManager::setEvent);
 
-	/*rpc_adv_response<bool> action = service->response_bool(nullptr, "onRecordingStarting");
-	action.event = Streamdeck::rpc_event::RPC_ID_START_RECORDING;
+	rpc_adv_response<bool> action = service->response_bool(nullptr, "onRecordingStarting");
+	action.event = Streamdeck::rpc_event::START_RECORDING;
 	action.data = false;
-	service->streamdeckManager()->commit_all(action, &StreamdeckManager::setError);*/
+	service->streamdeckManager()->commit_all(action, &StreamdeckManager::setError);
 }
 
 bool
@@ -276,14 +280,14 @@ RecordingService::onRecordStopped(void* recordingService, calldata_t* data) {
 	response.data = "offline";
 	service->streamdeckManager()->commit_all(response, &StreamdeckManager::setEvent);
 
-	/*rpc_adv_response<bool> action = service->response_bool(nullptr, "onRecordingStopped");
+	rpc_adv_response<bool> action = service->response_bool(nullptr, "onRecordingStopped");
 	if(code == 0) {
-		action.event = Streamdeck::rpc_event::RPC_ID_STOP_RECORDING;
+		action.event = Streamdeck::rpc_event::STOP_RECORDING;
 		action.data = false;
 	}
 	else {
-		action.event = Streamdeck::rpc_event::RPC_ID_START_RECORDING;
+		action.event = Streamdeck::rpc_event::START_RECORDING;
 		action.data = true;
 	}
-	service->streamdeckManager()->commit_all(action, &StreamdeckManager::setError);*/
+	service->streamdeckManager()->commit_all(action, &StreamdeckManager::setError);
 }

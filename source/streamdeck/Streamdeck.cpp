@@ -615,6 +615,18 @@ Streamdeck::lockEventAuthorizations(const rpc_event event) {
 			setEventAuthorizations(rpc_event::STREAMING_STATUS_CHANGED_SUBSCRIBE, 0x0);
 			break;
 
+		case rpc_event::START_RECORDING:
+			setEventAuthorizations(rpc_event::START_RECORDING, EVENT_WRITE);
+			setEventAuthorizations(rpc_event::STOP_RECORDING, 0x0);
+			setEventAuthorizations(rpc_event::RECORDING_STATUS_CHANGED_SUBSCRIBE, 0x0);
+			break;
+
+		case rpc_event::STOP_RECORDING:
+			setEventAuthorizations(rpc_event::START_RECORDING, 0x0);
+			setEventAuthorizations(rpc_event::STOP_RECORDING, EVENT_WRITE);
+			setEventAuthorizations(rpc_event::RECORDING_STATUS_CHANGED_SUBSCRIBE, 0x0);
+			break;
+
 		default:
 			break;
 	}
@@ -633,6 +645,18 @@ Streamdeck::unlockEventAuthorizations(const rpc_event event) {
 			setEventAuthorizations(rpc_event::START_STREAMING, EVENT_READ_WRITE);
 			setEventAuthorizations(rpc_event::STOP_STREAMING, EVENT_READ_WRITE);
 			setEventAuthorizations(rpc_event::STREAMING_STATUS_CHANGED_SUBSCRIBE, EVENT_READ_WRITE);
+			break;
+
+		case rpc_event::START_RECORDING:
+			setEventAuthorizations(rpc_event::START_RECORDING, EVENT_READ_WRITE);
+			setEventAuthorizations(rpc_event::STOP_RECORDING, EVENT_READ_WRITE);
+			setEventAuthorizations(rpc_event::RECORDING_STATUS_CHANGED_SUBSCRIBE, EVENT_READ_WRITE);
+			break;
+
+		case rpc_event::STOP_RECORDING:
+			setEventAuthorizations(rpc_event::START_RECORDING, EVENT_READ_WRITE);
+			setEventAuthorizations(rpc_event::STOP_RECORDING, EVENT_READ_WRITE);
+			setEventAuthorizations(rpc_event::RECORDING_STATUS_CHANGED_SUBSCRIBE, EVENT_READ_WRITE);
 			break;
 
 		default:
@@ -724,12 +748,12 @@ Streamdeck::disconnected(int code) {
 void
 Streamdeck::logEvent(const rpc_event event, const QJsonDocument& json_quest) {
 	switch(event) {
-		/*case rpc_event::RPC_ID_START_RECORDING:
+		case rpc_event::START_RECORDING:
 			log_custom(0x33ff02) << QString("Action START_RECORD (%1)").arg((int)event).toStdString();
 			break;
-		case rpc_event::RPC_ID_STOP_RECORDING:
+		case rpc_event::STOP_RECORDING:
 			log_custom(0x33ff02) << QString("Action STOP_RECORD (%1)").arg((int)event).toStdString();
-			break;*/
+			break;
 		case rpc_event::START_STREAMING:
 			log_custom(0x33ff02) << QString("Action START_STREAM (%1)").arg((int)event).toStdString();
 			break;

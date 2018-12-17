@@ -317,7 +317,10 @@ StreamingService::onStreamReconnecting(void* streamingService, calldata_t* data)
 	if(!service->checkOutput(data)) return;
 
 	service->logInfo("OBS output is reconnecting stream");
-	rpc_adv_response<std::string> response = service->response_string(nullptr, "onStreamingReconnecting");
+	rpc_adv_response<std::string> response = service->response_string(
+		nullptr,
+		"onStreamingReconnecting"
+	);
 	response.event = Streamdeck::rpc_event::STREAMING_STATUS_CHANGED_SUBSCRIBE;
 	response.data = "reconnecting";
 	service->streamdeckManager()->commit_all(response, &StreamdeckManager::setEvent);
@@ -330,7 +333,10 @@ StreamingService::onStreamReconnected(void* streamingService, calldata_t* data) 
 	if(!service->checkOutput(data)) return;
 
 	service->logInfo("OBS output has reconnected stream");
-	rpc_adv_response<std::string> response = service->response_string(nullptr, "onStreamingReconnected");
+	rpc_adv_response<std::string> response = service->response_string(
+		nullptr,
+		"onStreamingReconnected"
+	);
 	response.event = Streamdeck::rpc_event::STREAMING_STATUS_CHANGED_SUBSCRIBE;
 	response.data = "live";
 	service->streamdeckManager()->commit_all(response, &StreamdeckManager::setEvent);
