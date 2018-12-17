@@ -91,10 +91,10 @@ CollectionsService::onCollectionAdded(const Collection& collection) {
 		.toStdString()
 	);
 
-	//rpc_adv_response<void> response = response_void(nullptr, "onCollectionAdded");
-	//response.event = Streamdeck::rpc_event::COLLECTION_ADDED_SUBSCRIBE;
+	rpc_adv_response<void> response = response_void(nullptr, "onCollectionAdded");
+	response.event = Streamdeck::rpc_event::COLLECTION_ADDED_SUBSCRIBE;
 
-	return true;// streamdeckManager()->commit_all(response, &StreamdeckManager::setStatus);
+	return streamdeckManager()->commit_all(response, &StreamdeckManager::setEvent);
 }
 
 bool
@@ -108,7 +108,7 @@ CollectionsService::onCollectionRemoved(const Collection& collection) {
 	rpc_adv_response<void> response = response_void(nullptr, "onCollectionRemoved");
 	response.event = Streamdeck::rpc_event::COLLECTION_REMOVED_SUBSCRIBE;
 
-	return true;// streamdeckManager()->commit_all(response, &StreamdeckManager::setStatus);
+	return streamdeckManager()->commit_all(response, &StreamdeckManager::setEvent);
 }
 
 bool
@@ -118,11 +118,12 @@ CollectionsService::onCollectionUpdated(const Collection& collection) {
 		.arg(collection.id())
 		.toStdString()
 	);
-	//rpc_adv_response<Collections> response = response_collections(nullptr, "onCollectionUpdated");
-	//response.event = Streamdeck::rpc_event::COLLECTION_UPDATED_SUBSCRIBE;
-	//response.data = m_collectionManager->collections();
 
-	return true;// streamdeckManager()->commit_all(response, &StreamdeckManager::setCollections);
+	rpc_adv_response<CollectionPtr> response = response_collection(nullptr, "onCollectionUpdated");
+	response.event = Streamdeck::rpc_event::COLLECTION_UPDATED_SUBSCRIBE;
+	response.data = const_cast<CollectionPtr>(&collection);
+
+	return streamdeckManager()->commit_all(response, &StreamdeckManager::setEvent);
 }
 
 /*

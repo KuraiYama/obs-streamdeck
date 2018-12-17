@@ -137,7 +137,7 @@ StreamdeckClient::run() {
 */
 
 QJsonObject
-Streamdeck::buildJsonResult(const rpc_event event, const QString& resourceId) const {
+Streamdeck::buildJsonResult(const rpc_event event, const QString& resourceId) {
 	QJsonObject response, result;
 	response["jsonrpc"] = "2.0";
 	response["id"] = (int)event;
@@ -149,7 +149,7 @@ Streamdeck::buildJsonResult(const rpc_event event, const QString& resourceId) co
 }
 
 QJsonObject
-Streamdeck::buildJsonResponse(const rpc_event event, const QString& resourceId) const {
+Streamdeck::buildJsonResponse(const rpc_event event, const QString& resourceId) {
 	QJsonObject response;
 	response["jsonrpc"] = "2.0";
 	response["id"] = (int)event;
@@ -160,12 +160,12 @@ Streamdeck::buildJsonResponse(const rpc_event event, const QString& resourceId) 
 }
 
 void
-Streamdeck::addToJsonObject(QJsonObject& json_object, QString key, QJsonValue&& value) const {
+Streamdeck::addToJsonObject(QJsonObject& json_object, QString key, QJsonValue&& value) {
 	json_object[key] = value;
 }
 
 void
-Streamdeck::addToJsonObject(QJsonValueRef&& json_object, QString key, QJsonValue&& value) const {
+Streamdeck::addToJsonObject(QJsonValueRef&& json_object, QString key, QJsonValue&& value) {
 	if(json_object.isObject() == true) {
 		QJsonObject copy(json_object.toObject());
 		copy[key] = value;
@@ -174,12 +174,12 @@ Streamdeck::addToJsonObject(QJsonValueRef&& json_object, QString key, QJsonValue
 }
 
 void
-Streamdeck::addToJsonArray(QJsonArray& json_array, QJsonValue&& value) const {
+Streamdeck::addToJsonArray(QJsonArray& json_array, QJsonValue&& value) {
 	json_array.append(value);
 }
 
 void
-Streamdeck::addToJsonArray(QJsonValueRef&& json_array, QJsonValue&& value) const {
+Streamdeck::addToJsonArray(QJsonValueRef&& json_array, QJsonValue&& value) {
 	if(json_array.isArray() == true) {
 		QJsonArray copy(json_array.toArray());
 		copy.append(value);

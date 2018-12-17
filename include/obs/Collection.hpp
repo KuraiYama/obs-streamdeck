@@ -33,6 +33,8 @@ class Collection;
 ========================================================================================================
 */
 
+typedef Collection* CollectionPtr;
+
 typedef std::vector<Collection*> Collections;
 
 class Collection {

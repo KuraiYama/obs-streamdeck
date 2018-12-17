@@ -7,6 +7,41 @@
 
 /*
 ========================================================================================================
+	JSON Helpers
+========================================================================================================
+*/
+
+template<typename T>
+inline bool
+rpc2json(QJsonObject& response, const T& data) {
+	Q_UNUSED(response);
+	Q_UNUSED(data);
+
+	logError("Can't convert data to JSON (type unknown)");
+
+	return false;
+}
+
+template<>
+inline bool
+rpc2json(QJsonObject& response, const std::string& data) {
+	Streamdeck::addToJsonObject(response["result"], "data", data.c_str());
+	return true;
+}
+
+template<>
+inline bool
+rpc2json(QJsonObject& response, const CollectionPtr& data) {
+	QJsonObject data_json;
+	Streamdeck::addToJsonObject(data_json, "id", QString("%1").arg(data->id()));
+	Streamdeck::addToJsonObject(data_json, "name", data->name().c_str());
+
+	Streamdeck::addToJsonObject(response, "data", data_json);
+	return true;
+}
+
+/*
+========================================================================================================
 	RPC Protocol
 ========================================================================================================
 */
@@ -14,15 +49,6 @@
 template<typename T>
 bool
 Streamdeck::sendEvent(const rpc_event event, const T& data) {
-	Q_UNUSED(event);
-	Q_UNUSED(data);
-	log_error << "[Streamdeck] Event parameters list not handled.";
-	return false;
-}
-
-template<>
-inline bool
-Streamdeck::sendEvent(const rpc_event event, const std::string& data) {
 	if(m_subscribedResources.find(event) == m_subscribedResources.end())
 		return false;
 
@@ -31,12 +57,14 @@ Streamdeck::sendEvent(const rpc_event event, const std::string& data) {
 		QString::fromStdString(m_subscribedResources[event])
 	);
 
-	addToJsonObject(response["result"], "data", data.c_str());
+	bool converted = rpc2json(response, data);
 
-	log_custom(LOG_STREAMDECK) << QString("Send Event Message to %1.")
-		.arg(m_subscribedResources[event].c_str())
-		.toStdString();
+	if(converted) {
+		log_custom(LOG_STREAMDECK) << QString("Send Event Message to %1.")
+			.arg(m_subscribedResources[event].c_str())
+			.toStdString();
+		send(event, QJsonDocument(response));
+	}
 
-	send(event, QJsonDocument(response));
-	return true;
+	return converted;
 }

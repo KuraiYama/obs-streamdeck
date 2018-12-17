@@ -163,8 +163,8 @@ ServiceT<T>::response_string2(const rpc_event_data* data, const char* method) co
 		};
 }
 
-/*template<typename T>
-rpc_adv_response<Collection*>
+template<typename T>
+rpc_adv_response<CollectionPtr>
 ServiceT<T>::response_collection(const rpc_event_data* data, const char* method) const {
 	return
 		rpc_adv_response<Collection*>{
@@ -173,7 +173,7 @@ ServiceT<T>::response_collection(const rpc_event_data* data, const char* method)
 	};
 }
 
-template<typename T>
+/*template<typename T>
 rpc_adv_response<Collections>
 ServiceT<T>::response_collections(const rpc_event_data* data, const char* method) const {
 	return

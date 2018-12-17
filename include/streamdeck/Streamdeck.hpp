@@ -210,6 +210,24 @@ class Streamdeck : public QObject {
 		static StreamdeckClient*
 		createClient(qintptr socketDescriptor);
 
+		static QJsonObject
+		buildJsonResponse(const rpc_event event, const QString& resourceId);
+
+		static QJsonObject
+		buildJsonResult(const rpc_event event, const QString& resourceId);
+
+		static void
+		addToJsonObject(QJsonObject& json_object, QString key, QJsonValue&& value);
+
+		static void
+		addToJsonObject(QJsonValueRef&& json_object, QString key, QJsonValue&& value);
+
+		static void
+		addToJsonArray(QJsonArray& json_array, QJsonValue&& value);
+
+		static void
+		addToJsonArray(QJsonValueRef&& json_array, QJsonValue&& value);
+
 	/*
 	====================================================================================================
 		Instance Data Members
@@ -324,24 +342,6 @@ class Streamdeck : public QObject {
 
 		void
 		logEvent(const rpc_event event, const QJsonDocument& json_quest);
-
-		QJsonObject
-		buildJsonResponse(const rpc_event event, const QString& resourceId) const;
-
-		QJsonObject
-		buildJsonResult(const rpc_event event, const QString& resourceId) const;
-
-		void
-		addToJsonObject(QJsonObject& json_object, QString key, QJsonValue&& value) const;
-
-		void
-		addToJsonObject(QJsonValueRef&& json_object, QString key, QJsonValue&& value) const;
-
-		void
-		addToJsonArray(QJsonArray& json_array, QJsonValue&& value) const;
-
-		void
-		addToJsonArray(QJsonValueRef&& json_array, QJsonValue&& value) const;
 
 	/*
 	====================================================================================================
