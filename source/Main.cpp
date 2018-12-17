@@ -30,8 +30,8 @@
 #include "include/services/ApplicationService.hpp"
 #include "include/services/StreamingService.hpp"
 #include "include/services/RecordingService.hpp"
-/*#include "include/services/CollectionsService.hpp"
-#include "include/services/ScenesService.hpp"*/
+#include "include/services/CollectionsService.hpp"
+//#include "include/services/ScenesService.hpp"
 
 /*
 ========================================================================================================
@@ -68,7 +68,7 @@ obs_module_load(void) {
 	services.push_back((Service*)new ApplicationService(parent));
 	services.push_back((Service*)new StreamingService());
 	services.push_back((Service*)new RecordingService());
-	//services.push_back((Service*)new CollectionsService(streamdeckManager, collectionManager));
+	services.push_back((Service*)new CollectionsService());
 	//services.push_back((Service*)new ScenesService(streamdeckManager, collectionManager));
 
 	return true;

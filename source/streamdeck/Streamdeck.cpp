@@ -763,10 +763,10 @@ Streamdeck::logEvent(const rpc_event event, const QJsonDocument& json_quest) {
 
 		case rpc_event::RECORDING_STATUS_CHANGED_SUBSCRIBE:
 		case rpc_event::STREAMING_STATUS_CHANGED_SUBSCRIBE:
-		/*case rpc_event::RPC_ID_COLLECTION_ADDED_SUBSCRIBE:
-		case rpc_event::RPC_ID_COLLECTION_REMOVED_SUBSCRIBE:
-		case rpc_event::RPC_ID_COLLECTION_UPDATED_SUBSCRIBE:
-		case rpc_event::RPC_ID_COLLECTION_SWITCHED_SUBSCRIBE:*/
+		case rpc_event::COLLECTION_ADDED_SUBSCRIBE:
+		case rpc_event::COLLECTION_REMOVED_SUBSCRIBE:
+		case rpc_event::COLLECTION_UPDATED_SUBSCRIBE:
+		/*case rpc_event::RPC_ID_COLLECTION_SWITCHED_SUBSCRIBE:*/
 			log_custom(0xffb520) << QString("Subscribe Event (%1)").arg((int)event).toStdString();
 			break;
 

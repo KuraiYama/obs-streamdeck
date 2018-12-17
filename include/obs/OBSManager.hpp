@@ -5,6 +5,7 @@
  */
 #include <map>
 #include <vector>
+#include <memory>
 
 /*
  * OBS Includes
@@ -45,7 +46,7 @@ class OBSManager {
 	*/
 	private:
 
-		std::map<unsigned long long, Collection> m_collections;
+		std::map<unsigned long long, std::shared_ptr<Collection>> m_collections;
 
 	/*
 	====================================================================================================
@@ -71,9 +72,15 @@ class OBSManager {
 		void
 		saveCollections();
 
+		obs::collection_event
+		updateCollections(std::shared_ptr<Collection>& collection_updated);
+
+		Collections
+		collections() const;
+
 	private:
 
 		void
-		extractFromOBSCollections(std::map<std::string, Collection>& collections);
+		extractFromOBSCollections(std::map<std::string, std::shared_ptr<Collection>>& collections);
 
 };

@@ -5,6 +5,7 @@
  */
 #include <map>
 #include <vector>
+#include <memory>
 
 /*
  * OBS Includes
@@ -43,7 +44,7 @@ class Collection {
 	*/
 	public:
 
-		static bool buildFromBuffer(Collection& collection, char* buffer, size_t size);
+		static bool buildFromBuffer(Collection** collection, char* buffer, size_t size);
 
 	/*
 	====================================================================================================
@@ -84,6 +85,9 @@ class Collection {
 
 		std::string
 		name() const;
+
+		void
+		name(std::string new_name);
 
 		/*Scenes
 		scenes() const;*/

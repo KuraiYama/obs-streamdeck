@@ -47,25 +47,25 @@ class CollectionsService : public ServiceT<CollectionsService> {
 	*/
 	private:
 
-		/*bool
+		bool
 		onCollectionsListChanged();
 
 		bool
-		onCollectionAdded();
+		onCollectionAdded(const Collection& collection);
 
 		bool
-		onCollectionRemoved();
+		onCollectionRemoved(const Collection& collection);
 
 		bool
-		onCollectionUpdated();
+		onCollectionUpdated(const Collection& collection);
 
-		bool
-		onCollectionSwitched();
+		/*bool
+		onCollectionSwitched();*/
 
 		bool
 		subscribeCollectionChange(const rpc_event_data& data);
 
-		bool
+		/*bool
 		onFetchCollectionsSchema(const rpc_event_data& data);
 
 		bool

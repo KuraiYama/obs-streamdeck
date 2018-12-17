@@ -9,11 +9,11 @@
  */
 #include "include/obs/OBSManager.hpp"
 
- /*
- ========================================================================================================
-	 Static Class Attributes Initializations
- ========================================================================================================
- */
+/*
+========================================================================================================
+	Static Class Attributes Initializations
+========================================================================================================
+*/
 
 unsigned long long OBSManager::_last_registered_id = 0x0;
 
@@ -29,6 +29,7 @@ OBSManager::OBSManager() /*:
 }
 
 OBSManager::~OBSManager() {
+	m_collections.clear();
 }
 
 /*
@@ -62,11 +63,11 @@ OBSManager::saveCollections() {
 				auto collection_it = m_collections.begin();
 				while(collection_it != m_collections.end()) {
 
-					size_t buff_size = collection_it->second.toBytes(&buffer);
+					size_t buff_size = collection_it->second->toBytes(&buffer);
 					if(buff_size > 0) {
 						collectionsFile.write((char*)&buff_size, sizeof(size_t));
 						collectionsFile.write(buffer, buff_size);
-						delete[] buffer;
+						delete [] buffer;
 						buffer = nullptr;
 					}
 					collection_it++;
@@ -88,7 +89,7 @@ OBSManager::loadCollections() {
 	std::ifstream collectionsFile;
 	collectionsFile.open("collections.dat", std::ifstream::in | std::ifstream::binary);
 
-	std::map<std::string, Collection> collections_preload;
+	std::map<std::string, std::shared_ptr<Collection>> collections_preload;
 
 	if(collectionsFile.good()) {
 
@@ -104,6 +105,7 @@ OBSManager::loadCollections() {
 			);
 
 			char* block_buffer = nullptr;
+			Collection* collection = nullptr;
 
 			try {
 				while(collections_count > 0) {
@@ -117,11 +119,10 @@ OBSManager::loadCollections() {
 					collectionsFile.read(block_buffer, collection_size);
 
 					// Construct the collection
-					Collection collection;
-					if(Collection::buildFromBuffer(collection, block_buffer, collection_size)) {
+					if(Collection::buildFromBuffer(&collection, block_buffer, collection_size)) {
 						collections_preload.insert(
-							std::map<std::string, Collection>::value_type(
-								collection.name(),
+							std::map<std::string, std::shared_ptr<Collection>>::value_type(
+								collection->name(),
 								collection
 							)
 						);
@@ -133,7 +134,10 @@ OBSManager::loadCollections() {
 			}
 			catch(std::ifstream::failure e) {
 				if(block_buffer != nullptr) {
-					delete[] block_buffer;
+					delete [] block_buffer;
+				}
+				if(collection != nullptr) {
+					delete collection;
 				}
 			}
 		}
@@ -145,7 +149,7 @@ OBSManager::loadCollections() {
 }
 
 void
-OBSManager::extractFromOBSCollections(std::map<std::string, Collection>& collections) {
+OBSManager::extractFromOBSCollections(std::map<std::string, std::shared_ptr<Collection>>& collections) {
 	bool collections_preload = collections.size() > 0;
 
 	char** obs_collections = obs_frontend_get_scene_collections();
@@ -157,8 +161,8 @@ OBSManager::extractFromOBSCollections(std::map<std::string, Collection>& collect
 			auto collection_it = collections.find(obs_collections[i]);
 			if(collection_it != collections.end()) {
 				m_collections.insert(
-					std::map<unsigned long long, Collection>::value_type(
-						collection_it->second.id(),
+					std::map<unsigned long long, std::shared_ptr<Collection>>::value_type(
+						collection_it->second->id(),
 						collection_it->second
 					)
 				);
@@ -169,15 +173,68 @@ OBSManager::extractFromOBSCollections(std::map<std::string, Collection>& collect
 
 		++_last_registered_id;
 		m_collections.insert(
-			std::map<unsigned long long, Collection>::value_type(
+			std::map<unsigned long long, std::shared_ptr<Collection>>::value_type(
 				_last_registered_id,
-				Collection(_last_registered_id, obs_collections[i])
+				new Collection(_last_registered_id, obs_collections[i])
 			)
 		);
 		++i;
 	}
 
 	bfree(obs_collections);
+}
+
+obs::collection_event
+OBSManager::updateCollections(std::shared_ptr<Collection>& collection_updated) {
+	obs::collection_event event = obs::collection_event::COLLECTIONS_LIST_BUILD;
+
+	std::map<std::string, std::shared_ptr<Collection>> collections;
+	for(auto iter = m_collections.begin(); iter != m_collections.end(); iter++) {
+		collections[iter->second->name()] = iter->second;
+	}
+
+	char** obs_collections = obs_frontend_get_scene_collections();
+
+	int i = 0, j = -1;
+	while(obs_collections[i] != NULL) {
+		auto iter = collections.find(obs_collections[i]);
+		
+		if(iter == collections.end()) {
+			j = i;
+		}
+		else {
+			collections.erase(iter);
+		}
+		++i;
+	}
+
+	if(j != -1) {
+		// New collection
+		if(collections.size() == 0) {
+			++_last_registered_id;
+			m_collections.insert(
+				std::map<unsigned long long, std::shared_ptr<Collection>>::value_type(
+					_last_registered_id,
+					new Collection(_last_registered_id, obs_collections[j])
+				)
+			);
+			collection_updated = m_collections.find(_last_registered_id)->second;
+			event = obs::collection_event::COLLECTION_ADDED;
+		}
+		// Update collection
+		else if(collections.size() == 1) {
+			collections.begin()->second->name(obs_collections[j]);
+			collection_updated = collections.begin()->second;
+			event = obs::collection_event::COLLECTION_RENAMED;
+		}
+	}
+	else {
+		collection_updated = collections.begin()->second;
+		m_collections.erase(collections.begin()->second->id());
+		event = obs::collection_event::COLLECTION_REMOVED;
+	}
+
+	return event;
 }
 
 /*Collection*
@@ -195,15 +252,15 @@ OBSManager::getCollectionByName(const std::string& name) {
 ========================================================================================================
 */
 
-/*Collections
-CollectionManager::collections() const {
+Collections
+OBSManager::collections() const {
 	Collections collections;
 	for(auto iter = m_collections.begin(); iter != m_collections.end(); iter++)
-		collections.push_back(const_cast<Collection*>(&(iter->second)));
+		collections.push_back(const_cast<Collection*>(iter->second.get()));
 	return collections;
 }
 
-Collection*
+/*Collection*
 CollectionManager::activeCollection() const {
 	const char* current_collection = obs_frontend_get_current_scene_collection();
 	if(m_activeCollection->name().compare(current_collection) != 0) {

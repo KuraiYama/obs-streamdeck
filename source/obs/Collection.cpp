@@ -23,7 +23,7 @@ Collection::~Collection() {
 ========================================================================================================
 */
 
-bool Collection::buildFromBuffer(Collection& collection, char* buffer, size_t size) {
+bool Collection::buildFromBuffer(Collection** collection, char* buffer, size_t size) {
 
 	char* start_buf = buffer;
 	char* end_buf = buffer + size;
@@ -44,8 +44,7 @@ bool Collection::buildFromBuffer(Collection& collection, char* buffer, size_t si
 	char* name = new char[nameSz];
 	memcpy(name, buffer, nameSz);
 
-	collection.m_identifier = identifier;
-	collection.m_name.assign(name);
+	*collection = new Collection(identifier, name);
 
 	// Clean memory
 	delete [] name;
@@ -109,6 +108,11 @@ Collection::buildScenes() {
 std::string
 Collection::name() const {
 	return m_name;
+}
+
+void
+Collection::name(std::string new_name) {
+	m_name = new_name;
 }
 
 long long
