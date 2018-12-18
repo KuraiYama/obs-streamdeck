@@ -210,11 +210,11 @@ class Streamdeck : public QObject {
 		static StreamdeckClient*
 		createClient(qintptr socketDescriptor);
 
-		static QJsonObject
-		buildJsonResponse(const rpc_event event, const QString& resourceId);
+		//static QJsonObject
+		//buildJsonResponse(const rpc_event event, const QString& resourceId);
 
 		static QJsonObject
-		buildJsonResult(const rpc_event event, const QString& resourceId);
+		buildJsonResult(const rpc_event event, const QString& resourceId, bool event_mode = false);
 
 		static void
 		addToJsonObject(QJsonObject& json_object, QString key, QJsonValue&& value);
@@ -275,44 +275,54 @@ class Streamdeck : public QObject {
 		send(const rpc_event event, const QJsonDocument& json_quest);
 
 		bool
-		sendSubscription(const rpc_event event, const std::string& resourceId);
+		sendSubscription(const rpc_event event, const std::string& resourceId, bool event_mode = false);
 
 		template<typename T>
 		bool
-		sendEvent(const rpc_event event, const T& data);
+		sendEvent(const rpc_event event, const T& data, bool event_mode = false);
 
 		bool
-		sendEvent(const rpc_event event);
+		sendEvent(const rpc_event event, bool event_mode = false);
 
 		bool
 		sendRecordStreamState(
 			const rpc_event event,
 			const std::string& resourceId,
 			const std::string& streaming,
-			const std::string& recording
+			const std::string& recording,
+			bool event_mode = false
 		);
 
 		bool
-		sendError(const rpc_event event, const std::string& resourceId, bool error);
+		sendError(
+			const rpc_event event,
+			const std::string& resourceId,
+			bool error,
+			bool event_mode = false
+		);
 
 		bool sendSchemaMessage(
 			const rpc_event event,
 			const std::string& resourceId,
-			const Collections& collections
+			const Collections& collections,
+			bool event_mode = false
 		);
 
 		bool
 		sendCollectionsMessage(
 			const rpc_event event,
 			const std::string& resourceId,
-			const Collections& collections
+			const Collections& collections,
+			bool event_mode = false
 		);
 
 		bool
 		sendCollectionMessage(
 			const rpc_event event,
 			const std::string& resourceId,
-			const CollectionPtr& collection);
+			const CollectionPtr& collection,
+			bool event_mode = false
+		);
 
 		/*bool
 		sendActiveCollectionMessage(

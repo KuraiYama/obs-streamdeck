@@ -137,18 +137,18 @@ StreamdeckClient::run() {
 */
 
 QJsonObject
-Streamdeck::buildJsonResult(const rpc_event event, const QString& resourceId) {
+Streamdeck::buildJsonResult(const rpc_event event, const QString& resourceId, bool event_mode) {
 	QJsonObject response, result;
 	response["jsonrpc"] = "2.0";
 	response["id"] = (int)event;
 	result["resourceId"] = resourceId;
-	if(event == rpc_event::NO_EVENT)
+	if(event == rpc_event::NO_EVENT || event_mode)
 		result["_type"] = "EVENT";
 	response["result"] = result;
 	return response;
 }
 
-QJsonObject
+/*QJsonObject
 Streamdeck::buildJsonResponse(const rpc_event event, const QString& resourceId) {
 	QJsonObject response;
 	response["jsonrpc"] = "2.0";
@@ -157,7 +157,7 @@ Streamdeck::buildJsonResponse(const rpc_event event, const QString& resourceId) 
 	if(event == rpc_event::NO_EVENT)
 		response["_type"] = "EVENT";
 	return response;
-}
+}*/
 
 void
 Streamdeck::addToJsonObject(QJsonObject& json_object, QString key, QJsonValue&& value) {
@@ -194,9 +194,9 @@ Streamdeck::addToJsonArray(QJsonValueRef&& json_array, QJsonValue&& value) {
 */
 
 bool
-Streamdeck::sendSubscription(const rpc_event event, const std::string& resourceId) {
+Streamdeck::sendSubscription(const rpc_event event, const std::string& resourceId, bool event_mode) {
 	m_subscribedResources[event] = resourceId;
-	QJsonObject response = buildJsonResult(event, QString::fromStdString(resourceId));
+	QJsonObject response = buildJsonResult(event, QString::fromStdString(resourceId), event_mode);
 
 	log_custom(LOG_STREAMDECK) << QString("Subscription to resource : %1.")
 		.arg(resourceId.c_str())
@@ -207,13 +207,14 @@ Streamdeck::sendSubscription(const rpc_event event, const std::string& resourceI
 }
 
 bool
-Streamdeck::sendEvent(const rpc_event event) {
+Streamdeck::sendEvent(const rpc_event event, bool event_mode) {
 	if(m_subscribedResources.find(event) == m_subscribedResources.end())
 		return false;
 
 	QJsonObject response = buildJsonResult(
 		rpc_event::NO_EVENT,
-		QString::fromStdString(m_subscribedResources[event])
+		QString::fromStdString(m_subscribedResources[event]),
+		event_mode
 	);
 
 	log_custom(LOG_STREAMDECK) << QString("Send Event Message to %1.")
@@ -229,14 +230,16 @@ Streamdeck::sendRecordStreamState(
 	const rpc_event event,
 	const std::string& resourceId,
 	const std::string& streaming,
-	const std::string& recording
+	const std::string& recording,
+	bool event_mode
 ) {
 	if(event != rpc_event::GET_RECORD_STREAM_STATE)
 		return false;
 
 	QJsonObject response = buildJsonResult(
 		rpc_event::GET_RECORD_STREAM_STATE,
-		QString::fromStdString(resourceId)
+		QString::fromStdString(resourceId),
+		event_mode
 	);
 
 	addToJsonObject(response["result"], "streamingStatus", streaming.c_str());
@@ -249,8 +252,13 @@ Streamdeck::sendRecordStreamState(
 }
 
 bool
-Streamdeck::sendError(const rpc_event event, const std::string& resourceId, bool error) {
-	QJsonObject response = buildJsonResult(event, QString::fromStdString(resourceId));
+Streamdeck::sendError(
+	const rpc_event event,
+	const std::string& resourceId,
+	bool error,
+	bool event_mode
+) {
+	QJsonObject response = buildJsonResult(event, QString::fromStdString(resourceId), event_mode);
 	this->addToJsonObject(response, "error", error);
 
 	log_custom(LOG_STREAMDECK) << QString("Error Message sent for event %1.")
@@ -265,22 +273,25 @@ bool
 Streamdeck::sendSchemaMessage(
 	const rpc_event event,
 	const std::string& resourceId,
-	const Collections& collections
+	const Collections& collections,
+	bool event_mode
 ) {
-	bool add_event = false;
+
+	rpc_event ev = event;
+	std::string resource = resourceId;
+
 	// In the case of FETCH, Streamdeck doesn't respect its own protocol
 	if(event == rpc_event::FETCH_COLLECTIONS_SCHEMA) {
 		auto iter = m_subscribedResources.find(rpc_event::FETCH_COLLECTIONS_SCHEMA);
 		if(iter == m_subscribedResources.end())
 			return false;
-		add_event = true;
-		rpc_event& ev = const_cast<rpc_event&>(event);
 		ev = rpc_event::GET_COLLECTIONS;
-		std::string& resource = const_cast<std::string&>(resourceId);
 		resource = iter->second;
+		event_mode = true;
 	}
-
-	QJsonObject response = buildJsonResult(event, QString::fromStdString(resourceId));
+#ifdef USE_SCHEMA
+	
+	QJsonObject response = buildJsonResult(ev, QString::fromStdString(resource));
 
 	if(add_event) addToJsonObject(response["result"], "_type", "EVENT");
 
@@ -289,6 +300,9 @@ Streamdeck::sendSchemaMessage(
 		QJsonObject collection;
 		addToJsonObject(collection, "name", (*iter)->name().c_str());
 		addToJsonObject(collection, "id", QString("%1").arg((*iter)->id()));
+		QJsonArray sources;
+		addToJsonObject(collection, "sources", sources);
+		// TODO
 		addToJsonArray(data, collection);
 	}
 	addToJsonObject(response["result"], "data", data);
@@ -297,15 +311,22 @@ Streamdeck::sendSchemaMessage(
 
 	send(event, QJsonDocument(response));
 	return true;
+#else
+
+	return this->sendCollectionsMessage(ev, resource, collections, event_mode);
+
+#endif
 }
 
 bool
 Streamdeck::sendCollectionsMessage(
 	const rpc_event event,
 	const std::string& resourceId,
-	const Collections& collections
+	const Collections& collections,
+	bool event_mode
 ) {
-	QJsonObject response = buildJsonResult(event, QString::fromStdString(resourceId));
+	
+	QJsonObject response = buildJsonResult(event, QString::fromStdString(resourceId), event_mode);
 
 	QJsonArray data;
 	for(auto iter = collections.begin(); iter < collections.end(); iter++) {
@@ -326,9 +347,10 @@ bool
 Streamdeck::sendCollectionMessage(
 	const rpc_event event,
 	const std::string& resourceId,
-	const CollectionPtr& collection
+	const CollectionPtr& collection,
+	bool event_mode
 ) {
-	QJsonObject response = buildJsonResult(event, QString::fromStdString(resourceId));
+	QJsonObject response = buildJsonResult(event, QString::fromStdString(resourceId), event_mode);
 	addToJsonObject(response["result"], "id", QString("%1").arg(collection->id()));
 	addToJsonObject(response["result"], "name", collection->name().c_str());
 

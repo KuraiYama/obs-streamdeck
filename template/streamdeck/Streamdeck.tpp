@@ -47,13 +47,14 @@ rpc2json(QJsonObject& response, const CollectionPtr& data) {
 
 template<typename T>
 bool
-Streamdeck::sendEvent(const rpc_event event, const T& data) {
+Streamdeck::sendEvent(const rpc_event event, const T& data, bool event_mode) {
 	if(m_subscribedResources.find(event) == m_subscribedResources.end())
 		return false;
 
 	QJsonObject response = buildJsonResult(
 		rpc_event::NO_EVENT,
-		QString::fromStdString(m_subscribedResources[event])
+		QString::fromStdString(m_subscribedResources[event]),
+		event_mode
 	);
 
 	bool converted = rpc2json(response, data);
