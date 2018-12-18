@@ -2,7 +2,7 @@
  * Plugin Includes
  */
 #include "include/services/Service.hpp"
-#include "include/common/Global.h"
+#include "include/Global.h"
 #include "include/common/Logger.hpp"
 
 /*
@@ -45,14 +45,14 @@ ServiceT<T>::setupEvent(
 	Streamdeck::rpc_event event, 
 	typename RPCHandler::template FuncWrapperB<void>::Callback handler
 ) {
-	if(_streamdeckManager == nullptr)
+	if(_streamdeck_manager == nullptr)
 		return;
 
 	_rpcEvent.registerCallback(
 		event, 
 		(RPCHandler::FuncWrapperB<void>::Callback)handler, reinterpret_cast<T*>(this)
 	);
-	_streamdeckManager->addEventHandler(event, &m_rpcEvent);
+	_streamdeck_manager->addEventHandler(event, &m_rpcEvent);
 }
 
 template<typename T>
@@ -62,14 +62,14 @@ ServiceT<T>::setupEvent(
 	Streamdeck::rpc_event event, 
 	typename RPCHandler::template FuncWrapperB<B>::Callback handler
 ) {
-	if(_streamdeckManager == nullptr)
+	if(_streamdeck_manager == nullptr)
 		return;
 
 	m_rpcEvent.registerCallback<B>(
 		event, 
 		(RPCHandler::FuncWrapperB<B>::Callback)handler, reinterpret_cast<T*>(this)
 	);
-	_streamdeckManager->addEventHandler(event, &m_rpcEvent);
+	_streamdeck_manager->addEventHandler(event, &m_rpcEvent);
 }
 
 /*
@@ -208,13 +208,13 @@ ServiceT<T>::name() const {
 template<typename T>
 StreamdeckManager*
 ServiceT<T>::streamdeckManager() const {
-	return _streamdeckManager;
+	return _streamdeck_manager;
 }
 
 template<typename T>
 OBSManager*
 ServiceT<T>::obsManager() const {
-	return _obsManager;
+	return _obs_manager;
 }
 
 /*

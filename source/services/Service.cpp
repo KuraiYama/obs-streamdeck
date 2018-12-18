@@ -10,9 +10,9 @@
 ========================================================================================================
 */
 
-StreamdeckManager* Service::_streamdeckManager = nullptr;
+StreamdeckManager* Service::_streamdeck_manager = nullptr;
 
-OBSManager* Service::_obsManager = nullptr;
+OBSManager* Service::_obs_manager = nullptr;
 
 /*
 ========================================================================================================

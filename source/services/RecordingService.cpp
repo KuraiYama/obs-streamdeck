@@ -226,8 +226,8 @@ RecordingService::onRecordStarted() {
 }
 
 void
-RecordingService::onRecordStarted(void* recordingService, calldata_t* data) {
-	RecordingService* service = reinterpret_cast<RecordingService*>(recordingService);
+RecordingService::onRecordStarted(void* recording_service, calldata_t* data) {
+	RecordingService* service = reinterpret_cast<RecordingService*>(recording_service);
 
 	if(!service->checkOutput(data)) return;
 
@@ -245,8 +245,8 @@ RecordingService::onRecordStopping() {
 }
 
 void
-RecordingService::onRecordStopping(void* recordingService, calldata_t* data) {
-	RecordingService* service = reinterpret_cast<RecordingService*>(recordingService);
+RecordingService::onRecordStopping(void* recording_service, calldata_t* data) {
+	RecordingService* service = reinterpret_cast<RecordingService*>(recording_service);
 
 	if(!service->checkOutput(data)) return;
 
@@ -264,8 +264,8 @@ RecordingService::onRecordStopped() {
 }
 
 void
-RecordingService::onRecordStopped(void* recordingService, calldata_t* data) {
-	RecordingService* service = reinterpret_cast<RecordingService*>(recordingService);
+RecordingService::onRecordStopped(void* recording_service, calldata_t* data) {
+	RecordingService* service = reinterpret_cast<RecordingService*>(recording_service);
 
 	if(!service->checkOutput(data)) return;
 

@@ -14,7 +14,7 @@
 /*
  * Plugin Includes
  */
-#include "include/common/Global.h"
+#include "include/Global.h"
 #include "include/events/EventObservable.hpp"
 #include "include/streamdeck/Streamdeck.hpp"
 #include "include/obs/Collection.hpp"

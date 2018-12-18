@@ -72,6 +72,11 @@ CollectionsService::onCollectionsListChanged() {
 
 bool
 CollectionsService::onCollectionSwitched() {
+
+	// During loading, we don't send anything to the streamdecks
+	if(obsManager()->isLoadingCollections())
+		return true;
+
 	Collection* collection = obsManager()->activeCollection();
 	logInfo(QString("Collection switched to %1.")
 		.arg(collection->name().c_str())

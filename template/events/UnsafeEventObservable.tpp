@@ -27,8 +27,8 @@ UnsafeEventObservable<T>::~UnsafeEventObservable() {
 
 template<typename T>
 void
-UnsafeEventObservable<T>::addEventHandler(const T& event, const EventObserver<T>* eventHandler) {
-	EventObserver<T>::FuncWrapper* callback = eventHandler->callback(event);
+UnsafeEventObservable<T>::addEventHandler(const T& event, const EventObserver<T>* event_handler) {
+	EventObserver<T>::FuncWrapper* callback = event_handler->callback(event);
 	if(callback != nullptr && 
 			m_eventHandlers.contains(event) && !m_eventHandlers[event].contains(callback))
 		m_eventHandlers[event].insert(callback);
@@ -36,8 +36,8 @@ UnsafeEventObservable<T>::addEventHandler(const T& event, const EventObserver<T>
 
 template<typename T>
 void
-UnsafeEventObservable<T>::remEventHandler(const T& event, const EventObserver<T>* eventHandler) {
-	EventObserver<T>::FuncWrapper* callback = eventHandler->callback(event);
+UnsafeEventObservable<T>::remEventHandler(const T& event, const EventObserver<T>* event_handler) {
+	EventObserver<T>::FuncWrapper* callback = event_handler->callback(event);
 	if(callback != nullptr && 
 			m_eventHandlers.contains(event) && m_eventHandlers[event].contains(callback))
 		m_eventHandlers[event].remove(callback);

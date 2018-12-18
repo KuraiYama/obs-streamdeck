@@ -42,29 +42,29 @@ ApplicationService::~ApplicationService() {
 */
 
 void
-ApplicationService::onRecordStarting(void* streamingService, calldata_t* data) {
-	ApplicationService* service = reinterpret_cast<ApplicationService*>(streamingService);
+ApplicationService::onRecordStarting(void* streaming_service, calldata_t* data) {
+	ApplicationService* service = reinterpret_cast<ApplicationService*>(streaming_service);
 	if(!service->checkOutput(data, service->m_recordOutput)) return;
 	service->m_recordingState = "recording";
 }
 
 void
-ApplicationService::onRecordStarted(void* streamingService, calldata_t* data) {
-	ApplicationService* service = reinterpret_cast<ApplicationService*>(streamingService);
+ApplicationService::onRecordStarted(void* streaming_service, calldata_t* data) {
+	ApplicationService* service = reinterpret_cast<ApplicationService*>(streaming_service);
 	if(!service->checkOutput(data, service->m_recordOutput)) return;
 	service->m_recordingState = "starting";
 }
 
 void
-ApplicationService::onRecordStopping(void* streamingService, calldata_t* data) {
-	ApplicationService* service = reinterpret_cast<ApplicationService*>(streamingService);
+ApplicationService::onRecordStopping(void* streaming_service, calldata_t* data) {
+	ApplicationService* service = reinterpret_cast<ApplicationService*>(streaming_service);
 	if(!service->checkOutput(data, service->m_recordOutput)) return;
 	service->m_recordingState = "stopping";
 }
 
 void
-ApplicationService::onRecordStopped(void* streamingService, calldata_t* data) {
-	ApplicationService* service = reinterpret_cast<ApplicationService*>(streamingService);
+ApplicationService::onRecordStopped(void* streaming_service, calldata_t* data) {
+	ApplicationService* service = reinterpret_cast<ApplicationService*>(streaming_service);
 	if(!service->checkOutput(data, service->m_recordOutput)) return;
 	service->m_recordingState = "offline";
 	service->disconnectRecordOutputHandler();
@@ -77,44 +77,44 @@ ApplicationService::onRecordStopped(void* streamingService, calldata_t* data) {
 */
 
 void
-ApplicationService::onStreamStarting(void* streamingService, calldata_t* data) {
-	ApplicationService* service = reinterpret_cast<ApplicationService*>(streamingService);
+ApplicationService::onStreamStarting(void* streaming_service, calldata_t* data) {
+	ApplicationService* service = reinterpret_cast<ApplicationService*>(streaming_service);
 	if(!service->checkOutput(data, service->m_streamOutput)) return;
 	service->m_streamingState = "starting";
 }
 
 void
-ApplicationService::onStreamStarted(void* streamingService, calldata_t* data) {
-	ApplicationService* service = reinterpret_cast<ApplicationService*>(streamingService);
+ApplicationService::onStreamStarted(void* streaming_service, calldata_t* data) {
+	ApplicationService* service = reinterpret_cast<ApplicationService*>(streaming_service);
 	if(!service->checkOutput(data, service->m_streamOutput)) return;
 	service->m_streamingState = "live";
 }
 
 void
-ApplicationService::onStreamStopping(void* streamingService, calldata_t* data) {
-	ApplicationService* service = reinterpret_cast<ApplicationService*>(streamingService);
+ApplicationService::onStreamStopping(void* streaming_service, calldata_t* data) {
+	ApplicationService* service = reinterpret_cast<ApplicationService*>(streaming_service);
 	if(!service->checkOutput(data, service->m_streamOutput)) return;
 	service->m_streamingState = "ending";
 }
 
 void
-ApplicationService::onStreamStopped(void* streamingService, calldata_t* data) {
-	ApplicationService* service = reinterpret_cast<ApplicationService*>(streamingService);
+ApplicationService::onStreamStopped(void* streaming_service, calldata_t* data) {
+	ApplicationService* service = reinterpret_cast<ApplicationService*>(streaming_service);
 	if(!service->checkOutput(data, service->m_streamOutput)) return;
 	service->m_streamingState = "offline";
 	service->disconnectStreamOutputHandler();
 }
 
 void
-ApplicationService::onStreamReconnecting(void* streamingService, calldata_t* data) {
-	ApplicationService* service = reinterpret_cast<ApplicationService*>(streamingService);
+ApplicationService::onStreamReconnecting(void* streaming_service, calldata_t* data) {
+	ApplicationService* service = reinterpret_cast<ApplicationService*>(streaming_service);
 	if(!service->checkOutput(data, service->m_streamOutput)) return;
 	service->m_streamingState = "reconnecting";
 }
 
 void
-ApplicationService::onStreamReconnected(void* streamingService, calldata_t* data) {
-	ApplicationService* service = reinterpret_cast<ApplicationService*>(streamingService);
+ApplicationService::onStreamReconnected(void* streaming_service, calldata_t* data) {
+	ApplicationService* service = reinterpret_cast<ApplicationService*>(streaming_service);
 	if(!service->checkOutput(data, service->m_streamOutput)) return;
 	service->m_streamingState = "live";
 }
@@ -216,10 +216,10 @@ ApplicationService::disconnectRecordOutputHandler() {
 }
 
 bool
-ApplicationService::checkOutput(calldata_t* data, obs_output_t* output2) const {
-	obs_output_t* output = nullptr;
-	calldata_get_ptr(data, "output", &output);
-	return output == output2;
+ApplicationService::checkOutput(calldata_t* data, obs_output_t* output) const {
+	obs_output_t* data_output = nullptr;
+	calldata_get_ptr(data, "output", &data_output);
+	return data_output == output;
 }
 
 /*

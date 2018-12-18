@@ -62,8 +62,8 @@ bool
 obs_module_load(void) {
 	QMainWindow *parent = (QMainWindow*)obs_frontend_get_main_window();
 
-	Service::_streamdeckManager = new StreamdeckManager();
-	Service::_obsManager = new OBSManager();
+	Service::_streamdeck_manager = new StreamdeckManager();
+	Service::_obs_manager = new OBSManager();
 
 	services.push_back((Service*)new ApplicationService(parent));
 	services.push_back((Service*)new StreamingService());
@@ -76,8 +76,8 @@ obs_module_load(void) {
 
 void
 obs_module_unload(void) {
-	delete Service::_streamdeckManager;
-	delete Service::_obsManager;
+	delete Service::_streamdeck_manager;
+	delete Service::_obs_manager;
 
 	for(auto i = services.begin(); i != services.end(); i++)
 		delete *i;

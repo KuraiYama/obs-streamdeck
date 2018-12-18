@@ -220,8 +220,8 @@ StreamingService::onStreamStarting() {
 }
 
 void
-StreamingService::onStreamStarting(void* streamingService, calldata_t* data) {
-	StreamingService* service = reinterpret_cast<StreamingService*>(streamingService);
+StreamingService::onStreamStarting(void* streaming_service, calldata_t* data) {
+	StreamingService* service = reinterpret_cast<StreamingService*>(streaming_service);
 
 	if(!service->checkOutput(data)) return;
 
@@ -239,8 +239,8 @@ StreamingService::onStreamStarted() {
 }
 
 void
-StreamingService::onStreamStarted(void* streamingService, calldata_t* data) {
-	StreamingService* service = reinterpret_cast<StreamingService*>(streamingService);
+StreamingService::onStreamStarted(void* streaming_service, calldata_t* data) {
+	StreamingService* service = reinterpret_cast<StreamingService*>(streaming_service);
 
 	if(!service->checkOutput(data)) return;
 
@@ -263,8 +263,8 @@ StreamingService::onStreamStopping() {
 }
 
 void
-StreamingService::onStreamStopping(void* streamingService, calldata_t* data) {
-	StreamingService* service = reinterpret_cast<StreamingService*>(streamingService);
+StreamingService::onStreamStopping(void* streaming_service, calldata_t* data) {
+	StreamingService* service = reinterpret_cast<StreamingService*>(streaming_service);
 
 	if(!service->checkOutput(data)) return;
 
@@ -282,8 +282,8 @@ StreamingService::onStreamStopped() {
 }
 
 void
-StreamingService::onStreamStopped(void* streamingService, calldata_t* data) {
-	StreamingService* service = reinterpret_cast<StreamingService*>(streamingService);
+StreamingService::onStreamStopped(void* streaming_service, calldata_t* data) {
+	StreamingService* service = reinterpret_cast<StreamingService*>(streaming_service);
 
 	if(!service->checkOutput(data)) return;
 
@@ -311,8 +311,8 @@ StreamingService::onStreamStopped(void* streamingService, calldata_t* data) {
 }
 
 void
-StreamingService::onStreamReconnecting(void* streamingService, calldata_t* data) {
-	StreamingService* service = reinterpret_cast<StreamingService*>(streamingService);
+StreamingService::onStreamReconnecting(void* streaming_service, calldata_t* data) {
+	StreamingService* service = reinterpret_cast<StreamingService*>(streaming_service);
 
 	if(!service->checkOutput(data)) return;
 
@@ -327,8 +327,8 @@ StreamingService::onStreamReconnecting(void* streamingService, calldata_t* data)
 }
 
 void
-StreamingService::onStreamReconnected(void* streamingService, calldata_t* data) {
-	StreamingService* service = reinterpret_cast<StreamingService*>(streamingService);
+StreamingService::onStreamReconnected(void* streaming_service, calldata_t* data) {
+	StreamingService* service = reinterpret_cast<StreamingService*>(streaming_service);
 
 	if(!service->checkOutput(data)) return;
 

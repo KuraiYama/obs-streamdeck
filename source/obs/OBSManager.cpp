@@ -24,7 +24,8 @@ unsigned long long OBSManager::_last_registered_id = 0x0;
 */
 
 OBSManager::OBSManager() :
-	m_activeCollection(nullptr) {
+	m_activeCollection(nullptr),
+	m_isLoadingCollections(false) {
 }
 
 OBSManager::~OBSManager() {
@@ -39,18 +40,18 @@ OBSManager::~OBSManager() {
 
 void
 OBSManager::saveCollections() {
-	std::ofstream collectionsFile;
-	collectionsFile.open("collections.dat", std::ofstream::out | std::ofstream::binary);
+	std::ofstream collections_file;
+	collections_file.open("collections.dat", std::ofstream::out | std::ofstream::binary);
 
-	if(collectionsFile.good()) {
+	if(collections_file.good()) {
 
 		// Write the number of registered collections
 		short collections_count = m_collections.size();
-		collectionsFile.write((char*)&collections_count, sizeof(short));
+		collections_file.write((char*)&collections_count, sizeof(short));
 
-		if(collectionsFile) {
+		if(collections_file) {
 
-			collectionsFile.exceptions(
+			collections_file.exceptions(
 				std::ifstream::failbit |
 				std::ifstream::badbit |
 				std::ifstream::eofbit
@@ -64,8 +65,8 @@ OBSManager::saveCollections() {
 
 					size_t buff_size = collection_it->second->toBytes(&buffer);
 					if(buff_size > 0) {
-						collectionsFile.write((char*)&buff_size, sizeof(size_t));
-						collectionsFile.write(buffer, buff_size);
+						collections_file.write((char*)&buff_size, sizeof(size_t));
+						collections_file.write(buffer, buff_size);
 						delete [] buffer;
 						buffer = nullptr;
 					}
@@ -80,24 +81,26 @@ OBSManager::saveCollections() {
 		}
 	}
 
-	collectionsFile.close();
+	collections_file.close();
 }
 
 void
 OBSManager::loadCollections() {
-	std::ifstream collectionsFile;
-	collectionsFile.open("collections.dat", std::ifstream::in | std::ifstream::binary);
+	m_isLoadingCollections = true;
+
+	std::ifstream collections_file;
+	collections_file.open("collections.dat", std::ifstream::in | std::ifstream::binary);
 
 	std::map<std::string, std::shared_ptr<Collection>> collections_preload;
 
-	if(collectionsFile.good()) {
+	if(collections_file.good()) {
 
 		// Read the number of registered collections
 		short collections_count = 0;
-		collectionsFile.read((char*)&collections_count, sizeof(short));
-		if(collectionsFile) {
+		collections_file.read((char*)&collections_count, sizeof(short));
+		if(collections_file) {
 
-			collectionsFile.exceptions(
+			collections_file.exceptions(
 				std::ifstream::failbit |
 				std::ifstream::badbit |
 				std::ifstream::eofbit
@@ -111,11 +114,11 @@ OBSManager::loadCollections() {
 
 					// Read block size
 					size_t collection_size = 0;
-					collectionsFile.read((char*)&collection_size, sizeof(size_t));
+					collections_file.read((char*)&collection_size, sizeof(size_t));
 
 					// Read blocks
 					block_buffer = new char[collection_size];
-					collectionsFile.read(block_buffer, collection_size);
+					collections_file.read(block_buffer, collection_size);
 
 					// Construct the collection
 					if(Collection::buildFromBuffer(&collection, block_buffer, collection_size)) {
@@ -142,9 +145,11 @@ OBSManager::loadCollections() {
 		}
 	}
 
-	collectionsFile.close();
+	collections_file.close();
 
 	extractFromOBSCollections(collections_preload);
+
+	m_isLoadingCollections = false;
 }
 
 void
@@ -152,10 +157,12 @@ OBSManager::extractFromOBSCollections(std::map<std::string, std::shared_ptr<Coll
 	bool collections_preload = collections.size() > 0;
 
 	char** obs_collections = obs_frontend_get_scene_collections();
+	char* current_collection = obs_frontend_get_current_scene_collection();
 
 	int i = 0;
 
 	while(obs_collections[i] != NULL) {
+		Collection* collection_loaded = nullptr;
 		if(collections_preload) {
 			auto collection_it = collections.find(obs_collections[i]);
 			if(collection_it != collections.end()) {
@@ -165,22 +172,33 @@ OBSManager::extractFromOBSCollections(std::map<std::string, std::shared_ptr<Coll
 						collection_it->second
 					)
 				);
-				++i;
-				continue;
+				_last_registered_id = std::max<unsigned long long>(
+					_last_registered_id,
+					collection_it->second->id()
+				);
+				collection_loaded = collection_it->second.get();
+				collections.erase(collection_it);
 			}
 		}
 
-		++_last_registered_id;
-		m_collections.insert(
-			std::map<unsigned long long, std::shared_ptr<Collection>>::value_type(
-				_last_registered_id,
-				new Collection(_last_registered_id, obs_collections[i])
-			)
-		);
+		if(collection_loaded == nullptr) {
+			++_last_registered_id;
+			collection_loaded = new Collection(_last_registered_id, obs_collections[i]);
+			m_collections.insert(
+				std::map<unsigned long long, std::shared_ptr<Collection>>::value_type(
+					_last_registered_id,
+					collection_loaded
+				)
+			);
+		}
+
+		loadScenes(*collection_loaded);
 		++i;
 	}
 
 	bfree(obs_collections);
+
+	obs_frontend_set_current_scene_collection(current_collection);
 }
 
 obs::collection_event
@@ -238,6 +256,11 @@ OBSManager::updateCollections(std::shared_ptr<Collection>& collection_updated) {
 	return event;
 }
 
+void
+OBSManager::loadScenes(Collection& collection) {
+	collection.extractFromOBSScenes(_last_registered_id);
+}
+
 /*Collection*
 OBSManager::getCollectionByName(const std::string& name) {
 	Collection* collection = nullptr;
@@ -282,7 +305,7 @@ OBSManager::activeCollection() const {
 	return m_activeCollection;
 }
 
-/*bool
-CollectionManager::isBuildingCollections() const {
-	return m_isBuildingCollections;
-}*/
+bool
+OBSManager::isLoadingCollections() const {
+	return m_isLoadingCollections;
+}

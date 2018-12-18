@@ -61,7 +61,7 @@ template<typename T>
 bool
 StreamdeckManager::commit_all(
 	rpc_adv_response<T>& response, 
-		bool(StreamdeckManager::*functor)(Streamdeck*, const rpc_adv_response<T>&)
+	bool(StreamdeckManager::*functor)(Streamdeck*, const rpc_adv_response<T>&)
 ) {
 	bool result = this->validate(response);
 
@@ -85,7 +85,7 @@ template<typename T>
 bool
 StreamdeckManager::commit_any(
 	rpc_adv_response<T>& response, 
-		bool(StreamdeckManager::*functor)(Streamdeck*, const rpc_adv_response<T>&)
+	bool(StreamdeckManager::*functor)(Streamdeck*, const rpc_adv_response<T>&)
 ) {
 	bool result = this->validate(response);
 

@@ -26,18 +26,18 @@ SafeEventObservable<T>::~SafeEventObservable() {
 
 template<typename T>
 void
-SafeEventObservable<T>::addEventHandler(const T& event, const EventObserver<T>* eventHandler) {
+SafeEventObservable<T>::addEventHandler(const T& event, const EventObserver<T>* event_handler) {
 	if(m_eventHandlers.contains(event) && 
-			!m_eventHandlers[event].contains((EventObserver<T>*)eventHandler))
-		m_eventHandlers[event].insert((EventObserver<T>*)eventHandler);
+			!m_eventHandlers[event].contains((EventObserver<T>*)event_handler))
+		m_eventHandlers[event].insert((EventObserver<T>*)event_handler);
 }
 
 template<typename T>
 void
-SafeEventObservable<T>::remEventHandler(const T& event, const EventObserver<T>* eventHandler) {
+SafeEventObservable<T>::remEventHandler(const T& event, const EventObserver<T>* event_handler) {
 	if(m_eventHandlers.contains(event) && 
-			m_eventHandlers[event].contains((EventObserver<T>*)eventHandler))
-		m_eventHandlers[event].remove((EventObserver<T>*)eventHandler);
+			m_eventHandlers[event].contains((EventObserver<T>*)event_handler))
+		m_eventHandlers[event].remove((EventObserver<T>*)event_handler);
 }
 
 /*

@@ -14,7 +14,7 @@
 /*
  * Plugin Includes
  */
-#include "include/common/Global.h"
+#include "include/Global.h"
 #include "include/streamdeck/Streamdeck.hpp"
 #include "include/common/SharedVariablesManager.hpp"
 #include "include/common/Logger.hpp"
@@ -33,7 +33,7 @@ extern std::string ptr_to_string(void* ptr);
 ========================================================================================================
 */
 
-bool StreamdeckClient::_isVerbose = false;
+bool StreamdeckClient::_is_verbose = false;
 
 /*
 ========================================================================================================
@@ -41,8 +41,8 @@ bool StreamdeckClient::_isVerbose = false;
 ========================================================================================================
 */
 
-StreamdeckClient::StreamdeckClient(qintptr socketDescriptor) :
-	m_socketDescriptor(socketDescriptor),
+StreamdeckClient::StreamdeckClient(qintptr socket_descriptor) :
+	m_socketDescriptor(socket_descriptor),
 	m_startExecution(false) {
 	m_internalSocket = nullptr;
 }
@@ -137,11 +137,11 @@ StreamdeckClient::run() {
 */
 
 QJsonObject
-Streamdeck::buildJsonResult(const rpc_event event, const QString& resourceId, bool event_mode) {
+Streamdeck::buildJsonResult(const rpc_event event, const QString& resource, bool event_mode) {
 	QJsonObject response, result;
 	response["jsonrpc"] = "2.0";
 	response["id"] = (int)event;
-	result["resourceId"] = resourceId;
+	result["resource"] = resource;
 	if(event == rpc_event::NO_EVENT || event_mode)
 		result["_type"] = "EVENT";
 	response["result"] = result;
@@ -149,11 +149,11 @@ Streamdeck::buildJsonResult(const rpc_event event, const QString& resourceId, bo
 }
 
 /*QJsonObject
-Streamdeck::buildJsonResponse(const rpc_event event, const QString& resourceId) {
+Streamdeck::buildJsonResponse(const rpc_event event, const QString& resource) {
 	QJsonObject response;
 	response["jsonrpc"] = "2.0";
 	response["id"] = (int)event;
-	response["resourceId"] = resourceId;
+	response["resource"] = resource;
 	if(event == rpc_event::NO_EVENT)
 		response["_type"] = "EVENT";
 	return response;
@@ -194,12 +194,12 @@ Streamdeck::addToJsonArray(QJsonValueRef&& json_array, QJsonValue&& value) {
 */
 
 bool
-Streamdeck::sendSubscription(const rpc_event event, const std::string& resourceId, bool event_mode) {
-	m_subscribedResources[event] = resourceId;
-	QJsonObject response = buildJsonResult(event, QString::fromStdString(resourceId), event_mode);
+Streamdeck::sendSubscription(const rpc_event event, const std::string& resource, bool event_mode) {
+	m_subscribedResources[event] = resource;
+	QJsonObject response = buildJsonResult(event, QString::fromStdString(resource), event_mode);
 
 	log_custom(LOG_STREAMDECK) << QString("Subscription to resource : %1.")
-		.arg(resourceId.c_str())
+		.arg(resource.c_str())
 		.toStdString();
 
 	send(event, QJsonDocument(response));
@@ -228,7 +228,7 @@ Streamdeck::sendEvent(const rpc_event event, bool event_mode) {
 bool
 Streamdeck::sendRecordStreamState(
 	const rpc_event event,
-	const std::string& resourceId,
+	const std::string& resource,
 	const std::string& streaming,
 	const std::string& recording,
 	bool event_mode
@@ -238,7 +238,7 @@ Streamdeck::sendRecordStreamState(
 
 	QJsonObject response = buildJsonResult(
 		rpc_event::GET_RECORD_STREAM_STATE,
-		QString::fromStdString(resourceId),
+		QString::fromStdString(resource),
 		event_mode
 	);
 
@@ -254,11 +254,11 @@ Streamdeck::sendRecordStreamState(
 bool
 Streamdeck::sendError(
 	const rpc_event event,
-	const std::string& resourceId,
+	const std::string& resource,
 	bool error,
 	bool event_mode
 ) {
-	QJsonObject response = buildJsonResult(event, QString::fromStdString(resourceId), event_mode);
+	QJsonObject response = buildJsonResult(event, QString::fromStdString(resource), event_mode);
 	this->addToJsonObject(response, "error", error);
 
 	log_custom(LOG_STREAMDECK) << QString("Error Message sent for event %1.")
@@ -272,13 +272,13 @@ Streamdeck::sendError(
 bool
 Streamdeck::sendSchemaMessage(
 	const rpc_event event,
-	const std::string& resourceId,
+	const std::string& resource,
 	const Collections& collections,
 	bool event_mode
 ) {
 
 	rpc_event ev = event;
-	std::string resource = resourceId;
+	std::string res = resource;
 
 	// In the case of FETCH, Streamdeck doesn't respect its own protocol
 	if(event == rpc_event::FETCH_COLLECTIONS_SCHEMA) {
@@ -286,7 +286,7 @@ Streamdeck::sendSchemaMessage(
 		if(iter == m_subscribedResources.end())
 			return false;
 		ev = rpc_event::GET_COLLECTIONS;
-		resource = iter->second;
+		res = iter->second;
 		event_mode = true;
 	}
 #ifdef USE_SCHEMA
@@ -313,7 +313,7 @@ Streamdeck::sendSchemaMessage(
 	return true;
 #else
 
-	return this->sendCollectionsMessage(ev, resource, collections, event_mode);
+	return this->sendCollectionsMessage(ev, res, collections, event_mode);
 
 #endif
 }
@@ -321,12 +321,12 @@ Streamdeck::sendSchemaMessage(
 bool
 Streamdeck::sendCollectionsMessage(
 	const rpc_event event,
-	const std::string& resourceId,
+	const std::string& resource,
 	const Collections& collections,
 	bool event_mode
 ) {
 	
-	QJsonObject response = buildJsonResult(event, QString::fromStdString(resourceId), event_mode);
+	QJsonObject response = buildJsonResult(event, QString::fromStdString(resource), event_mode);
 
 	QJsonArray data;
 	for(auto iter = collections.begin(); iter < collections.end(); iter++) {
@@ -346,11 +346,11 @@ Streamdeck::sendCollectionsMessage(
 bool
 Streamdeck::sendCollectionMessage(
 	const rpc_event event,
-	const std::string& resourceId,
+	const std::string& resource,
 	const CollectionPtr& collection,
 	bool event_mode
 ) {
-	QJsonObject response = buildJsonResult(event, QString::fromStdString(resourceId), event_mode);
+	QJsonObject response = buildJsonResult(event, QString::fromStdString(resource), event_mode);
 	addToJsonObject(response["result"], "id", QString("%1").arg(collection->id()));
 	addToJsonObject(response["result"], "name", collection->name().c_str());
 
@@ -456,7 +456,7 @@ Streamdeck::sendCollectionsSchema(const rpc_event event, const Collections& coll
 }*/
 
 /*bool
-Streamdeck::sendScenesMessage(const rpc_event event, const std::string& resourceId,
+Streamdeck::sendScenesMessage(const rpc_event event, const std::string& resource,
 		const Collection* collection, const Scenes& scenes) {
 
 	if(m_authorizedEvents[event] == false)
@@ -467,7 +467,7 @@ Streamdeck::sendScenesMessage(const rpc_event event, const std::string& resource
 
 	log_custom(LOG_STREAMDECK) << "Scenes sent.";
 
-	QJsonObject response = buildJsonResponse(event, QString::fromStdString(resourceId));
+	QJsonObject response = buildJsonResponse(event, QString::fromStdString(resource));
 
 	addToJsonObject(response, "collection", collection->name().c_str());
 
@@ -523,7 +523,7 @@ StreamdeckClient::read() {
 			log_custom(LOG_STREAMDECK_CLIENT) << "[Streamdeck Client] Read message...";
 			QByteArray data = m_internalSocket->readLine();
 			QJsonDocument json_quest = QJsonDocument::fromJson(data);
-			if(_isVerbose) {
+			if(_is_verbose) {
 				std::string log = json_quest.toJson(QJsonDocument::JsonFormat::Indented).toStdString();
 				log_custom(LOG_STREAMDECK_CLIENT) << log;
 			}
@@ -539,7 +539,7 @@ void
 StreamdeckClient::write(QJsonDocument document) {
 	log_custom(LOG_STREAMDECK_CLIENT) << QString("[Streamdeck Client] Write message...").toStdString();
 
-	if(_isVerbose) {
+	if(_is_verbose) {
 		std::string log = document.toJson(QJsonDocument::JsonFormat::Indented).toStdString();
 		log_custom(LOG_STREAMDECK_CLIENT) << log;
 	}
@@ -724,6 +724,19 @@ Streamdeck::unlockEventAuthorizations(const rpc_event event) {
 			setEventAuthorizations(rpc_event::GET_ACTIVE_COLLECTION, EVENT_READ_WRITE);
 			break;
 
+		case rpc_event::COLLECTION_ADDED_SUBSCRIBE:
+		case rpc_event::COLLECTION_REMOVED_SUBSCRIBE:
+			setEventAuthorizations(rpc_event::FETCH_COLLECTIONS_SCHEMA, EVENT_WRITE);
+			setEventAuthorizations(rpc_event::GET_COLLECTIONS, EVENT_WRITE);
+			setEventAuthorizations(rpc_event::GET_ACTIVE_COLLECTION, EVENT_WRITE);
+			break;
+
+		case rpc_event::COLLECTION_SWITCHED_SUBSCRIBE:
+			setEventAuthorizations(rpc_event::FETCH_COLLECTIONS_SCHEMA, EVENT_READ_WRITE);
+			setEventAuthorizations(rpc_event::GET_COLLECTIONS, EVENT_READ_WRITE);
+			setEventAuthorizations(rpc_event::GET_ACTIVE_COLLECTION, EVENT_READ_WRITE);
+			break;
+
 		default:
 			break;
 	}
@@ -765,12 +778,12 @@ StreamdeckClient::disconnected() {
 */
 
 StreamdeckClient*
-Streamdeck::createClient(qintptr socketDescriptor) {
+Streamdeck::createClient(qintptr socket_descriptor) {
 
 	bool_s ready = shared_variable<bool>("ready", false);
 	bool_s socket_created = shared_variable<bool>("socket_created", false);
 
-	StreamdeckClient* client = new StreamdeckClient(socketDescriptor);
+	StreamdeckClient* client = new StreamdeckClient(socket_descriptor);
 	client->start();
 
 	ready = true;
