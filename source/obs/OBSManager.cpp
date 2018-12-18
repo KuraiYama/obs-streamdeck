@@ -23,9 +23,8 @@ unsigned long long OBSManager::_last_registered_id = 0x0;
 ========================================================================================================
 */
 
-OBSManager::OBSManager() /*:
-	m_activeCollection(nullptr),
-	m_isBuildingCollections(false)*/ {
+OBSManager::OBSManager() :
+	m_activeCollection(nullptr) {
 }
 
 OBSManager::~OBSManager() {
@@ -219,6 +218,7 @@ OBSManager::updateCollections(std::shared_ptr<Collection>& collection_updated) {
 				)
 			);
 			collection_updated = m_collections.find(_last_registered_id)->second;
+			m_activeCollection = nullptr;
 			event = obs::collection_event::COLLECTION_ADDED;
 		}
 		// Update collection
@@ -231,6 +231,7 @@ OBSManager::updateCollections(std::shared_ptr<Collection>& collection_updated) {
 	else {
 		collection_updated = collections.begin()->second;
 		m_collections.erase(collections.begin()->second->id());
+		m_activeCollection = nullptr;
 		event = obs::collection_event::COLLECTION_REMOVED;
 	}
 
@@ -260,16 +261,28 @@ OBSManager::collections() const {
 	return collections;
 }
 
-/*Collection*
-CollectionManager::activeCollection() const {
+Collection*
+OBSManager::activeCollection() const {
 	const char* current_collection = obs_frontend_get_current_scene_collection();
-	if(m_activeCollection->name().compare(current_collection) != 0) {
-		m_activeCollection = (Collection*)&m_collections.find(current_collection)->second;
+
+	if(m_activeCollection) {
+		if(m_activeCollection->name().compare(current_collection) == 0)
+			return m_activeCollection;
+		m_activeCollection = nullptr;
 	}
+
+	auto collection_it = m_collections.begin();
+	while(collection_it != m_collections.end() && m_activeCollection == nullptr) {
+		if(collection_it->second->name().compare(current_collection) == 0) {
+			m_activeCollection = collection_it->second.get();
+		}
+		collection_it++;
+	}
+
 	return m_activeCollection;
 }
 
-bool
+/*bool
 CollectionManager::isBuildingCollections() const {
 	return m_isBuildingCollections;
 }*/

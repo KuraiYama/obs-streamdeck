@@ -59,22 +59,22 @@ class CollectionsService : public ServiceT<CollectionsService> {
 		bool
 		onCollectionUpdated(const Collection& collection);
 
-		/*bool
-		onCollectionSwitched();*/
+		bool
+		onCollectionSwitched();
 
 		bool
 		subscribeCollectionChange(const rpc_event_data& data);
 
-		/*bool
+		bool
 		onFetchCollectionsSchema(const rpc_event_data& data);
 
 		bool
 		onGetCollections(const rpc_event_data& data);
 
-		bool
-		onGetActiveCollection(const rpc_event_data& data);
+		/*bool
+		onGetActiveCollection(const rpc_event_data& data);*/
 
-		bool
+		/*bool
 		onMakeCollectionActive(const rpc_event_data& data);*/
 
 };

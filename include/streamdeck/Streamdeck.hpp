@@ -295,6 +295,25 @@ class Streamdeck : public QObject {
 		bool
 		sendError(const rpc_event event, const std::string& resourceId, bool error);
 
+		bool sendSchemaMessage(
+			const rpc_event event,
+			const std::string& resourceId,
+			const Collections& collections
+		);
+
+		bool
+		sendCollectionsMessage(
+			const rpc_event event,
+			const std::string& resourceId,
+			const Collections& collections
+		);
+
+		bool
+		sendCollectionMessage(
+			const rpc_event event,
+			const std::string& resourceId,
+			const CollectionPtr& collection);
+
 		/*bool
 		sendActiveCollectionMessage(
 			const rpc_event event,
@@ -305,12 +324,7 @@ class Streamdeck : public QObject {
 		bool
 		sendCollectionSwitchMessage(const rpc_event event, const Collection* collection);
 
-		bool
-		sendCollectionsMessage(
-			const rpc_event event,
-			const std::string& resourceId,
-			const Collections& collections
-		);
+		
 
 		bool
 		sendCollectionsSchema(

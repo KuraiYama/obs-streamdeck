@@ -164,10 +164,7 @@ class StreamdeckManager : public QObject, public SafeEventObservable<Streamdeck:
 		);
 
 		bool
-		setSubscription(
-			Streamdeck* client,
-			const rpc_adv_response<std::string>& reponse
-		);
+		setSubscription(Streamdeck* client, const rpc_adv_response<std::string>& reponse);
 
 		template<typename T>
 		bool
@@ -180,30 +177,18 @@ class StreamdeckManager : public QObject, public SafeEventObservable<Streamdeck:
 		);
 
 		bool
-		setError(
-			Streamdeck* client,
-			const rpc_adv_response<bool>& response
-		);
+		setError(Streamdeck* client, const rpc_adv_response<bool>& response);
+
+		bool
+		setSchema(Streamdeck* client, const rpc_adv_response<Collections>& response);
+
+		bool
+		setCollections(Streamdeck* client, const rpc_adv_response<Collections>& response);
+
+		bool
+		setCollection(Streamdeck* client, const rpc_adv_response<CollectionPtr>& response);
 
 		/*bool
-		setCollections(
-			Streamdeck* client,
-			const rpc_adv_response<Collections>& response
-		);
-
-		bool
-		fetchCollections(
-			Streamdeck* client,
-			const rpc_adv_response<Collections>& response
-		);
-
-		bool
-		setActiveCollection(
-			Streamdeck* client,
-			const rpc_adv_response<Collection*>& response
-		);
-
-		bool
 		setCollectionSwitched(
 			Streamdeck* client,
 			const rpc_adv_response<Collection*>& response
@@ -214,15 +199,8 @@ class StreamdeckManager : public QObject, public SafeEventObservable<Streamdeck:
 			Streamdeck* client,
 			const rpc_adv_response<std::tuple<Collection*,Scenes>>& response
 		);
-
+		*/
 		
-
-		bool
-		setStatus(
-			Streamdeck* client,
-			const rpc_adv_response<void>& status
-		);*/
-	
 	private:
 
 		void

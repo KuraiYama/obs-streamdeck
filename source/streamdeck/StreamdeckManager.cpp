@@ -156,11 +156,8 @@ StreamdeckManager::setRecordStreamState(
 	);
 }
 
-/*bool
-StreamdeckManager::setActiveCollection(
-	Streamdeck* client,
-	const rpc_adv_response<Collection*>& response
-) {
+bool
+StreamdeckManager::setSchema(Streamdeck* client, const rpc_adv_response<Collections>& response) {
 	QString resource = response.request != nullptr ?
 		QString("%1.%2")
 		.arg(response.request->serviceName.c_str())
@@ -169,28 +166,43 @@ StreamdeckManager::setActiveCollection(
 		.arg(response.serviceName)
 		.arg(response.method);
 
-	return client->sendActiveCollectionMessage(response.event, resource.toStdString(), response.data);
-}
-
-bool StreamdeckManager::setCollectionSwitched(
-	Streamdeck* client,
-	const rpc_adv_response<Collection*>& response
-) {
-	return client->sendCollectionSwitchMessage(response.event, response.data);
+	return client->sendSchemaMessage(response.event, resource.toStdString(), response.data);
 }
 
 bool
 StreamdeckManager::setCollections(Streamdeck* client, const rpc_adv_response<Collections>& response) {
 	QString resource = response.request != nullptr ?
 		QString("%1.%2")
+			.arg(response.request->serviceName.c_str())
+			.arg(response.request->method.c_str()) :
+		QString("%1.%2")
+			.arg(response.serviceName)
+			.arg(response.method);
+
+	return client->sendCollectionsMessage(response.event, resource.toStdString(), response.data);
+}
+
+bool
+StreamdeckManager::setCollection(Streamdeck* client, const rpc_adv_response<CollectionPtr>& response) {
+	QString resource = response.request != nullptr ?
+		QString("%1.%2")
 		.arg(response.request->serviceName.c_str())
 		.arg(response.request->method.c_str()) :
 		QString("%1.%2")
 		.arg(response.serviceName)
 		.arg(response.method);
 
-	return client->sendCollectionsMessage(response.event, resource.toStdString(), response.data);
+	return client->sendCollectionMessage(response.event, resource.toStdString(), response.data);
 }
+
+/*bool StreamdeckManager::setCollectionSwitched(
+	Streamdeck* client,
+	const rpc_adv_response<Collection*>& response
+) {
+	return client->sendCollectionSwitchMessage(response.event, response.data);
+}
+
+
 
 bool
 StreamdeckManager::fetchCollections(Streamdeck* client, const rpc_adv_response<Collections>& response) {
@@ -213,12 +225,6 @@ StreamdeckManager::setScenes(
 	return client->sendScenesMessage(response.event, resource.toStdString(), 
 		std::get<0>(response.data), std::get<1>(response.data));
 }
-
-bool
-StreamdeckManager::setStatus(Streamdeck* client, const rpc_adv_response<void>& response) {
-	return client->sendStatusMessage(response.event);
-}
-
 */
 
 /*

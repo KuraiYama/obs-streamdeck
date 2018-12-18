@@ -35,8 +35,7 @@ rpc2json(QJsonObject& response, const CollectionPtr& data) {
 	QJsonObject data_json;
 	Streamdeck::addToJsonObject(data_json, "id", QString("%1").arg(data->id()));
 	Streamdeck::addToJsonObject(data_json, "name", data->name().c_str());
-
-	Streamdeck::addToJsonObject(response, "data", data_json);
+	Streamdeck::addToJsonObject(response["result"], "data", data_json);
 	return true;
 }
 

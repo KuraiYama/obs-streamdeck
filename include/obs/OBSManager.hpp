@@ -48,6 +48,8 @@ class OBSManager {
 
 		std::map<unsigned long long, std::shared_ptr<Collection>> m_collections;
 
+		mutable Collection* m_activeCollection;
+
 	/*
 	====================================================================================================
 		Constructors / Destructor
@@ -74,6 +76,9 @@ class OBSManager {
 
 		obs::collection_event
 		updateCollections(std::shared_ptr<Collection>& collection_updated);
+
+		Collection*
+		activeCollection() const;
 
 		Collections
 		collections() const;

@@ -173,7 +173,7 @@ ServiceT<T>::response_collection(const rpc_event_data* data, const char* method)
 	};
 }
 
-/*template<typename T>
+template<typename T>
 rpc_adv_response<Collections>
 ServiceT<T>::response_collections(const rpc_event_data* data, const char* method) const {
 	return
@@ -183,7 +183,7 @@ ServiceT<T>::response_collections(const rpc_event_data* data, const char* method
 		};
 }
 
-template<typename T>
+/*template<typename T>
 rpc_adv_response<std::tuple<Collection*, Scenes>>
 ServiceT<T>::response_scenes(const rpc_event_data* data, const char* method) const {
 	return

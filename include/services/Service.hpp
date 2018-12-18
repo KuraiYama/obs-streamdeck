@@ -154,8 +154,8 @@ class ServiceT : private Service,
 		rpc_adv_response<std::pair<std::string, std::string>>
 		response_string2(const rpc_event_data* data, const char* method) const;
 
-		/*rpc_adv_response<Collections>
-		response_collections(const rpc_event_data* data, const char* method) const;*/
+		rpc_adv_response<Collections>
+		response_collections(const rpc_event_data* data, const char* method) const;
 
 		rpc_adv_response<Collection*>
 		response_collection(const rpc_event_data* data, const char* method) const;
