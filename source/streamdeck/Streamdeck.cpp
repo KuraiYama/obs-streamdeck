@@ -679,6 +679,7 @@ Streamdeck::lockEventAuthorizations(const rpc_event event) {
 			setEventAuthorizations(rpc_event::COLLECTION_REMOVED_SUBSCRIBE, 0x0);
 			setEventAuthorizations(rpc_event::COLLECTION_UPDATED_SUBSCRIBE, 0x0);
 			setEventAuthorizations(rpc_event::COLLECTION_SWITCHED_SUBSCRIBE, 0x0);
+			setEventAuthorizations(rpc_event::GET_ACTIVE_COLLECTION, 0x0);
 			break;
 
 		default:
@@ -721,6 +722,7 @@ Streamdeck::unlockEventAuthorizations(const rpc_event event) {
 			setEventAuthorizations(rpc_event::COLLECTION_UPDATED_SUBSCRIBE, EVENT_READ_WRITE);
 			setEventAuthorizations(rpc_event::FETCH_COLLECTIONS_SCHEMA, EVENT_READ_WRITE);
 			setEventAuthorizations(rpc_event::COLLECTION_SWITCHED_SUBSCRIBE, EVENT_READ_WRITE);
+			setEventAuthorizations(rpc_event::GET_ACTIVE_COLLECTION, EVENT_READ_WRITE);
 			break;
 
 		default:
@@ -850,8 +852,8 @@ Streamdeck::logEvent(const rpc_event event, const QJsonDocument& json_quest) {
 			log_custom(0xed65e6) << "Get Recording and Streaming State";
 			break;
 
-		/*case rpc_event::RPC_ID_GET_ACTIVE_COLLECTION:
-			log_custom(0xab83f0) << "Get active collection";*/
+		case rpc_event::GET_ACTIVE_COLLECTION:
+			log_custom(0xab83f0) << "Get active collection";
 
 		case rpc_event::ERROR:
 		default:

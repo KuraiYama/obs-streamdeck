@@ -24,8 +24,8 @@ CollectionsService::CollectionsService() : ServiceT("CollectionsService", "Scene
 	this->setupEvent<const rpc_event_data&>(Streamdeck::rpc_event::GET_COLLECTIONS,
 		&CollectionsService::onGetCollections);
 
-	/*this->setupEvent<const rpc_event_data&>(Streamdeck::rpc_event::GET_ACTIVE_COLLECTION,
-		&CollectionsService::onGetActiveCollection);*/
+	this->setupEvent<const rpc_event_data&>(Streamdeck::rpc_event::GET_ACTIVE_COLLECTION,
+		&CollectionsService::onGetActiveCollection);
 
 	/*this->setupEvent<const rpc_event_data&>(Streamdeck::rpc_event::RPC_ID_MAKE_COLLECTION_ACTIVE,
 		&CollectionsService::onMakeCollectionActive);*/
@@ -207,7 +207,7 @@ CollectionsService::onGetCollections(const rpc_event_data& data) {
 	return false;
 }
 
-/*bool
+bool
 CollectionsService::onGetActiveCollection(const rpc_event_data& data) {
 	rpc_adv_response<CollectionPtr> response = response_collection(&data, "onGetActiveCollection");
 	if(data.event == Streamdeck::rpc_event::GET_ACTIVE_COLLECTION) {
@@ -222,7 +222,7 @@ CollectionsService::onGetActiveCollection(const rpc_event_data& data) {
 
 	logError("GetActiveCollection not called by GET_ACTIVE_COLLECTION.");
 	return false;
-}*/
+}
 
 /*bool
 CollectionsService::onMakeCollectionActive(const rpc_event_data& data) {
