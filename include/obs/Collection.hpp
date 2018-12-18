@@ -17,7 +17,7 @@
 /*
  * Plugin Includes
  */
-//#include "include/obs/Scene.hpp"
+#include "include/obs/Scene.hpp"
 
 /*
 ========================================================================================================
@@ -55,11 +55,11 @@ class Collection {
 	*/
 	private:
 
-		//std::map<std::string, Scene> m_scenes;
+		std::map<unsigned long long, std::shared_ptr<Scene>> m_scenes;
 
 		std::string m_name;
 
-		long long m_identifier;
+		unsigned long long m_identifier;
 
 	/*
 	====================================================================================================
@@ -68,7 +68,7 @@ class Collection {
 	*/
 	public:
 
-		Collection(long long id = -1, std::string name = "");
+		Collection(unsigned long long id, std::string name);
 
 		~Collection();
 
@@ -79,10 +79,13 @@ class Collection {
 	*/
 	public:
 
+		void
+		extractFromOBSScenes(unsigned long long& next_scene_identifier);
+
 		size_t
 		toBytes(char** buffer) const;
 
-		long long
+		unsigned long long
 		id() const;
 
 		std::string
@@ -91,7 +94,7 @@ class Collection {
 		void
 		name(std::string new_name);
 
-		/*Scenes
-		scenes() const;*/
+		Scenes
+		scenes() const;
 
 };

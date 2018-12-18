@@ -33,16 +33,16 @@ class RecordingService : public ServiceT<RecordingService> {
 	private:
 
 		static void
-		onRecordStarting(void* streamingService, calldata_t* data);
+		onRecordStarting(void* streaming_service, calldata_t* data);
 
 		static void
-		onRecordStarted(void* streamingService, calldata_t* data);
+		onRecordStarted(void* streaming_service, calldata_t* data);
 
 		static void
-		onRecordStopping(void* streamingService, calldata_t* data);
+		onRecordStopping(void* streaming_service, calldata_t* data);
 
 		static void
-		onRecordStopped(void* streamingService, calldata_t* data);
+		onRecordStopped(void* streaming_service, calldata_t* data);
 
 	/*
 	====================================================================================================

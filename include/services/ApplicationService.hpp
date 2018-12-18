@@ -36,34 +36,34 @@ class ApplicationService : public ServiceT<ApplicationService> {
 	private:
 
 		static void
-		onRecordStarting(void* streamingService, calldata_t* data);
+		onRecordStarting(void* streaming_service, calldata_t* data);
 
 		static void
-		onRecordStarted(void* streamingService, calldata_t* data);
+		onRecordStarted(void* streaming_service, calldata_t* data);
 
 		static void
-		onRecordStopping(void* streamingService, calldata_t* data);
+		onRecordStopping(void* streaming_service, calldata_t* data);
 
 		static void
-		onRecordStopped(void* streamingService, calldata_t* data);
+		onRecordStopped(void* streaming_service, calldata_t* data);
 
 		static void
-		onStreamStarting(void* streamingService, calldata_t* data);
+		onStreamStarting(void* streaming_service, calldata_t* data);
 
 		static void
-		onStreamStarted(void* streamingService, calldata_t* data);
+		onStreamStarted(void* streaming_service, calldata_t* data);
 
 		static void
-		onStreamStopping(void* streamingService, calldata_t* data);
+		onStreamStopping(void* streaming_service, calldata_t* data);
 
 		static void
-		onStreamStopped(void* streamingService, calldata_t* data);
+		onStreamStopped(void* streaming_service, calldata_t* data);
 
 		static void
-		onStreamReconnecting(void* streamingService, calldata_t* data);
+		onStreamReconnecting(void* streaming_service, calldata_t* data);
 
 		static void
-		onStreamReconnected(void* streamingService, calldata_t* data);
+		onStreamReconnected(void* streaming_service, calldata_t* data);
 
 	/*
 	====================================================================================================
@@ -113,7 +113,7 @@ class ApplicationService : public ServiceT<ApplicationService> {
 		disconnectRecordOutputHandler();
 
 		bool
-		checkOutput(calldata_t* data, obs_output_t* output2) const;
+		checkOutput(calldata_t* data, obs_output_t* output) const;
 
 		bool
 		onApplicationLoaded();

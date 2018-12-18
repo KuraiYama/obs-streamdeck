@@ -32,6 +32,26 @@ class OBSManager {
 
 	/*
 	====================================================================================================
+		Types Definitions
+	====================================================================================================
+	*/
+	private:
+
+		class FileLoader {
+
+			/*
+			============================================================================================
+				Instance Data Members
+			============================================================================================
+			*/
+			private:
+
+				std::fstream _internalFile;
+
+		};
+
+	/*
+	====================================================================================================
 		Static Class Attributes
 	====================================================================================================
 	*/
@@ -49,6 +69,8 @@ class OBSManager {
 		std::map<unsigned long long, std::shared_ptr<Collection>> m_collections;
 
 		mutable Collection* m_activeCollection;
+
+		bool m_isLoadingCollections;
 
 	/*
 	====================================================================================================
@@ -77,11 +99,17 @@ class OBSManager {
 		obs::collection_event
 		updateCollections(std::shared_ptr<Collection>& collection_updated);
 
+		void
+		loadScenes(Collection& collection);
+
 		Collection*
 		activeCollection() const;
 
 		Collections
 		collections() const;
+
+		bool
+		isLoadingCollections() const;
 
 	private:
 

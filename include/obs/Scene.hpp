@@ -16,7 +16,7 @@
 /*
  * Plugin Includes
  */
-#include "include/obs/Item.hpp"
+//#include "include/obs/Item.hpp"
 
 /*
 ========================================================================================================
@@ -45,7 +45,9 @@ class Scene {
 	*/
 	private:
 
-		std::map<int64_t, Item> m_items;
+		//std::map<int64_t, Item> m_items;
+
+		unsigned long long m_identifier;
 
 		std::string m_name;
 
@@ -62,11 +64,9 @@ class Scene {
 	*/
 	public:
 
-		Scene(Collection* collection, obs_source_t* source);
+		Scene(Collection* collection, unsigned long long id, std::string name);
 
-		Scene(const Scene& scene);
-
-		Scene(Scene&& scene);
+		Scene(Collection* collection, unsigned long long id, obs_source_t* source);
 
 		~Scene();
 
@@ -77,19 +77,22 @@ class Scene {
 	*/
 	public:
 
-		void
-		buildItems();
+		/*void
+		buildItems();*/
 
 		std::string
 		name() const;
 
-		std::string
+		unsigned long long
 		id() const;
+
+		void
+		source(obs_source_t* obs_source);
 
 		obs_scene_t*
 		scene() const;
 
-		Items
-		items() const;
+		/*Items
+		items() const;*/
 
 };

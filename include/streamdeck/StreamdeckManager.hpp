@@ -100,7 +100,7 @@ class StreamdeckServer : private QTcpServer {
 	private:
 
 		void
-		incomingConnection(qintptr socketDescriptor) override final;
+		incomingConnection(qintptr socket_descriptor) override final;
 
 	public:
 
@@ -131,7 +131,7 @@ class StreamdeckManager : public QObject, public SafeEventObservable<Streamdeck:
 	*/
 	public:
 
-		StreamdeckManager(short listenPort = OBS_PORT);
+		StreamdeckManager(short listen_port = OBS_PORT);
 		
 		~StreamdeckManager();
 

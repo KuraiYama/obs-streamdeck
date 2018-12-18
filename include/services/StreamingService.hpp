@@ -33,22 +33,22 @@ class StreamingService : public ServiceT<StreamingService> {
 	private:
 
 		static void
-		onStreamStarting(void* streamingService, calldata_t* data);
+		onStreamStarting(void* streaming_service, calldata_t* data);
 
 		static void
-		onStreamStarted(void* streamingService, calldata_t* data);
+		onStreamStarted(void* streaming_service, calldata_t* data);
 
 		static void
-		onStreamStopping(void* streamingService, calldata_t* data);
+		onStreamStopping(void* streaming_service, calldata_t* data);
 
 		static void
-		onStreamStopped(void* streamingService, calldata_t* data);
+		onStreamStopped(void* streaming_service, calldata_t* data);
 
 		static void
-		onStreamReconnecting(void* streamingService, calldata_t* data);
+		onStreamReconnecting(void* streaming_service, calldata_t* data);
 
 		static void
-		onStreamReconnected(void* streamingService, calldata_t* data);
+		onStreamReconnected(void* streaming_service, calldata_t* data);
 
 	/*
 	====================================================================================================

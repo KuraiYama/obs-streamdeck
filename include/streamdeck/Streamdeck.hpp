@@ -54,7 +54,7 @@ class StreamdeckClient : public QThread {
 	*/
 	private:
 
-		static bool _isVerbose;
+		static bool _is_verbose;
 
 	/*
 	====================================================================================================
@@ -76,7 +76,7 @@ class StreamdeckClient : public QThread {
 	*/
 	private:
 
-		StreamdeckClient(qintptr socjetDescriptor);
+		StreamdeckClient(qintptr socket_descriptor);
 
 		~StreamdeckClient();
 
@@ -208,13 +208,13 @@ class Streamdeck : public QObject {
 	public:
 
 		static StreamdeckClient*
-		createClient(qintptr socketDescriptor);
+		createClient(qintptr socket_descriptor);
 
 		//static QJsonObject
 		//buildJsonResponse(const rpc_event event, const QString& resourceId);
 
 		static QJsonObject
-		buildJsonResult(const rpc_event event, const QString& resourceId, bool event_mode = false);
+		buildJsonResult(const rpc_event event, const QString& resource, bool event_mode = false);
 
 		static void
 		addToJsonObject(QJsonObject& json_object, QString key, QJsonValue&& value);
@@ -275,7 +275,7 @@ class Streamdeck : public QObject {
 		send(const rpc_event event, const QJsonDocument& json_quest);
 
 		bool
-		sendSubscription(const rpc_event event, const std::string& resourceId, bool event_mode = false);
+		sendSubscription(const rpc_event event, const std::string& resource, bool event_mode = false);
 
 		template<typename T>
 		bool
@@ -287,7 +287,7 @@ class Streamdeck : public QObject {
 		bool
 		sendRecordStreamState(
 			const rpc_event event,
-			const std::string& resourceId,
+			const std::string& resource,
 			const std::string& streaming,
 			const std::string& recording,
 			bool event_mode = false
@@ -296,14 +296,14 @@ class Streamdeck : public QObject {
 		bool
 		sendError(
 			const rpc_event event,
-			const std::string& resourceId,
+			const std::string& resource,
 			bool error,
 			bool event_mode = false
 		);
 
 		bool sendSchemaMessage(
 			const rpc_event event,
-			const std::string& resourceId,
+			const std::string& resource,
 			const Collections& collections,
 			bool event_mode = false
 		);
@@ -311,7 +311,7 @@ class Streamdeck : public QObject {
 		bool
 		sendCollectionsMessage(
 			const rpc_event event,
-			const std::string& resourceId,
+			const std::string& resource,
 			const Collections& collections,
 			bool event_mode = false
 		);
@@ -319,7 +319,7 @@ class Streamdeck : public QObject {
 		bool
 		sendCollectionMessage(
 			const rpc_event event,
-			const std::string& resourceId,
+			const std::string& resource,
 			const CollectionPtr& collection,
 			bool event_mode = false
 		);

@@ -40,9 +40,9 @@ class Service {
 	*/
 	public:
 
-		static StreamdeckManager* _streamdeckManager;
+		static StreamdeckManager* _streamdeck_manager;
 
-		static OBSManager* _obsManager;
+		static OBSManager* _obs_manager;
 
 	/*
 	====================================================================================================

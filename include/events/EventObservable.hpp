@@ -51,10 +51,10 @@ class EventObservable<T> {
 	public:
 
 		virtual void
-		addEventHandler(const T& event, const EventObserver<T>* eventHandler) = 0;         
+		addEventHandler(const T& event, const EventObserver<T>* event_handler) = 0;         
 		
 		virtual void
-		remEventHandler(const T& event, const EventObserver<T>* eventHandler) = 0;
+		remEventHandler(const T& event, const EventObserver<T>* event_handler) = 0;
 
 	protected:
 
@@ -100,10 +100,10 @@ class SafeEventObservable : protected EventObservable<T> {
 	public:
 
 		virtual void
-		addEventHandler(const T& event, const EventObserver<T>* eventHandler) override;
+		addEventHandler(const T& event, const EventObserver<T>* event_handler) override;
 
 		virtual void
-		remEventHandler(const T& event, const EventObserver<T>* eventHandler) override;
+		remEventHandler(const T& event, const EventObserver<T>* event_handler) override;
 
 		virtual void
 		addEvent(const T& event) override;
@@ -151,10 +151,10 @@ class UnsafeEventObservable : public EventObservable<T> {
 	public:
 
 		virtual void
-		addEventHandler(const T& event, const EventObserver<T>* eventHandler) override;
+		addEventHandler(const T& event, const EventObserver<T>* event_handler) override;
 
 		virtual void
-		remEventHandler(const T& event, const EventObserver<T>* eventHandler) override;
+		remEventHandler(const T& event, const EventObserver<T>* event_handler) override;
 
 		virtual void
 		addEvent(const T& event) override;
