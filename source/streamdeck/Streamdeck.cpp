@@ -720,7 +720,6 @@ Streamdeck::unlockEventAuthorizations(const rpc_event event) {
 			setEventAuthorizations(rpc_event::COLLECTION_ADDED_SUBSCRIBE, EVENT_READ_WRITE);
 			setEventAuthorizations(rpc_event::COLLECTION_REMOVED_SUBSCRIBE, EVENT_READ_WRITE);
 			setEventAuthorizations(rpc_event::COLLECTION_UPDATED_SUBSCRIBE, EVENT_READ_WRITE);
-			setEventAuthorizations(rpc_event::FETCH_COLLECTIONS_SCHEMA, EVENT_READ_WRITE);
 			setEventAuthorizations(rpc_event::COLLECTION_SWITCHED_SUBSCRIBE, EVENT_READ_WRITE);
 			setEventAuthorizations(rpc_event::GET_ACTIVE_COLLECTION, EVENT_READ_WRITE);
 			break;
@@ -832,7 +831,7 @@ Streamdeck::logEvent(const rpc_event event, const QJsonDocument& json_quest) {
 		case rpc_event::COLLECTION_ADDED_SUBSCRIBE:
 		case rpc_event::COLLECTION_REMOVED_SUBSCRIBE:
 		case rpc_event::COLLECTION_UPDATED_SUBSCRIBE:
-		/*case rpc_event::RPC_ID_COLLECTION_SWITCHED_SUBSCRIBE:*/
+		case rpc_event::COLLECTION_SWITCHED_SUBSCRIBE:
 			log_custom(0xffb520) << QString("Subscribe Event (%1)").arg((int)event).toStdString();
 			break;
 
@@ -854,6 +853,7 @@ Streamdeck::logEvent(const rpc_event event, const QJsonDocument& json_quest) {
 
 		case rpc_event::GET_ACTIVE_COLLECTION:
 			log_custom(0xab83f0) << "Get active collection";
+			break;
 
 		case rpc_event::ERROR:
 		default:
