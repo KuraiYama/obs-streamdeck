@@ -3,7 +3,7 @@
  */
 #include "include/streamdeck/Streamdeck.hpp"
 #include "include/common/Logger.hpp"
-#include "include/common/Global.h"
+#include "include/Global.h"
 
 /*
 ========================================================================================================

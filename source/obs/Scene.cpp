@@ -31,6 +31,60 @@ Scene::Scene(Collection* collection, unsigned long long id, std::string name) :
 }
 
 Scene::~Scene() {
+	int papa;
+	papa++;
+}
+
+/*
+========================================================================================================
+	Builders
+========================================================================================================
+*/
+
+Scene*
+Scene::buildFromMemory(Collection* collection, Memory& memory) {
+	unsigned long long id = 0;
+	unsigned int namelen = 0;
+	char scene_name[MAX_NAME_LENGTH];
+
+	if(memory == nullptr)
+		return nullptr;
+
+	memory.read((byte*)&id, sizeof(unsigned long long));
+	memory.read((byte*)&namelen, sizeof(unsigned int));
+	scene_name[namelen] = 0;
+	memory.read(scene_name, namelen);
+
+	Scene* scene = new Scene(collection, id, scene_name);
+
+	return scene;
+}
+
+/*
+========================================================================================================
+	Serialization
+========================================================================================================
+*/
+
+Memory
+Scene::toMemory(size_t& size) const {
+	/*BLOCK
+		id (unsigned long long)
+		namelen (unsigned int)
+		name (namelen)
+	*/
+	unsigned int namelen = strlen(m_name.c_str());
+	size_t block_size = sizeof(unsigned long long) + sizeof(unsigned int) + namelen;
+
+	// TODO
+
+	Memory block(block_size);
+	block.write((byte*)&m_identifier, sizeof(unsigned long long));
+	block.write((byte*)&namelen, sizeof(unsigned int));
+	block.write((byte*)m_name.c_str(), namelen);
+
+	size += block_size;
+	return block;
 }
 
 /*

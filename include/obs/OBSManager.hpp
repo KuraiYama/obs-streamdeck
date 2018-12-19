@@ -1,8 +1,9 @@
 #pragma once
 
 /*
- * Qt Includes
+ * STL Includes
  */
+#include <fstream>
 #include <map>
 #include <vector>
 #include <memory>
@@ -17,6 +18,7 @@
 /*
  * Plugin Includes
  */
+#include "include/common/Memory.hpp"
 #include "include/obs/OBSEvents.hpp"
 #include "include/obs/Collection.hpp"
 //#include "include/obs/Scene.hpp"
@@ -46,7 +48,34 @@ class OBSManager {
 			*/
 			private:
 
-				std::fstream _internalFile;
+				std::fstream m_stream;
+
+			/*
+			============================================================================================
+				Constructors / Destructor
+			============================================================================================
+			*/
+			public:
+
+				FileLoader(const char* filename, std::ios_base::openmode mode = std::ios::in);
+
+				~FileLoader();
+
+			/*
+			============================================================================================
+				Instance Methods
+			============================================================================================
+			*/
+			public:
+
+				bool
+				open(const char* filename, std::ios_base::openmode mode);
+
+				size_t
+				read(char* buffer, size_t size);
+
+				size_t
+				write(char* buffer, size_t size);
 
 		};
 

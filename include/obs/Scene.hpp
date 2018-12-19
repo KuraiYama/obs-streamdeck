@@ -1,7 +1,7 @@
 #pragma once
 
 /*
- * Qt Includes
+ * STL Includes
  */
 #include <map>
 #include <vector>
@@ -16,6 +16,7 @@
 /*
  * Plugin Includes
  */
+#include "include/common/Memory.hpp"
 //#include "include/obs/Item.hpp"
 
 /*
@@ -37,6 +38,24 @@ class Collection;
 typedef std::vector<Scene*> Scenes;
 
 class Scene {
+
+	/*
+	====================================================================================================
+		Constants
+	====================================================================================================
+	*/
+	public:
+
+		static const unsigned int MAX_NAME_LENGTH = 99;
+
+	/*
+	====================================================================================================
+		Static Class Functions
+	====================================================================================================
+	*/
+	public:
+
+		static Scene* buildFromMemory(Collection* collection, Memory& memory);
 
 	/*
 	====================================================================================================
@@ -76,6 +95,9 @@ class Scene {
 	====================================================================================================
 	*/
 	public:
+
+		Memory
+		toMemory(size_t& size) const;
 
 		/*void
 		buildItems();*/

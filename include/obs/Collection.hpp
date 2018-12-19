@@ -1,7 +1,7 @@
 #pragma once
 
 /*
- * Qt Includes
+ * STL Includes
  */
 #include <map>
 #include <vector>
@@ -17,6 +17,7 @@
 /*
  * Plugin Includes
  */
+#include "include/common/Memory.hpp"
 #include "include/obs/Scene.hpp"
 
 /*
@@ -41,12 +42,21 @@ class Collection {
 
 	/*
 	====================================================================================================
+		Constants
+	====================================================================================================
+	*/
+	public:
+
+		static const unsigned int MAX_NAME_LENGTH = 99;
+
+	/*
+	====================================================================================================
 		Static Class Functions
 	====================================================================================================
 	*/
 	public:
 
-		static bool buildFromBuffer(Collection** collection, char* buffer, size_t size);
+		static Collection* buildFromMemory(Memory& memory);
 
 	/*
 	====================================================================================================
@@ -82,8 +92,8 @@ class Collection {
 		void
 		extractFromOBSScenes(unsigned long long& next_scene_identifier);
 
-		size_t
-		toBytes(char** buffer) const;
+		Memory
+		toMemory(size_t& size) const;
 
 		unsigned long long
 		id() const;

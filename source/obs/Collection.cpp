@@ -15,6 +15,8 @@ Collection::Collection(unsigned long long id, std::string name) :
 }
 
 Collection::~Collection() {
+	int papa;
+	papa++;
 }
 
 /*
@@ -23,40 +25,46 @@ Collection::~Collection() {
 ========================================================================================================
 */
 
-bool Collection::buildFromBuffer(Collection** collection, char* buffer, size_t size) {
+Collection*
+Collection::buildFromMemory(Memory& memory) {
+	unsigned long long id = 0;
+	unsigned int namelen = 0;
+	char collection_name[MAX_NAME_LENGTH];
+	short nb_scenes = 0;
 
-	char* start_buf = buffer;
-	char* end_buf = buffer + size;
+	if(memory == nullptr)
+		return nullptr;
 
-	// Extract id
-	long long identifier = -1;
-	memcpy(&identifier, buffer, sizeof(long long));
+	memory.read((byte*)&id, sizeof(unsigned long long));
+	memory.read((byte*)&namelen, sizeof(unsigned int));
+	collection_name[namelen] = 0;
+	memory.read(collection_name, namelen);
+	memory.read((byte*)&nb_scenes, sizeof(short));
 
-	// Extract name length
-	buffer += sizeof(long long);
-	if(buffer == end_buf) return false;
-	size_t nameSz = 0;
-	memcpy(&nameSz, buffer, sizeof(size_t));
+	Collection* collection = new Collection(id, collection_name);
 
-	// Extract name
-	buffer += sizeof(size_t);
-	if(buffer == end_buf) return false;
-	char* name = new char[nameSz];
-	memcpy(name, buffer, nameSz);
+	while(nb_scenes > 0) {
+		size_t block_size = 0;
+		memory.read((byte*)&block_size, sizeof(size_t));
+		void* end_of_block = memory.tell() + block_size;
+		Scene* scene = Scene::buildFromMemory(collection, memory);
+		if(scene != nullptr) {
+			collection->m_scenes.insert(
+				std::map<unsigned long long, std::shared_ptr<Scene>>::value_type(
+					scene->id(),
+					scene
+				)
+			);
+		}
+		if(memory.tell() != end_of_block) {
+			delete collection;
+			collection = nullptr;
+			nb_scenes = 0;
+		}
+		nb_scenes--;
+	}
 
-	*collection = new Collection(identifier, name);
-
-	// Extract scenes count
-	buffer += nameSz;
-	if(buffer == end_buf) return false;
-	size_t nb_scenes = 0;
-	memcpy(&nb_scenes, buffer, sizeof(size_t));
-
-	// Clean memory
-	delete [] name;
-	delete [] start_buf;
-
-	return buffer == end_buf;
+	return collection;
 }
 
 /*
@@ -65,19 +73,42 @@ bool Collection::buildFromBuffer(Collection** collection, char* buffer, size_t s
 ========================================================================================================
 */
 
-size_t
-Collection::toBytes(char** buffer) const {
-	if(buffer == nullptr)
-		return 0;
+Memory
+Collection::toMemory(size_t& size) const {
 
-	size_t name_len = m_name.length();
-	size_t total_size = sizeof(long long) + sizeof(size_t) + name_len;
-	*buffer = new char[total_size];
-	memcpy(*buffer, &m_identifier, sizeof(long long));
-	memcpy(*buffer+sizeof(long long), &name_len, sizeof(size_t));
-	memcpy(*buffer+sizeof(long long)+sizeof(size_t), m_name.c_str(), name_len);
+	std::vector<Memory> scene_blocks;
 
-	return total_size;
+	/*BLOCK
+		id (unsigned long long)
+		namelen (unsigned int)
+		name (namelen)
+		nbscenes (short)
+		foreach(scene)
+			block_size (size_t)
+			block_scene (block_size)
+	*/
+	unsigned int namelen = strlen(m_name.c_str());
+	size_t total_size = sizeof(unsigned long long) + sizeof(unsigned int) + namelen + sizeof(short);
+	short nb_scenes = m_scenes.size();
+	for(auto iter = m_scenes.begin(); iter != m_scenes.end(); iter++) {
+		total_size += sizeof(size_t);
+		scene_blocks.push_back(iter->second->toMemory(total_size));
+	}
+
+	Memory block(total_size);
+	block.write((byte*)&m_identifier, sizeof(unsigned long long));
+	block.write((byte*)&namelen, sizeof(unsigned int));
+	block.write((byte*)m_name.c_str(), namelen);
+	block.write((byte*)&nb_scenes, sizeof(short));
+
+	for(auto iter = scene_blocks.begin(); iter < scene_blocks.end(); iter++) {
+		size_t sc_size = iter->size();
+		block.write((byte*)&sc_size, sizeof(size_t));
+		block.write(*iter, iter->size());
+	}
+
+	size += total_size;
+	return block;
 }
 
 /*

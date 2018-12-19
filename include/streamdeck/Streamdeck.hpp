@@ -39,8 +39,6 @@ class Streamdeck;
 ========================================================================================================
 */
 
-typedef unsigned char byte;
-
 class StreamdeckClient : public QThread {
 
 	friend class Streamdeck;
