@@ -58,7 +58,8 @@ StreamdeckClient::~StreamdeckClient() {
 }
 
 Streamdeck::Streamdeck(StreamdeckClient& client) :
-	m_internalClient(client) {
+	m_internalClient(client),
+	m_cancelLock(0x0) {
 	connect(&m_internalClient, SIGNAL(disconnected(int)), this, SLOT(disconnected(int)));
 	connect(&m_internalClient, SIGNAL(read(QJsonDocument)), this, SLOT(read(QJsonDocument)));
 	connect(this, SIGNAL(write(QJsonDocument)), &m_internalClient, SLOT(write(QJsonDocument)), 
@@ -141,7 +142,7 @@ Streamdeck::buildJsonResult(const rpc_event event, const QString& resource, bool
 	QJsonObject response, result;
 	response["jsonrpc"] = "2.0";
 	response["id"] = (int)event;
-	result["resource"] = resource;
+	result["resourceId"] = resource;
 	if(event == rpc_event::NO_EVENT || event_mode)
 		result["_type"] = "EVENT";
 	response["result"] = result;
@@ -325,7 +326,6 @@ Streamdeck::sendCollectionsMessage(
 	const Collections& collections,
 	bool event_mode
 ) {
-	
 	QJsonObject response = buildJsonResult(event, QString::fromStdString(resource), event_mode);
 
 	QJsonArray data;
@@ -359,29 +359,6 @@ Streamdeck::sendCollectionMessage(
 	return true;
 }
 
-/*bool
-Streamdeck::sendCollectionSwitchMessage(const rpc_event event, const Collection* collection) {
-	if(m_authorizedEvents[event] == false)
-		return true;
-
-	if(m_subscribedResources.find(event) == m_subscribedResources.end())
-		return false;
-
-	log_custom(LOG_STREAMDECK) << "Switch collection message sent.";
-
-	QJsonObject response = buildJsonResult(rpc_event::RPC_ID_NO_EVENT,
-		QString::fromStdString(m_subscribedResources[event]));
-	QString id = QString::fromStdString(
-		std::to_string((reinterpret_cast<unsigned long long>(collection))));
-	QJsonObject data;
-	addToJsonObject(data, "id", id);
-	addToJsonObject(response["result"], "data", data);
-	bool result = false;
-	emit write(QJsonDocument(response));
-	updateEventAuthorizations(event, true);
-	return true;
-}
-*/
 
 
 /*bool
@@ -682,6 +659,11 @@ Streamdeck::lockEventAuthorizations(const rpc_event event) {
 			setEventAuthorizations(rpc_event::GET_ACTIVE_COLLECTION, 0x0);
 			break;
 
+		case rpc_event::COLLECTION_ADDED_SUBSCRIBE:
+		case rpc_event::COLLECTION_REMOVED_SUBSCRIBE:
+			m_cancelLock = 0x01;
+			break;
+
 		default:
 			break;
 	}
@@ -726,9 +708,10 @@ Streamdeck::unlockEventAuthorizations(const rpc_event event) {
 
 		case rpc_event::COLLECTION_ADDED_SUBSCRIBE:
 		case rpc_event::COLLECTION_REMOVED_SUBSCRIBE:
-			setEventAuthorizations(rpc_event::FETCH_COLLECTIONS_SCHEMA, EVENT_WRITE);
-			setEventAuthorizations(rpc_event::GET_COLLECTIONS, EVENT_WRITE);
-			setEventAuthorizations(rpc_event::GET_ACTIVE_COLLECTION, EVENT_WRITE);
+			setEventAuthorizations(rpc_event::FETCH_COLLECTIONS_SCHEMA, EVENT_WRITE | m_cancelLock);
+			setEventAuthorizations(rpc_event::GET_COLLECTIONS, EVENT_WRITE | m_cancelLock);
+			setEventAuthorizations(rpc_event::GET_ACTIVE_COLLECTION, EVENT_WRITE | m_cancelLock);
+			m_cancelLock = 0x0;
 			break;
 
 		case rpc_event::COLLECTION_SWITCHED_SUBSCRIBE:
@@ -845,6 +828,9 @@ Streamdeck::logEvent(const rpc_event event, const QJsonDocument& json_quest) {
 		case rpc_event::COLLECTION_REMOVED_SUBSCRIBE:
 		case rpc_event::COLLECTION_UPDATED_SUBSCRIBE:
 		case rpc_event::COLLECTION_SWITCHED_SUBSCRIBE:
+		case rpc_event::SCENE_ADDED_SUBSCRIBE:
+		case rpc_event::SCENE_REMOVED_SUBSCRIBE:
+		case rpc_event::SCENE_SWITCHED_SUBSCRIBE:
 			log_custom(0xffb520) << QString("Subscribe Event (%1)").arg((int)event).toStdString();
 			break;
 

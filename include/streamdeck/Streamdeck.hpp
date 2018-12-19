@@ -239,6 +239,8 @@ class Streamdeck : public QObject {
 
 		StreamdeckClient& m_internalClient;
 
+		byte m_cancelLock;
+
 	/*
 	====================================================================================================
 		Constructors / Destructors

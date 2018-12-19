@@ -11,12 +11,11 @@
 
 Collection::Collection(unsigned long long id, std::string name) :
 	m_identifier(id),
-	m_name(name) {
+	m_name(name),
+	m_activeScene(nullptr) {
 }
 
 Collection::~Collection() {
-	int papa;
-	papa++;
 }
 
 /*
@@ -156,6 +155,88 @@ Collection::extractFromOBSScenes(unsigned long long& next_scene_identifier) {
 			m_scenes.erase(scene_it->second->id());
 		}
 	}
+}
+
+obs::scene_event
+Collection::updateScenes(
+	unsigned long long& next_scene_identifier,
+	std::shared_ptr<Scene> scene_updated
+) {
+	obs::scene_event event = obs::scene_event::SCENES_LIST_BUILD;
+
+	std::map<std::string, std::shared_ptr<Scene>> scenes;
+	for(auto iter = m_scenes.begin(); iter != m_scenes.end(); iter++) {
+		scenes[iter->second->name()] = iter->second;
+	}
+
+	obs_frontend_source_list obs_scenes = {};
+	obs_frontend_get_scenes(&obs_scenes);
+
+	size_t j = -1;
+	for(size_t i = 0; i < obs_scenes.sources.num; i++) {
+		std::string scene_name(obs_source_get_name(obs_scenes.sources.array[i]));
+		auto iter = scenes.find(scene_name);
+
+		if(iter == scenes.end()) {
+			j = i;
+		}
+		else {
+			scenes.erase(iter);
+		}
+		++i;
+	}
+
+	if(j != -1) {
+		// New scenes
+		if(scenes.size() == 0) {
+			++next_scene_identifier;
+			m_scenes.insert(
+				std::map<unsigned long long, std::shared_ptr<Scene>>::value_type(
+					next_scene_identifier,
+					new Scene(this, next_scene_identifier, obs_scenes.sources.array[j])
+				)
+			);
+			scene_updated = m_scenes.find(next_scene_identifier)->second;
+			m_activeScene = nullptr;
+			event = obs::scene_event::SCENE_ADDED;
+		}
+		// Update collection
+		else if(scenes.size() == 1) {
+			scene_updated = scenes.begin()->second;
+			scene_updated->source(obs_scenes.sources.array[j]);
+			event = obs::scene_event::SCENE_RENAMED;
+		}
+	}
+	else {
+		scene_updated = scenes.begin()->second;
+		m_scenes.erase(scenes.begin()->second->id());
+		m_activeScene = nullptr;
+		event = obs::scene_event::SCENE_REMOVED;
+	}
+
+	obs_frontend_source_list_free(&obs_scenes);
+	return event;
+}
+
+Scene*
+Collection::activeScene() const {
+	const char* current_scene = obs_source_get_name(obs_frontend_get_current_scene());
+
+	if(m_activeScene) {
+		if(m_activeScene->name().compare(current_scene) == 0)
+			return m_activeScene;
+		m_activeScene = nullptr;
+	}
+
+	auto collection_it = m_scenes.begin();
+	while(collection_it != m_scenes.end() && m_activeScene == nullptr) {
+		if(collection_it->second->name().compare(current_scene) == 0) {
+			m_activeScene = collection_it->second.get();
+		}
+		collection_it++;
+	}
+
+	return m_activeScene;
 }
 
 /*

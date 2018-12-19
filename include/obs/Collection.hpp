@@ -18,6 +18,7 @@
  * Plugin Includes
  */
 #include "include/common/Memory.hpp"
+#include "include/obs/OBSEvents.hpp"
 #include "include/obs/Scene.hpp"
 
 /*
@@ -71,6 +72,8 @@ class Collection {
 
 		unsigned long long m_identifier;
 
+		mutable Scene* m_activeScene;
+
 	/*
 	====================================================================================================
 		Constructors / Destructor
@@ -91,6 +94,12 @@ class Collection {
 
 		void
 		extractFromOBSScenes(unsigned long long& next_scene_identifier);
+
+		obs::scene_event
+		updateScenes(unsigned long long& next_scene_identifier, std::shared_ptr<Scene> scene_updated);
+
+		Scene*
+		activeScene() const;
 
 		Memory
 		toMemory(size_t& size) const;

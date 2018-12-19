@@ -17,6 +17,7 @@
 
 Scene::Scene(Collection* collection, unsigned long long id, obs_source_t* source) :
 	m_parentCollection(collection),
+	m_identifier(id),
 	m_source(source) {
 	m_name = obs_source_get_name(m_source);
 	m_scene = obs_scene_from_source(m_source);
@@ -31,8 +32,6 @@ Scene::Scene(Collection* collection, unsigned long long id, std::string name) :
 }
 
 Scene::~Scene() {
-	int papa;
-	papa++;
 }
 
 /*
@@ -134,6 +133,7 @@ Scene::scene() const {
 void
 Scene::source(obs_source_t* obs_source) {
 	m_source = obs_source;
+	m_name = obs_source_get_name(m_source);
 	m_scene = obs_scene_from_source(obs_source);
 }
 

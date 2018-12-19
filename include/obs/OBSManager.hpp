@@ -131,6 +131,9 @@ class OBSManager {
 		void
 		loadScenes(Collection& collection);
 
+		obs::scene_event
+		updateScenes(Collection& collection, std::shared_ptr<Scene>& scene_updated);
+
 		Collection*
 		activeCollection() const;
 

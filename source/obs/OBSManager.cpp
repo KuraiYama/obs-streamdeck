@@ -294,6 +294,11 @@ OBSManager::loadScenes(Collection& collection) {
 	collection.extractFromOBSScenes(_last_registered_id);
 }
 
+obs::scene_event
+OBSManager::updateScenes(Collection& collection, std::shared_ptr<Scene>& scene_updated) {
+	return collection.updateScenes(_last_registered_id, scene_updated);
+}
+
 /*Collection*
 OBSManager::getCollectionByName(const std::string& name) {
 	Collection* collection = nullptr;

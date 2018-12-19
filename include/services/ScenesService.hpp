@@ -31,21 +31,12 @@ class ScenesService : public ServiceT<ScenesService> {
 
 	/*
 	====================================================================================================
-		Instance Data Members
-	====================================================================================================
-	*/
-	private:
-
-		CollectionManager* m_collectionManager;
-
-	/*
-	====================================================================================================
 		Constructors / Destructor
 	====================================================================================================
 	*/
 	public:
 
-		ScenesService(StreamdeckManager* streamdeckManager, CollectionManager* collectionManager);
+		ScenesService();
 
 		virtual ~ScenesService();
 
@@ -57,6 +48,21 @@ class ScenesService : public ServiceT<ScenesService> {
 	private:
 
 		bool
-		onGetScenes(const rpc_event_data& data);
+		onScenesListChanged();
+
+		bool
+		subscribeSceneChange(const rpc_event_data& data);
+
+		bool
+		onSceneAdded(const Scene& scene);
+
+		bool
+		onSceneRemoved(const Scene& scene);
+
+		bool
+		onSceneUpdated(const Scene& scene);
+
+		/*bool
+		onGetScenes(const rpc_event_data& data);*/
 
 };
