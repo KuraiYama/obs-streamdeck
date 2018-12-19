@@ -222,6 +222,8 @@ CollectionsService::onGetActiveCollection(const rpc_event_data& data) {
 	rpc_adv_response<CollectionPtr> response = response_collection(&data, "onGetActiveCollection");
 	if(data.event == Streamdeck::rpc_event::GET_ACTIVE_COLLECTION) {
 		response.event = Streamdeck::rpc_event::GET_ACTIVE_COLLECTION;
+		logInfo("Active Collection required.");
+
 		if(!checkResource(&data, QRegExp("activeCollection"))) {
 			logWarning("Unknown resource for activeCollection.");
 		}

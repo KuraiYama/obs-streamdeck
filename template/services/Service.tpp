@@ -193,15 +193,15 @@ ServiceT<T>::response_scene(const rpc_event_data* data, const char* method) cons
 	};
 }
 
-/*template<typename T>
-rpc_adv_response<std::tuple<Collection*, Scenes>>
+template<typename T>
+rpc_adv_response<Scenes>
 ServiceT<T>::response_scenes(const rpc_event_data* data, const char* method) const {
 	return
-		rpc_adv_response<std::tuple<Collection*, Scenes>>{
+		rpc_adv_response<Scenes>{
 			{data, Streamdeck::rpc_event::NO_EVENT, name(), method},
-			std::tuple<Collection*, Scenes>(nullptr, Scenes())
+			{ nullptr, std::vector<ScenePtr>() }
 	};
-}*/
+}
 
 /*
 ========================================================================================================

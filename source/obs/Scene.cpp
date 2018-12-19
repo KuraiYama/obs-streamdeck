@@ -137,6 +137,11 @@ Scene::source(obs_source_t* obs_source) {
 	m_scene = obs_scene_from_source(obs_source);
 }
 
+CollectionPtr
+Scene::collection() const {
+	return m_parentCollection;
+}
+
 /*Items
 Scene::items() const {
 	Items items;

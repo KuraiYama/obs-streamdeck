@@ -208,8 +208,8 @@ class Streamdeck : public QObject {
 		static StreamdeckClient*
 		createClient(qintptr socket_descriptor);
 
-		//static QJsonObject
-		//buildJsonResponse(const rpc_event event, const QString& resourceId);
+		static QJsonObject
+		buildJsonResponse(const rpc_event event, const QString& resource, bool event_mode = false);
 
 		static QJsonObject
 		buildJsonResult(const rpc_event event, const QString& resource, bool event_mode = false);
@@ -319,6 +319,14 @@ class Streamdeck : public QObject {
 			const rpc_event event,
 			const std::string& resource,
 			const CollectionPtr& collection,
+			bool event_mode = false
+		);
+
+		bool
+		sendScenesMessage(
+			const rpc_event event,
+			const std::string& resource,
+			const Scenes& scenes,
 			bool event_mode = false
 		);
 

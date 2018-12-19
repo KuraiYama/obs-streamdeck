@@ -196,6 +196,19 @@ StreamdeckManager::setCollection(Streamdeck* client, const rpc_adv_response<Coll
 }
 
 bool
+StreamdeckManager::setScenes(Streamdeck* client, const rpc_adv_response<Scenes>& response) {
+	QString resource = response.request != nullptr ?
+		QString("%1.%2")
+		.arg(response.request->serviceName.c_str())
+		.arg(response.request->method.c_str()) :
+		QString("%1.%2")
+		.arg(response.serviceName)
+		.arg(response.method);
+
+	return client->sendScenesMessage(response.event, resource.toStdString(), response.data);
+}
+
+bool
 StreamdeckManager::setScene(Streamdeck* client, const rpc_adv_response<ScenePtr>& response) {
 	QString resource = response.request != nullptr ?
 		QString("%1.%2")

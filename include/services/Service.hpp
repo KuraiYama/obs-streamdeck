@@ -160,11 +160,11 @@ class ServiceT : private Service,
 		rpc_adv_response<CollectionPtr>
 		response_collection(const rpc_event_data* data, const char* method) const;
 
+		rpc_adv_response<Scenes>
+		response_scenes(const rpc_event_data* data, const char* method) const;
+
 		rpc_adv_response<ScenePtr>
 		response_scene(const rpc_event_data* data, const char* method) const;
-
-		/*rpc_adv_response<std::pair<Collection*, Scenes>>
-		response_scenes(const rpc_event_data* data, const char* method) const;*/
 
 		void
 		setupEvent(obs_frontend_event event, obs_frontend_callback handler);

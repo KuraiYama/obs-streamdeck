@@ -266,7 +266,9 @@ Collection::id() const {
 Scenes
 Collection::scenes() const {
 	Scenes scenes;
+	scenes._collection = this;
 	for(auto iter = m_scenes.begin(); iter != m_scenes.end(); iter++)
-		scenes.push_back(const_cast<Scene*>(iter->second.get()));
+		if(iter->second->collection() == this)
+			scenes._scenes.push_back(const_cast<Scene*>(iter->second.get()));
 	return scenes;
 }

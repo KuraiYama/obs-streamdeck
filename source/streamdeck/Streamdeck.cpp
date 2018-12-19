@@ -153,16 +153,16 @@ Streamdeck::buildJsonResult(const rpc_event event, const QString& resource, bool
 	return response;
 }
 
-/*QJsonObject
-Streamdeck::buildJsonResponse(const rpc_event event, const QString& resource) {
+QJsonObject
+Streamdeck::buildJsonResponse(const rpc_event event, const QString& resource, bool event_mode) {
 	QJsonObject response;
 	response["jsonrpc"] = "2.0";
 	response["id"] = (int)event;
-	response["resource"] = resource;
-	if(event == rpc_event::NO_EVENT)
+	response["resourceId"] = resource;
+	if(event == rpc_event::NO_EVENT || event_mode)
 		response["_type"] = "EVENT";
 	return response;
-}*/
+}
 
 void
 Streamdeck::addToJsonObject(QJsonObject& json_object, QString key, QJsonValue&& value) {
@@ -296,17 +296,23 @@ Streamdeck::sendSchemaMessage(
 	}
 #ifdef USE_SCHEMA
 	
-	QJsonObject response = buildJsonResult(ev, QString::fromStdString(resource));
-
-	if(add_event) addToJsonObject(response["result"], "_type", "EVENT");
+	QJsonObject response = buildJsonResult(ev, QString::fromStdString(res), event_mode);
 
 	QJsonArray data;
 	for(auto iter = collections.begin(); iter < collections.end(); iter++) {
 		QJsonObject collection;
 		addToJsonObject(collection, "name", (*iter)->name().c_str());
 		addToJsonObject(collection, "id", QString("%1").arg((*iter)->id()));
-		QJsonArray sources;
-		addToJsonObject(collection, "sources", sources);
+		QJsonArray scenes_json;
+		Scenes scenes = (*iter)->scenes();
+		for(auto iter_sc = scenes._scenes.begin(); iter_sc < scenes._scenes.end(); iter_sc++) {
+			QJsonObject scene;
+			addToJsonObject(scene, "id", QString("%1").arg((*iter_sc)->id()));
+			addToJsonObject(scene, "name", QString::fromStdString((*iter_sc)->name()));
+
+			addToJsonArray(scenes_json, scene);
+		}
+		addToJsonObject(collection, "scenes", scenes_json);
 		// TODO
 		addToJsonArray(data, collection);
 	}
@@ -314,7 +320,7 @@ Streamdeck::sendSchemaMessage(
 
 	log_custom(LOG_STREAMDECK) << QString("Send schema.").toStdString();
 
-	send(event, QJsonDocument(response));
+	send(ev, QJsonDocument(response));
 	return true;
 #else
 
@@ -364,146 +370,49 @@ Streamdeck::sendCollectionMessage(
 }
 
 bool
+Streamdeck::sendScenesMessage(
+	const rpc_event event,
+	const std::string& resource,
+	const Scenes& scenes,
+	bool event_mode
+) {
+	QJsonObject response = buildJsonResponse(event, QString::fromStdString(resource), event_mode);
+	QString collection_id = "";
+	if(scenes._collection != nullptr)
+		collection_id = QString("%1").arg(scenes._collection->id());
+	addToJsonObject(response, "collection", collection_id);
+
+	QJsonArray result;
+	for(auto iter = scenes._scenes.begin(); iter < scenes._scenes.end(); iter++) {
+		QJsonObject scene;
+		addToJsonObject(scene, "id", QString("%1").arg((*iter)->id()));
+		addToJsonObject(scene, "name", QString::fromStdString((*iter)->name()));
+
+		addToJsonArray(result, scene);
+	}
+	addToJsonObject(response, "result", result);
+
+	log_custom(LOG_STREAMDECK) << QString("Send scenes.").toStdString();
+
+	send(event, QJsonDocument(response));
+	return true;
+}
+
+bool
 Streamdeck::sendSceneMessage(
 	const rpc_event event,
 	const std::string& resource,
 	const ScenePtr& collection,
 	bool event_mode
 ) {
-	/*QJsonObject response = buildJsonResult(event, QString::fromStdString(resource), event_mode);
+	QJsonObject response = buildJsonResult(event, QString::fromStdString(resource), event_mode);
 	addToJsonObject(response["result"], "id", QString("%1").arg(collection->id()));
 	addToJsonObject(response["result"], "name", collection->name().c_str());
 
 	log_custom(LOG_STREAMDECK) << QString("Send collection (Event %1).").arg((int)event).toStdString();
-	send(event, QJsonDocument(response));*/
+	send(event, QJsonDocument(response));
 	return true;
 }
-
-/*bool
-Streamdeck::sendCollectionsSchema(const rpc_event event, const Collections& collections) {
-
-	if(m_authorizedEvents[event] == false)
-		return true;
-
-	rpc_event event_to_send = event;
-	if(m_subscribedResources.find(event_to_send) == m_subscribedResources.end())
-		return false;
-
-	log_custom(LOG_STREAMDECK) << "Collection schema sent.";
-
-	std::string resource = m_subscribedResources[event_to_send];
-
-	if(event_to_send == rpc_event::RPC_ID_FETCH_COLLECTIONS_SCHEMA)
-		event_to_send = rpc_event::RPC_ID_GET_COLLECTIONS;
-
-	QJsonObject response = buildJsonResult(event_to_send, QString::fromStdString(resource));
-
-	addToJsonObject(response["result"], "_type", "EVENT");
-	QJsonArray data_collections;
-	for(auto iter_cl = collections.begin(); iter_cl < collections.end(); iter_cl++) {
-
-		Collection* collection_ptr = *iter_cl;
-
-		QJsonObject collection_json;
-		addToJsonObject(collection_json, "name", collection_ptr->name().c_str());
-		addToJsonObject(collection_json, "id", collection_ptr->id().c_str());
-
-		QJsonArray data_scenes;
-		Scenes scenes = collection_ptr->scenes();
-		for(auto iter_sc = scenes.begin(); iter_sc < scenes.end(); iter_sc++) {
-
-			Scene* scene_ptr = *iter_sc;
-
-			QJsonObject scene_json;
-			addToJsonObject(scene_json, "name", scene_ptr->name().c_str());
-			addToJsonObject(scene_json, "id", scene_ptr->id().c_str());
-
-			QJsonArray data_items;
-			Items items = scene_ptr->items();
-			for(auto iter_it = items.begin(); iter_it < items.end(); iter_it++) {
-
-				Item* item_ptr = *iter_it;
-
-				QJsonObject item_json;
-				addToJsonObject(item_json, "sceneItemId", item_ptr->id());
-				addToJsonObject(item_json, "sourceId", item_ptr->name().c_str());
-				addToJsonObject(item_json, "visible", item_ptr->visible());
-
-				addToJsonArray(data_items, item_json);
-			}
-			addToJsonObject(scene_json, "sceneItems", data_items);
-
-			addToJsonArray(data_scenes, scene_json);
-			
-		}
-		addToJsonObject(collection_json, "scenes", data_scenes);
-
-		addToJsonArray(data_collections, collection_json);
-	}
-	addToJsonObject(response["result"], "data", data_collections);
-
-	bool result = false;
-	emit this->write(QJsonDocument(response));
-
-	updateEventAuthorizations(rpc_event::RPC_ID_GET_COLLECTIONS, true);
-
-	return true;
-}*/
-
-/*bool
-Streamdeck::sendScenesMessage(const rpc_event event, const std::string& resource,
-		const Collection* collection, const Scenes& scenes) {
-
-	if(m_authorizedEvents[event] == false)
-		return true;
-
-	if(collection == nullptr)
-		return true;
-
-	log_custom(LOG_STREAMDECK) << "Scenes sent.";
-
-	QJsonObject response = buildJsonResponse(event, QString::fromStdString(resource));
-
-	addToJsonObject(response, "collection", collection->name().c_str());
-
-	QJsonArray data;
-	for(auto iter_sc = scenes.begin(); iter_sc < scenes.end(); iter_sc++) {
-
-		Scene* scene_ptr = *iter_sc;
-
-		QJsonObject scene_json;
-		addToJsonObject(scene_json, "name", scene_ptr->name().c_str());
-		addToJsonObject(scene_json, "id", scene_ptr->id().c_str());
-
-		QJsonArray items_json;
-		
-		Items items = scene_ptr->items();
-		for(auto iter_it = items.begin(); iter_it < items.end(); iter_it++) {
-			Item* item_ptr = *iter_it;
-
-			QJsonObject item_json;
-			addToJsonObject(item_json, "sceneItemId", item_ptr->id());
-			addToJsonObject(item_json, "sourceId", item_ptr->completeName().c_str());
-			addToJsonObject(item_json, "visible", item_ptr->visible());
-			addToJsonObject(item_json, "sceneNodeType", item_ptr->type());
-
-			addToJsonArray(items_json, item_json);
-		}
-
-		// We can put it in "items" or "nodes"
-		//addToJsonObject(scene_json, "nodes", items_json);
-		addToJsonObject(scene_json, "items", items_json);
-		addToJsonArray(data, scene_json);
-	}
-	addToJsonObject(response, "result", data);
-
-	bool result = false;
-	emit this->write(QJsonDocument(response));
-
-	updateEventAuthorizations(rpc_event::RPC_ID_GET_COLLECTIONS, true);
-
-	return true;
-}*/
 
 /*
 ========================================================================================================
@@ -668,8 +577,10 @@ Streamdeck::lockEventAuthorizations(const rpc_event event) {
 
 		case rpc_event::FETCH_COLLECTIONS_SCHEMA:
 		case rpc_event::GET_COLLECTIONS:
+		case rpc_event::GET_SCENES:
 			setEventAuthorizations(rpc_event::FETCH_COLLECTIONS_SCHEMA, EVENT_WRITE);
 			setEventAuthorizations(rpc_event::GET_COLLECTIONS, EVENT_WRITE);
+			setEventAuthorizations(rpc_event::GET_SCENES, EVENT_WRITE);
 			setEventAuthorizations(rpc_event::COLLECTION_ADDED_SUBSCRIBE, 0x0);
 			setEventAuthorizations(rpc_event::COLLECTION_REMOVED_SUBSCRIBE, 0x0);
 			setEventAuthorizations(rpc_event::COLLECTION_UPDATED_SUBSCRIBE, 0x0);
@@ -713,8 +624,10 @@ Streamdeck::unlockEventAuthorizations(const rpc_event event) {
 			break;
 
 		case rpc_event::GET_COLLECTIONS:
+		case rpc_event::GET_SCENES:
 			setEventAuthorizations(rpc_event::FETCH_COLLECTIONS_SCHEMA, EVENT_READ_WRITE);
 			setEventAuthorizations(rpc_event::GET_COLLECTIONS, EVENT_READ_WRITE);
+			setEventAuthorizations(rpc_event::GET_SCENES, EVENT_READ_WRITE);
 			setEventAuthorizations(rpc_event::COLLECTION_ADDED_SUBSCRIBE, EVENT_READ_WRITE);
 			setEventAuthorizations(rpc_event::COLLECTION_REMOVED_SUBSCRIBE, EVENT_READ_WRITE);
 			setEventAuthorizations(rpc_event::COLLECTION_UPDATED_SUBSCRIBE, EVENT_READ_WRITE);
@@ -847,9 +760,9 @@ Streamdeck::logEvent(const rpc_event event, const QJsonDocument& json_quest) {
 			log_custom(0xffaa9d) << "Fetching collections schema";
 			break;
 
-		/*case rpc_event::RPC_ID_GET_SCENES:
+		case rpc_event::GET_SCENES:
 			log_custom(0xebdcd9) << "Get scenes";
-			break;*/
+			break;
 
 		case rpc_event::GET_RECORD_STREAM_STATE:
 			log_custom(0xed65e6) << "Get Recording and Streaming State";

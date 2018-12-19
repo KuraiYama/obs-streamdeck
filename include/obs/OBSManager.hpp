@@ -137,6 +137,9 @@ class OBSManager {
 		Collection*
 		activeCollection() const;
 
+		Collection*
+		collection(unsigned long long id) const;
+
 		Collections
 		collections() const;
 

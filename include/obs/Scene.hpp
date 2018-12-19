@@ -37,7 +37,10 @@ class Collection;
 
 typedef Scene* ScenePtr;
 
-typedef std::vector<ScenePtr> Scenes;
+typedef struct Scenes {
+	const Collection* _collection;
+	std::vector<ScenePtr> _scenes;
+} Scenes;
 
 class Scene {
 
@@ -115,6 +118,9 @@ class Scene {
 
 		obs_scene_t*
 		scene() const;
+
+		Collection*
+		collection() const;
 
 		/*Items
 		items() const;*/

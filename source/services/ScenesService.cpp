@@ -28,8 +28,8 @@ ScenesService::ScenesService() :
 	this->setupEvent<const rpc_event_data&>(Streamdeck::rpc_event::SCENE_SWITCHED_SUBSCRIBE,
 		&ScenesService::subscribeSceneChange);
 
-	/*this->setupEvent<const rpc_event_data&>(Streamdeck::rpc_event::RPC_ID_GET_SCENES,
-		&ScenesService::onGetScenes);*/
+	this->setupEvent<const rpc_event_data&>(Streamdeck::rpc_event::GET_SCENES,
+		&ScenesService::onGetScenes);
 }
 
 ScenesService::~ScenesService() {
@@ -153,35 +153,49 @@ ScenesService::subscribeSceneChange(const rpc_event_data& data) {
 	return false;
 }
 
-/*bool
+bool
 ScenesService::onGetScenes(const rpc_event_data& data) {
 
-	rpc_adv_response<std::tuple<Collection*,Scenes>> response = response_scenes(&data, "onGetScenes");
+	rpc_adv_response<Scenes> response = response_scenes(&data, "onGetScenes");
 
-	if(data.event == Streamdeck::rpc_event::RPC_ID_GET_SCENES) {
-		response.event = Streamdeck::rpc_event::RPC_ID_GET_SCENES;
-		if(data.serviceName.compare("ScenesService") == 0 && data.method.compare("getScenes") == 0) {
-			
-			if(!data.args.empty() && data.args[0].canConvert<QString>()) {
-				QString collection = data.args[0].toString();
-				Collection* collection_ptr = nullptr;
-				if(collection.compare("") == 0) {
-					collection_ptr = m_collectionManager->activeCollection();
-				}
-				else {
-					collection_ptr = m_collectionManager->getCollectionByName(collection.toStdString());
-				}
+	if(data.event == Streamdeck::rpc_event::GET_SCENES) {
+		response.event = Streamdeck::rpc_event::GET_SCENES;
+		logInfo("Scenes list required.");
 
-				if(collection_ptr != nullptr) {
-					response.data = std::tuple<Collection*, Scenes>(collection_ptr, 
-						collection_ptr->scenes());
-				}
-
-				return streamdeckManager()->commit_to(response, &StreamdeckManager::setScenes);
-			}
-
+		if(!checkResource(&data, QRegExp("getScenes"))) {
+			logWarning("Unknown resource for activeCollection.");
 		}
+
+		if(data.args.size() <= 0) {
+			logError("No argument provided by get_scenes.");
+			return false;
+		}
+
+		Collection* collection = nullptr;
+		if(data.args[0].compare("") == 0) {
+#if defined(COMPLETE_MODE)
+			Collections collections = obsManager()->collections();
+			bool result = true;
+			for(auto iter = collections.begin(); iter < collections.end() && result; iter++) {
+				response.data = (*iter)->scenes();
+				result &= streamdeckManager()->commit_to(response, &StreamdeckManager::setScenes);
+			}
+			return result;
+#else
+			collection = obsManager()->activeCollection();
+#endif
+		}
+		else {
+			unsigned long long id = QString(data.args[0].toString()).toLongLong();
+			collection = obsManager()->collection(id);
+		}
+
+		if(collection != nullptr)
+			response.data = collection->scenes();
+
+		return streamdeckManager()->commit_to(response, &StreamdeckManager::setScenes);
 	}
 
+	logError("getScenes not called by GET_SCENES");
 	return false;
-}*/
+}

@@ -343,6 +343,16 @@ OBSManager::activeCollection() const {
 	return m_activeCollection;
 }
 
+Collection*
+OBSManager::collection(unsigned long long id) const {
+	Collection* collection_ptr = nullptr;
+	auto collection_it = m_collections.find(id);
+	if(collection_it != m_collections.end())
+		collection_ptr = collection_it->second.get();
+
+	return collection_ptr;
+}
+
 bool
 OBSManager::isLoadingCollections() const {
 	return m_isLoadingCollections;
