@@ -157,8 +157,11 @@ class ServiceT : private Service,
 		rpc_adv_response<Collections>
 		response_collections(const rpc_event_data* data, const char* method) const;
 
-		rpc_adv_response<Collection*>
+		rpc_adv_response<CollectionPtr>
 		response_collection(const rpc_event_data* data, const char* method) const;
+
+		rpc_adv_response<ScenePtr>
+		response_scene(const rpc_event_data* data, const char* method) const;
 
 		/*rpc_adv_response<std::pair<Collection*, Scenes>>
 		response_scenes(const rpc_event_data* data, const char* method) const;*/

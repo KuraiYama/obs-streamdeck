@@ -239,8 +239,6 @@ class Streamdeck : public QObject {
 
 		StreamdeckClient& m_internalClient;
 
-		byte m_cancelLock;
-
 	/*
 	====================================================================================================
 		Constructors / Destructors
@@ -324,23 +322,15 @@ class Streamdeck : public QObject {
 			bool event_mode = false
 		);
 
-		/*bool
-		sendActiveCollectionMessage(
+		bool
+		sendSceneMessage(
 			const rpc_event event,
-			const std::string& resourceId,
-			const Collection* collection
+			const std::string& resource,
+			const ScenePtr& collection,
+			bool event_mode = false
 		);
 
-		bool
-		sendCollectionSwitchMessage(const rpc_event event, const Collection* collection);
-
-		
-
-		bool
-		sendCollectionsSchema(
-			const rpc_event event,
-			const Collections& collections
-		);
+		/*
 
 		bool
 		sendScenesMessage(

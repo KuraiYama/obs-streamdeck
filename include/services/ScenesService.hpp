@@ -62,6 +62,9 @@ class ScenesService : public ServiceT<ScenesService> {
 		bool
 		onSceneUpdated(const Scene& scene);
 
+		bool
+		onSceneSwitched();
+
 		/*bool
 		onGetScenes(const rpc_event_data& data);*/
 

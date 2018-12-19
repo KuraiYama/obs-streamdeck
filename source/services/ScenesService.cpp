@@ -16,6 +16,9 @@ ScenesService::ScenesService() :
 	this->setupEvent(obs_frontend_event::OBS_FRONTEND_EVENT_SCENE_LIST_CHANGED,
 		&ScenesService::onScenesListChanged);
 
+	this->setupEvent(obs_frontend_event::OBS_FRONTEND_EVENT_SCENE_CHANGED,
+		&ScenesService::onSceneSwitched);
+
 	this->setupEvent<const rpc_event_data&>(Streamdeck::rpc_event::SCENE_ADDED_SUBSCRIBE,
 		&ScenesService::subscribeSceneChange);
 
@@ -44,35 +47,76 @@ ScenesService::onScenesListChanged() {
 	obs::scene_event evt = obsManager()->updateScenes(*obsManager()->activeCollection(), scene_updated);
 	switch(evt) {
 		case obs::scene_event::SCENE_ADDED:
-			onSceneAdded(*scene_updated.get());
+			return onSceneAdded(*scene_updated.get());
 			break;
 		case obs::scene_event::SCENE_REMOVED:
-			onSceneRemoved(*scene_updated.get());
+			return onSceneRemoved(*scene_updated.get());
 			break;
 		case obs::scene_event::SCENE_RENAMED:
-			onSceneUpdated(*scene_updated.get());
+			return onSceneUpdated(*scene_updated.get());
 			break;
 	}
 	return true;
 }
 
-/*bool
+bool
 ScenesService::onSceneSwitched() {
-}*/
+	// During loading, we don't send anything to the streamdecks
+	if(obsManager()->isLoadingCollections())
+		return true;
+
+	Collection* current_collection = obsManager()->activeCollection();
+
+	// No switch when current collection is not computed
+	if(current_collection == nullptr)
+		return true;
+
+	Scene* scene = current_collection->activeScene();
+	logInfo(QString("Scene switched to %1.")
+		.arg(scene->name().c_str())
+		.toStdString()
+	);
+
+	rpc_adv_response<ScenePtr> response = response_scene(nullptr, "onSceneSwitched");
+	response.event = Streamdeck::rpc_event::SCENE_SWITCHED_SUBSCRIBE;
+	response.data = scene;
+
+	return streamdeckManager()->commit_all(response, &StreamdeckManager::setEvent);
+}
 
 bool
 ScenesService::onSceneAdded(const Scene& scene) {
-	logInfo(QString("Scene %1 added").arg(scene.name().c_str()).toStdString());
+	logInfo(QString("Scene %1 (%2) added.")
+		.arg(scene.name().c_str())
+		.arg(scene.id())
+		.toStdString()
+	);
+
+	rpc_adv_response<void> response = response_void(nullptr, "onSceneAdded");
+	response.event = Streamdeck::rpc_event::SCENE_ADDED_SUBSCRIBE;
+
+	return streamdeckManager()->commit_all(response, &StreamdeckManager::setEvent);
 }
 
 bool
 ScenesService::onSceneRemoved(const Scene& scene) {
-	logInfo(QString("Scene %1 removed").arg(scene.name().c_str()).toStdString());
+	logInfo(QString("Scene %1 (%2) removed.")
+		.arg(scene.name().c_str())
+		.arg(scene.id())
+		.toStdString()
+	);
+
+	rpc_adv_response<void> response = response_void(nullptr, "onSceneRemoved");
+	response.event = Streamdeck::rpc_event::SCENE_REMOVED_SUBSCRIBE;
+
+	return streamdeckManager()->commit_all(response, &StreamdeckManager::setEvent);
 }
 
 bool
 ScenesService::onSceneUpdated(const Scene& scene) {
 	logInfo(QString("Scene renamed to %1").arg(scene.name().c_str()).toStdString());
+	// TODO
+	return true;
 }
 
 /*

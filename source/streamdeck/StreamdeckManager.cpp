@@ -195,20 +195,20 @@ StreamdeckManager::setCollection(Streamdeck* client, const rpc_adv_response<Coll
 	return client->sendCollectionMessage(response.event, resource.toStdString(), response.data);
 }
 
-/*bool StreamdeckManager::setCollectionSwitched(
-	Streamdeck* client,
-	const rpc_adv_response<Collection*>& response
-) {
-	return client->sendCollectionSwitchMessage(response.event, response.data);
-}
-
-
-
 bool
-StreamdeckManager::fetchCollections(Streamdeck* client, const rpc_adv_response<Collections>& response) {
-	return client->sendCollectionsSchema(response.event, response.data);
+StreamdeckManager::setScene(Streamdeck* client, const rpc_adv_response<ScenePtr>& response) {
+	QString resource = response.request != nullptr ?
+		QString("%1.%2")
+		.arg(response.request->serviceName.c_str())
+		.arg(response.request->method.c_str()) :
+		QString("%1.%2")
+		.arg(response.serviceName)
+		.arg(response.method);
+
+	return client->sendSceneMessage(response.event, resource.toStdString(), response.data);
 }
 
+/*
 bool
 StreamdeckManager::setScenes(
 	Streamdeck* client,

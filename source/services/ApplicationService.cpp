@@ -193,6 +193,7 @@ ApplicationService::disconnectStreamOutputHandler() {
 			signal_handler_disconnect(signal_handler, "reconnect_success",
 				ApplicationService::onStreamReconnected, this);
 		}
+		obs_output_release(m_streamOutput);
 		m_streamOutput = nullptr;
 	}
 }
@@ -211,6 +212,7 @@ ApplicationService::disconnectRecordOutputHandler() {
 			signal_handler_disconnect(signal_handler, "stop",
 				ApplicationService::onRecordStopped, this);
 		}
+		obs_output_release(m_recordOutput);
 		m_recordOutput = nullptr;
 	}
 }
@@ -259,6 +261,8 @@ ApplicationService::onApplicationLoaded() {
 bool
 ApplicationService::onApplicationExit() {
 	obsManager()->saveCollections();
+	disconnectStreamOutputHandler();
+	disconnectRecordOutputHandler();
 	return true;
 }
 

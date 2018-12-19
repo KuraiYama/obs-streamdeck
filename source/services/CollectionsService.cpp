@@ -58,16 +58,16 @@ CollectionsService::onCollectionsListChanged() {
 	obs::collection_event evt = obsManager()->updateCollections(collection_updated);
 	switch(evt) {
 		case obs::collection_event::COLLECTION_ADDED:
-			onCollectionAdded(*collection_updated.get());
+			return onCollectionAdded(*collection_updated.get());
 			break;
 		case obs::collection_event::COLLECTION_REMOVED:
-			onCollectionRemoved(*collection_updated.get());
+			return onCollectionRemoved(*collection_updated.get());
 			break;
 		case obs::collection_event::COLLECTION_RENAMED:
-			onCollectionUpdated(*collection_updated.get());
+			return onCollectionUpdated(*collection_updated.get());
 			break;
 	}
-	return true;
+	return false;
 }
 
 bool

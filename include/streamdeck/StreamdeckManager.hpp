@@ -18,6 +18,7 @@
 #include "include/events/EventObservable.hpp"
 #include "include/streamdeck/Streamdeck.hpp"
 #include "include/obs/Collection.hpp"
+#include "include/obs/Scene.hpp"
 
 /*
 ========================================================================================================
@@ -187,6 +188,9 @@ class StreamdeckManager : public QObject, public SafeEventObservable<Streamdeck:
 
 		bool
 		setCollection(Streamdeck* client, const rpc_adv_response<CollectionPtr>& response);
+
+		bool
+		setScene(Streamdeck* client, const rpc_adv_response<ScenePtr>& response);
 
 		/*bool
 		setCollectionSwitched(

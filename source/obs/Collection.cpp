@@ -139,11 +139,13 @@ Collection::extractFromOBSScenes(unsigned long long& next_scene_identifier) {
 				scene = scene_it->second;
 				scene->source(obs_source);
 				scenes.erase(scene_it);
+				next_scene_identifier = std::max<size_t>(next_scene_identifier, scene->id());
 			}
 		}
 		if(scene == nullptr) {
+			++next_scene_identifier;
 			m_scenes.insert(std::map<unsigned long long, std::shared_ptr<Scene>>::value_type(
-				++next_scene_identifier,
+				next_scene_identifier,
 				new Scene(this, next_scene_identifier, obs_source)
 			));
 		}
@@ -160,7 +162,7 @@ Collection::extractFromOBSScenes(unsigned long long& next_scene_identifier) {
 obs::scene_event
 Collection::updateScenes(
 	unsigned long long& next_scene_identifier,
-	std::shared_ptr<Scene> scene_updated
+	std::shared_ptr<Scene>& scene_updated
 ) {
 	obs::scene_event event = obs::scene_event::SCENES_LIST_BUILD;
 
@@ -172,8 +174,8 @@ Collection::updateScenes(
 	obs_frontend_source_list obs_scenes = {};
 	obs_frontend_get_scenes(&obs_scenes);
 
-	size_t j = -1;
-	for(size_t i = 0; i < obs_scenes.sources.num; i++) {
+	int j = -1;
+	for(int i = 0; i < obs_scenes.sources.num; i++) {
 		std::string scene_name(obs_source_get_name(obs_scenes.sources.array[i]));
 		auto iter = scenes.find(scene_name);
 
@@ -183,7 +185,6 @@ Collection::updateScenes(
 		else {
 			scenes.erase(iter);
 		}
-		++i;
 	}
 
 	if(j != -1) {
@@ -220,7 +221,9 @@ Collection::updateScenes(
 
 Scene*
 Collection::activeScene() const {
-	const char* current_scene = obs_source_get_name(obs_frontend_get_current_scene());
+	obs_source_t* current_scene_src = obs_frontend_get_current_scene();
+	const char* current_scene = obs_source_get_name(current_scene_src);
+	obs_source_release(current_scene_src);
 
 	if(m_activeScene) {
 		if(m_activeScene->name().compare(current_scene) == 0)
@@ -228,12 +231,12 @@ Collection::activeScene() const {
 		m_activeScene = nullptr;
 	}
 
-	auto collection_it = m_scenes.begin();
-	while(collection_it != m_scenes.end() && m_activeScene == nullptr) {
-		if(collection_it->second->name().compare(current_scene) == 0) {
-			m_activeScene = collection_it->second.get();
+	auto scene_it = m_scenes.begin();
+	while(scene_it != m_scenes.end() && m_activeScene == nullptr) {
+		if(scene_it->second->name().compare(current_scene) == 0) {
+			m_activeScene = scene_it->second.get();
 		}
-		collection_it++;
+		scene_it++;
 	}
 
 	return m_activeScene;

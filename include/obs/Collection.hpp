@@ -96,7 +96,7 @@ class Collection {
 		extractFromOBSScenes(unsigned long long& next_scene_identifier);
 
 		obs::scene_event
-		updateScenes(unsigned long long& next_scene_identifier, std::shared_ptr<Scene> scene_updated);
+		updateScenes(unsigned long long& next_scene_identifier, std::shared_ptr<Scene>& scene_updated);
 
 		Scene*
 		activeScene() const;

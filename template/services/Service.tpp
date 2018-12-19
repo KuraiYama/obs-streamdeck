@@ -183,6 +183,16 @@ ServiceT<T>::response_collections(const rpc_event_data* data, const char* method
 		};
 }
 
+template<typename T>
+rpc_adv_response<ScenePtr>
+ServiceT<T>::response_scene(const rpc_event_data* data, const char* method) const {
+	return
+		rpc_adv_response<Scene*>{
+			{data, Streamdeck::rpc_event::NO_EVENT, name(), method},
+			nullptr
+	};
+}
+
 /*template<typename T>
 rpc_adv_response<std::tuple<Collection*, Scenes>>
 ServiceT<T>::response_scenes(const rpc_event_data* data, const char* method) const {

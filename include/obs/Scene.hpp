@@ -35,7 +35,9 @@ class Collection;
 ========================================================================================================
 */
 
-typedef std::vector<Scene*> Scenes;
+typedef Scene* ScenePtr;
+
+typedef std::vector<ScenePtr> Scenes;
 
 class Scene {
 

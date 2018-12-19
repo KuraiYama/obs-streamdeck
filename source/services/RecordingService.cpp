@@ -165,6 +165,7 @@ RecordingService::disconnectOutputHandler() {
 			signal_handler_disconnect(signal_handler, "stop",
 				RecordingService::onRecordStopped, this);
 		}
+		obs_output_release(m_recordingOutput);
 		m_recordingOutput = nullptr;
 	}
 }

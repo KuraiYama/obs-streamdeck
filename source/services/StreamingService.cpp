@@ -177,6 +177,7 @@ StreamingService::disconnectOutputHandler() {
 			signal_handler_disconnect(signal_handler, "reconnect_success",
 				StreamingService::onStreamReconnected, this);
 		}
+		obs_output_release(m_streamingOutput);
 		m_streamingOutput = nullptr;
 	}
 }

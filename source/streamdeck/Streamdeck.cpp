@@ -58,8 +58,7 @@ StreamdeckClient::~StreamdeckClient() {
 }
 
 Streamdeck::Streamdeck(StreamdeckClient& client) :
-	m_internalClient(client),
-	m_cancelLock(0x0) {
+	m_internalClient(client) {
 	connect(&m_internalClient, SIGNAL(disconnected(int)), this, SLOT(disconnected(int)));
 	connect(&m_internalClient, SIGNAL(read(QJsonDocument)), this, SLOT(read(QJsonDocument)));
 	connect(this, SIGNAL(write(QJsonDocument)), &m_internalClient, SLOT(write(QJsonDocument)), 
@@ -67,6 +66,11 @@ Streamdeck::Streamdeck(StreamdeckClient& client) :
 	connect(this, &Streamdeck::close_client, &m_internalClient, &StreamdeckClient::close);
 
 	memset((byte*)m_authorizedEvents, 0xFF, sizeof(m_authorizedEvents));
+
+	setEventAuthorizations(rpc_event::START_STREAMING, EVENT_READ);
+	setEventAuthorizations(rpc_event::STOP_STREAMING, EVENT_READ);
+	setEventAuthorizations(rpc_event::START_RECORDING, EVENT_READ);
+	setEventAuthorizations(rpc_event::STOP_RECORDING, EVENT_READ);
 }
 
 Streamdeck::~Streamdeck() {
@@ -359,7 +363,21 @@ Streamdeck::sendCollectionMessage(
 	return true;
 }
 
+bool
+Streamdeck::sendSceneMessage(
+	const rpc_event event,
+	const std::string& resource,
+	const ScenePtr& collection,
+	bool event_mode
+) {
+	/*QJsonObject response = buildJsonResult(event, QString::fromStdString(resource), event_mode);
+	addToJsonObject(response["result"], "id", QString("%1").arg(collection->id()));
+	addToJsonObject(response["result"], "name", collection->name().c_str());
 
+	log_custom(LOG_STREAMDECK) << QString("Send collection (Event %1).").arg((int)event).toStdString();
+	send(event, QJsonDocument(response));*/
+	return true;
+}
 
 /*bool
 Streamdeck::sendCollectionsSchema(const rpc_event event, const Collections& collections) {
@@ -657,11 +675,9 @@ Streamdeck::lockEventAuthorizations(const rpc_event event) {
 			setEventAuthorizations(rpc_event::COLLECTION_UPDATED_SUBSCRIBE, 0x0);
 			setEventAuthorizations(rpc_event::COLLECTION_SWITCHED_SUBSCRIBE, 0x0);
 			setEventAuthorizations(rpc_event::GET_ACTIVE_COLLECTION, 0x0);
-			break;
-
-		case rpc_event::COLLECTION_ADDED_SUBSCRIBE:
-		case rpc_event::COLLECTION_REMOVED_SUBSCRIBE:
-			m_cancelLock = 0x01;
+			setEventAuthorizations(rpc_event::SCENE_ADDED_SUBSCRIBE, 0x0);
+			setEventAuthorizations(rpc_event::SCENE_REMOVED_SUBSCRIBE, 0x0);
+			setEventAuthorizations(rpc_event::SCENE_SWITCHED_SUBSCRIBE, 0x0);
 			break;
 
 		default:
@@ -673,20 +689,20 @@ void
 Streamdeck::unlockEventAuthorizations(const rpc_event event) {
 	switch(event) {
 		case rpc_event::START_STREAMING:
-			setEventAuthorizations(rpc_event::START_STREAMING, EVENT_READ_WRITE);
-			setEventAuthorizations(rpc_event::STOP_STREAMING, EVENT_READ_WRITE);
+			setEventAuthorizations(rpc_event::START_STREAMING, EVENT_READ);
+			setEventAuthorizations(rpc_event::STOP_STREAMING, EVENT_READ);
 			setEventAuthorizations(rpc_event::STREAMING_STATUS_CHANGED_SUBSCRIBE, EVENT_READ_WRITE);
 			break;
 
 		case rpc_event::STOP_STREAMING:
-			setEventAuthorizations(rpc_event::START_STREAMING, EVENT_READ_WRITE);
-			setEventAuthorizations(rpc_event::STOP_STREAMING, EVENT_READ_WRITE);
+			setEventAuthorizations(rpc_event::START_STREAMING, EVENT_READ);
+			setEventAuthorizations(rpc_event::STOP_STREAMING, EVENT_READ);
 			setEventAuthorizations(rpc_event::STREAMING_STATUS_CHANGED_SUBSCRIBE, EVENT_READ_WRITE);
 			break;
 
 		case rpc_event::START_RECORDING:
-			setEventAuthorizations(rpc_event::START_RECORDING, EVENT_READ_WRITE);
-			setEventAuthorizations(rpc_event::STOP_RECORDING, EVENT_READ_WRITE);
+			setEventAuthorizations(rpc_event::START_RECORDING, EVENT_READ);
+			setEventAuthorizations(rpc_event::STOP_RECORDING, EVENT_READ);
 			setEventAuthorizations(rpc_event::RECORDING_STATUS_CHANGED_SUBSCRIBE, EVENT_READ_WRITE);
 			break;
 
@@ -704,20 +720,9 @@ Streamdeck::unlockEventAuthorizations(const rpc_event event) {
 			setEventAuthorizations(rpc_event::COLLECTION_UPDATED_SUBSCRIBE, EVENT_READ_WRITE);
 			setEventAuthorizations(rpc_event::COLLECTION_SWITCHED_SUBSCRIBE, EVENT_READ_WRITE);
 			setEventAuthorizations(rpc_event::GET_ACTIVE_COLLECTION, EVENT_READ_WRITE);
-			break;
-
-		case rpc_event::COLLECTION_ADDED_SUBSCRIBE:
-		case rpc_event::COLLECTION_REMOVED_SUBSCRIBE:
-			setEventAuthorizations(rpc_event::FETCH_COLLECTIONS_SCHEMA, EVENT_WRITE | m_cancelLock);
-			setEventAuthorizations(rpc_event::GET_COLLECTIONS, EVENT_WRITE | m_cancelLock);
-			setEventAuthorizations(rpc_event::GET_ACTIVE_COLLECTION, EVENT_WRITE | m_cancelLock);
-			m_cancelLock = 0x0;
-			break;
-
-		case rpc_event::COLLECTION_SWITCHED_SUBSCRIBE:
-			setEventAuthorizations(rpc_event::FETCH_COLLECTIONS_SCHEMA, EVENT_READ_WRITE);
-			setEventAuthorizations(rpc_event::GET_COLLECTIONS, EVENT_READ_WRITE);
-			setEventAuthorizations(rpc_event::GET_ACTIVE_COLLECTION, EVENT_READ_WRITE);
+			setEventAuthorizations(rpc_event::SCENE_ADDED_SUBSCRIBE, EVENT_READ_WRITE);
+			setEventAuthorizations(rpc_event::SCENE_REMOVED_SUBSCRIBE, EVENT_READ_WRITE);
+			setEventAuthorizations(rpc_event::SCENE_SWITCHED_SUBSCRIBE, EVENT_READ_WRITE);
 			break;
 
 		default:
