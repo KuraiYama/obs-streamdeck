@@ -125,10 +125,20 @@ ScenesService::onSceneUpdated(const Scene& scene) {
 
 	rpc_adv_response<Scenes> response = response_scenes(nullptr, "onSceneUpdated");
 	response.event = Streamdeck::rpc_event::GET_SCENES;
+#if !defined(COMPLETE_MODE)
 	Collection* collection = scene.collection();
 	response.data = collection->scenes();
 
 	return streamdeckManager()->commit_all(response, &StreamdeckManager::setScenes);
+#else
+	Collections collections = obsManager()->collections();
+	bool result = true;
+	for(auto iter = collections.begin(); iter < collections.end() && result; iter++) {
+		response.data = (*iter)->scenes();
+		result &= streamdeckManager()->commit_all(response, &StreamdeckManager::setScenes);
+	}
+	return result;
+#endif
 }
 
 /*
