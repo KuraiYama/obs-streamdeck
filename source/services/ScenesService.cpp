@@ -33,6 +33,9 @@ ScenesService::ScenesService() :
 
 	this->setupEvent<const rpc_event_data&>(Streamdeck::rpc_event::GET_ACTIVE_SCENE,
 		&ScenesService::onGetActiveScene);
+
+	this->setupEvent<const rpc_event_data&>(Streamdeck::rpc_event::MAKE_SCENE_ACTIVE,
+		&ScenesService::onMakeSceneActive);
 }
 
 ScenesService::~ScenesService() {
@@ -234,9 +237,35 @@ ScenesService::onGetActiveScene(const rpc_event_data& data) {
 		}
 
 		response.data = obsManager()->activeCollection()->activeScene();
+
 		return streamdeckManager()->commit_to(response, &StreamdeckManager::setScene);
 	}
 
 	logError("GetActiveScene not called by GET_ACTIVE_SCENE.");
+	return false;
+}
+
+bool
+ScenesService::onMakeSceneActive(const rpc_event_data& data) {
+	rpc_adv_response<bool> response = response_bool(&data, "onMakeSceneActive");
+	if(data.event == Streamdeck::rpc_event::MAKE_SCENE_ACTIVE) {
+		response.event = Streamdeck::rpc_event::MAKE_SCENE_ACTIVE;
+
+		if(!checkResource(&data, QRegExp("makeSceneActive"))) {
+			logWarning("Unknown resource for makeSceneActive.");
+		}
+
+		if(data.args.size() == 0) {
+			logError("No parameter provided for makeSceneActive. Abort.");
+			return false;
+		}
+
+		unsigned long long id = data.args[0].toString().toLongLong();
+		response.data = obsManager()->activeCollection()->activeScene(id);
+
+		return streamdeckManager()->commit_to(response, &StreamdeckManager::setResult);
+	}
+
+	logError("MakeSceneActive not called by MAKE_SCENE_ACTIVE.");
 	return false;
 }

@@ -78,3 +78,24 @@ Streamdeck::sendEvent(const rpc_event event, const T& data, bool event_mode) {
 
 	return converted;
 }
+
+template<typename T>
+bool
+Streamdeck::sendResult(
+	const rpc_event event,
+	const std::string& resource,
+	const T& data,
+	bool event_mode
+) {
+	QJsonObject response = buildJsonResponse(event, QString::fromStdString(resource), event_mode);
+
+	addToJsonObject(response, "result", data);
+
+	log_custom(LOG_STREAMDECK) << QString("Acknowledge event %1 (%2).")
+		.arg(QString("%1").arg((int)event))
+		.arg(resource.c_str())
+		.toStdString();
+
+	send(event, QJsonDocument(response));
+	return true;
+}

@@ -588,8 +588,9 @@ Streamdeck::lockEventAuthorizations(const rpc_event event) {
 			setEventAuthorizations(rpc_event::RECORDING_STATUS_CHANGED_SUBSCRIBE, 0x0);
 			break;
 
-		case rpc_event::MAKE_COLLECTION_ACTIVE:
-			setEventAuthorizations(rpc_event::MAKE_COLLECTION_ACTIVE, EVENT_WRITE);
+		case rpc_event::MAKE_SCENE_ACTIVE:
+			setEventAuthorizations(rpc_event::MAKE_COLLECTION_ACTIVE, 0x0);
+			setEventAuthorizations(rpc_event::MAKE_SCENE_ACTIVE, EVENT_WRITE);
 			setEventAuthorizations(rpc_event::FETCH_COLLECTIONS_SCHEMA, 0x0);
 			setEventAuthorizations(rpc_event::GET_COLLECTIONS, 0x0);
 			setEventAuthorizations(rpc_event::GET_SCENES, 0x0);
@@ -597,6 +598,23 @@ Streamdeck::lockEventAuthorizations(const rpc_event event) {
 			setEventAuthorizations(rpc_event::COLLECTION_REMOVED_SUBSCRIBE, 0x0);
 			setEventAuthorizations(rpc_event::COLLECTION_UPDATED_SUBSCRIBE, 0x0);
 			setEventAuthorizations(rpc_event::COLLECTION_SWITCHED_SUBSCRIBE, 0x0);
+			setEventAuthorizations(rpc_event::GET_ACTIVE_COLLECTION, 0x0);
+			setEventAuthorizations(rpc_event::GET_ACTIVE_SCENE, 0x0);
+			setEventAuthorizations(rpc_event::SCENE_ADDED_SUBSCRIBE, 0x0);
+			setEventAuthorizations(rpc_event::SCENE_REMOVED_SUBSCRIBE, 0x0);
+			setEventAuthorizations(rpc_event::SCENE_SWITCHED_SUBSCRIBE, EVENT_WRITE);
+			break;
+
+		case rpc_event::MAKE_COLLECTION_ACTIVE:
+			setEventAuthorizations(rpc_event::MAKE_COLLECTION_ACTIVE, EVENT_WRITE);
+			setEventAuthorizations(rpc_event::MAKE_SCENE_ACTIVE, 0x0);
+			setEventAuthorizations(rpc_event::FETCH_COLLECTIONS_SCHEMA, 0x0);
+			setEventAuthorizations(rpc_event::GET_COLLECTIONS, 0x0);
+			setEventAuthorizations(rpc_event::GET_SCENES, 0x0);
+			setEventAuthorizations(rpc_event::COLLECTION_ADDED_SUBSCRIBE, 0x0);
+			setEventAuthorizations(rpc_event::COLLECTION_REMOVED_SUBSCRIBE, 0x0);
+			setEventAuthorizations(rpc_event::COLLECTION_UPDATED_SUBSCRIBE, 0x0);
+			setEventAuthorizations(rpc_event::COLLECTION_SWITCHED_SUBSCRIBE, EVENT_WRITE);
 			setEventAuthorizations(rpc_event::GET_ACTIVE_COLLECTION, 0x0);
 			setEventAuthorizations(rpc_event::GET_ACTIVE_SCENE, 0x0);
 			setEventAuthorizations(rpc_event::SCENE_ADDED_SUBSCRIBE, 0x0);
@@ -620,6 +638,7 @@ Streamdeck::lockEventAuthorizations(const rpc_event event) {
 			setEventAuthorizations(rpc_event::SCENE_REMOVED_SUBSCRIBE, 0x0);
 			setEventAuthorizations(rpc_event::SCENE_SWITCHED_SUBSCRIBE, 0x0);
 			setEventAuthorizations(rpc_event::MAKE_COLLECTION_ACTIVE, 0x0);
+			setEventAuthorizations(rpc_event::MAKE_SCENE_ACTIVE, 0x0);
 			break;
 
 		default:
@@ -654,9 +673,11 @@ Streamdeck::unlockEventAuthorizations(const rpc_event event) {
 			setEventAuthorizations(rpc_event::RECORDING_STATUS_CHANGED_SUBSCRIBE, EVENT_READ_WRITE);
 			break;
 
+		case rpc_event::MAKE_SCENE_ACTIVE:
 		case rpc_event::MAKE_COLLECTION_ACTIVE:
 		case rpc_event::GET_COLLECTIONS:
 		case rpc_event::GET_SCENES:
+			setEventAuthorizations(rpc_event::MAKE_SCENE_ACTIVE, EVENT_READ_WRITE);
 			setEventAuthorizations(rpc_event::MAKE_COLLECTION_ACTIVE, EVENT_READ_WRITE);
 			setEventAuthorizations(rpc_event::FETCH_COLLECTIONS_SCHEMA, EVENT_READ_WRITE);
 			setEventAuthorizations(rpc_event::GET_COLLECTIONS, EVENT_READ_WRITE);
@@ -812,6 +833,10 @@ Streamdeck::logEvent(const rpc_event event, const QJsonDocument& json_quest) {
 
 		case rpc_event::MAKE_COLLECTION_ACTIVE:
 			log_custom(0xffada4) << "Make collection active";
+			break;
+
+		case rpc_event::MAKE_SCENE_ACTIVE:
+			log_custom(0x13abb0) << "Make scene active";
 			break;
 
 		case rpc_event::ERROR:

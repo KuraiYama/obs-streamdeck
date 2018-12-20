@@ -219,27 +219,21 @@ Collection::updateScenes(
 	return event;
 }
 
-Scene*
-Collection::activeScene() const {
-	obs_source_t* current_scene_src = obs_frontend_get_current_scene();
-	const char* current_scene = obs_source_get_name(current_scene_src);
-	obs_source_release(current_scene_src);
+bool
+Collection::activeScene(unsigned long long id) {
+	auto iter = m_scenes.find(id);
+	if(iter != m_scenes.end()) {
+		obs_frontend_set_current_scene(obs_scene_get_source(iter->second->scene()));
 
-	if(m_activeScene) {
-		if(m_activeScene->name().compare(current_scene) == 0)
-			return m_activeScene;
-		m_activeScene = nullptr;
+		obs_source_t* current_scene_src = obs_frontend_get_current_scene();
+		const char* current_scene = obs_source_get_name(current_scene_src);
+		obs_source_release(current_scene_src);
+
+		if(iter->second->name().compare(current_scene) == 0)
+			return true;
 	}
 
-	auto scene_it = m_scenes.begin();
-	while(scene_it != m_scenes.end() && m_activeScene == nullptr) {
-		if(scene_it->second->name().compare(current_scene) == 0) {
-			m_activeScene = scene_it->second.get();
-		}
-		scene_it++;
-	}
-
-	return m_activeScene;
+	return false;
 }
 
 /*
@@ -271,4 +265,27 @@ Collection::scenes() const {
 		if(iter->second->collection() == this)
 			scenes._scenes.push_back(const_cast<Scene*>(iter->second.get()));
 	return scenes;
+}
+
+Scene*
+Collection::activeScene() const {
+	obs_source_t* current_scene_src = obs_frontend_get_current_scene();
+	const char* current_scene = obs_source_get_name(current_scene_src);
+	obs_source_release(current_scene_src);
+
+	if(m_activeScene) {
+		if(m_activeScene->name().compare(current_scene) == 0)
+			return m_activeScene;
+		m_activeScene = nullptr;
+	}
+
+	auto scene_it = m_scenes.begin();
+	while(scene_it != m_scenes.end() && m_activeScene == nullptr) {
+		if(scene_it->second->name().compare(current_scene) == 0) {
+			m_activeScene = scene_it->second.get();
+		}
+		scene_it++;
+	}
+
+	return m_activeScene;
 }

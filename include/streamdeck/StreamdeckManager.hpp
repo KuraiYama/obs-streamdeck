@@ -172,7 +172,11 @@ class StreamdeckManager : public QObject, public SafeEventObservable<Streamdeck:
 
 		template<typename T>
 		bool
-		setEvent(Streamdeck* client, const rpc_adv_response<T>& status);
+		setResult(Streamdeck* client, const rpc_adv_response<T>& response);
+
+		template<typename T>
+		bool
+		setEvent(Streamdeck* client, const rpc_adv_response<T>& response);
 
 		bool
 		setRecordStreamState(

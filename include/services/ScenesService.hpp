@@ -71,4 +71,7 @@ class ScenesService : public ServiceT<ScenesService> {
 		bool
 		onGetActiveScene(const rpc_event_data& data);
 
+		bool
+		onMakeSceneActive(const rpc_event_data& data);
+
 };

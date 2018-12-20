@@ -275,6 +275,15 @@ class Streamdeck : public QObject {
 		bool
 		sendAcknowledge(const rpc_event event, const std::string& resource, bool event_mode = false);
 
+		template<typename T>
+		bool
+		sendResult(
+			const rpc_event event,
+			const std::string& resource,
+			const T& data,
+			bool event_mode = false
+		);
+
 		bool
 		sendSubscription(const rpc_event event, const std::string& resource, bool event_mode = false);
 

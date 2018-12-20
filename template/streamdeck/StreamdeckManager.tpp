@@ -16,6 +16,20 @@
 
 template<typename T>
 bool
+StreamdeckManager::setResult(Streamdeck* client, const rpc_adv_response<T>& response) {
+	QString resource = response.request != nullptr ?
+		QString("%1.%2")
+		.arg(response.request->serviceName.c_str())
+		.arg(response.request->method.c_str()) :
+		QString("%1.%2")
+		.arg(response.serviceName)
+		.arg(response.method);
+
+	return client->sendResult(response.event, resource.toStdString(), response.data);
+}
+
+template<typename T>
+bool
 StreamdeckManager::setEvent(Streamdeck* client, const rpc_adv_response<T>& response) {
 	return client->sendEvent(response.event, response.data);
 }

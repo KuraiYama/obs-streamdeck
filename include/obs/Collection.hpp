@@ -101,6 +101,9 @@ class Collection {
 		Scene*
 		activeScene() const;
 
+		bool
+		activeScene(unsigned long long id);
+
 		Memory
 		toMemory(size_t& size) const;
 

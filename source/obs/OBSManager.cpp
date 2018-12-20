@@ -283,6 +283,7 @@ OBSManager::updateCollections(std::shared_ptr<Collection>& collection_updated) {
 				)
 			);
 			collection_updated = m_collections.find(_last_registered_id)->second;
+			loadScenes(*collection_updated);
 			m_activeCollection = nullptr;
 			event = obs::collection_event::COLLECTION_ADDED;
 		}
