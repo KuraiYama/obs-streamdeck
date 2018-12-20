@@ -334,19 +334,9 @@ class Streamdeck : public QObject {
 		sendSceneMessage(
 			const rpc_event event,
 			const std::string& resource,
-			const ScenePtr& collection,
+			const ScenePtr& scene,
 			bool event_mode = false
 		);
-
-		/*
-
-		bool
-		sendScenesMessage(
-			const rpc_event event,
-			const std::string& resourceId,
-			const Collection* collection,
-			const Scenes& scenes
-		);*/
 
 		bool
 		checkEventAuthorizations(const rpc_event event, byte flag);

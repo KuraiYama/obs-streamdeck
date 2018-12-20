@@ -68,4 +68,7 @@ class ScenesService : public ServiceT<ScenesService> {
 		bool
 		onGetScenes(const rpc_event_data& data);
 
+		bool
+		onGetActiveScene(const rpc_event_data& data);
+
 };

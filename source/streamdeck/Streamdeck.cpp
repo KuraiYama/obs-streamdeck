@@ -402,14 +402,14 @@ bool
 Streamdeck::sendSceneMessage(
 	const rpc_event event,
 	const std::string& resource,
-	const ScenePtr& collection,
+	const ScenePtr& scene,
 	bool event_mode
 ) {
-	QJsonObject response = buildJsonResult(event, QString::fromStdString(resource), event_mode);
-	addToJsonObject(response["result"], "id", QString("%1").arg(collection->id()));
-	addToJsonObject(response["result"], "name", collection->name().c_str());
+	QJsonObject response = buildJsonResponse(event, QString::fromStdString(resource), event_mode);
+	addToJsonObject(response, "result", QString("%1").arg(scene->id()));
+	addToJsonObject(response, "collection", QString("%1").arg(scene->collection()->id()));
 
-	log_custom(LOG_STREAMDECK) << QString("Send collection (Event %1).").arg((int)event).toStdString();
+	log_custom(LOG_STREAMDECK) << QString("Send scene (Event %1).").arg((int)event).toStdString();
 	send(event, QJsonDocument(response));
 	return true;
 }
@@ -586,6 +586,7 @@ Streamdeck::lockEventAuthorizations(const rpc_event event) {
 			setEventAuthorizations(rpc_event::COLLECTION_UPDATED_SUBSCRIBE, 0x0);
 			setEventAuthorizations(rpc_event::COLLECTION_SWITCHED_SUBSCRIBE, 0x0);
 			setEventAuthorizations(rpc_event::GET_ACTIVE_COLLECTION, 0x0);
+			setEventAuthorizations(rpc_event::GET_ACTIVE_SCENE, 0x0);
 			setEventAuthorizations(rpc_event::SCENE_ADDED_SUBSCRIBE, 0x0);
 			setEventAuthorizations(rpc_event::SCENE_REMOVED_SUBSCRIBE, 0x0);
 			setEventAuthorizations(rpc_event::SCENE_SWITCHED_SUBSCRIBE, 0x0);
@@ -633,6 +634,7 @@ Streamdeck::unlockEventAuthorizations(const rpc_event event) {
 			setEventAuthorizations(rpc_event::COLLECTION_UPDATED_SUBSCRIBE, EVENT_READ_WRITE);
 			setEventAuthorizations(rpc_event::COLLECTION_SWITCHED_SUBSCRIBE, EVENT_READ_WRITE);
 			setEventAuthorizations(rpc_event::GET_ACTIVE_COLLECTION, EVENT_READ_WRITE);
+			setEventAuthorizations(rpc_event::GET_ACTIVE_SCENE, EVENT_READ_WRITE);
 			setEventAuthorizations(rpc_event::SCENE_ADDED_SUBSCRIBE, EVENT_READ_WRITE);
 			setEventAuthorizations(rpc_event::SCENE_REMOVED_SUBSCRIBE, EVENT_READ_WRITE);
 			setEventAuthorizations(rpc_event::SCENE_SWITCHED_SUBSCRIBE, EVENT_READ_WRITE);
@@ -770,6 +772,10 @@ Streamdeck::logEvent(const rpc_event event, const QJsonDocument& json_quest) {
 
 		case rpc_event::GET_ACTIVE_COLLECTION:
 			log_custom(0xab83f0) << "Get active collection";
+			break;
+
+		case rpc_event::GET_ACTIVE_SCENE:
+			log_custom(0xffe749) << "Get active scene";
 			break;
 
 		case rpc_event::ERROR:

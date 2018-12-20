@@ -30,6 +30,9 @@ ScenesService::ScenesService() :
 
 	this->setupEvent<const rpc_event_data&>(Streamdeck::rpc_event::GET_SCENES,
 		&ScenesService::onGetScenes);
+
+	this->setupEvent<const rpc_event_data&>(Streamdeck::rpc_event::GET_ACTIVE_SCENE,
+		&ScenesService::onGetActiveScene);
 }
 
 ScenesService::~ScenesService() {
@@ -115,8 +118,17 @@ ScenesService::onSceneRemoved(const Scene& scene) {
 bool
 ScenesService::onSceneUpdated(const Scene& scene) {
 	logInfo(QString("Scene renamed to %1").arg(scene.name().c_str()).toStdString());
-	// TODO
-	return true;
+
+	// The RPC protocol doesn't provide any resource for handling scene renaming.
+	// We can use both scene removed/scene added to handle that, but each of them
+	// implies GET_SCENES message. Then we send directly the GET_SCENES message instead.
+
+	rpc_adv_response<Scenes> response = response_scenes(nullptr, "onSceneUpdated");
+	response.event = Streamdeck::rpc_event::GET_SCENES;
+	Collection* collection = scene.collection();
+	response.data = collection->scenes();
+
+	return streamdeckManager()->commit_all(response, &StreamdeckManager::setScenes);
 }
 
 /*
@@ -197,5 +209,24 @@ ScenesService::onGetScenes(const rpc_event_data& data) {
 	}
 
 	logError("getScenes not called by GET_SCENES");
+	return false;
+}
+
+bool
+ScenesService::onGetActiveScene(const rpc_event_data& data) {
+	rpc_adv_response<ScenePtr> response = response_scene(&data, "onGetActiveScene");
+	if(data.event == Streamdeck::rpc_event::GET_ACTIVE_SCENE) {
+		response.event = Streamdeck::rpc_event::GET_ACTIVE_SCENE;
+		logInfo("Active Scene required.");
+
+		if(!checkResource(&data, QRegExp("activeSceneId"))) {
+			logWarning("Unknown resource for activeScene.");
+		}
+
+		response.data = obsManager()->activeCollection()->activeScene();
+		return streamdeckManager()->commit_to(response, &StreamdeckManager::setScene);
+	}
+
+	logError("GetActiveScene not called by GET_ACTIVE_SCENE.");
 	return false;
 }

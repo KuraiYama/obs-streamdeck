@@ -124,6 +124,7 @@ Collection::extractFromOBSScenes(unsigned long long& next_scene_identifier) {
 			scene_it->second->name(),
 			scene_it->second.get()
 		));
+		next_scene_identifier = std::max<size_t>(next_scene_identifier, scene_it->second->id());
 	}
 
 	obs_frontend_set_current_scene_collection(m_name.c_str());
@@ -139,7 +140,6 @@ Collection::extractFromOBSScenes(unsigned long long& next_scene_identifier) {
 				scene = scene_it->second;
 				scene->source(obs_source);
 				scenes.erase(scene_it);
-				next_scene_identifier = std::max<size_t>(next_scene_identifier, scene->id());
 			}
 		}
 		if(scene == nullptr) {
@@ -208,7 +208,7 @@ Collection::updateScenes(
 			event = obs::scene_event::SCENE_RENAMED;
 		}
 	}
-	else {
+	else if(scenes.size() > 0) {
 		scene_updated = scenes.begin()->second;
 		m_scenes.erase(scenes.begin()->second->id());
 		m_activeScene = nullptr;

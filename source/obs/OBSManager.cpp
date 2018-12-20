@@ -172,6 +172,10 @@ OBSManager::loadCollections() {
 			collection = Collection::buildFromMemory(block);
 			if(collection != nullptr) {
 				collections_preload.insert(collection_map_elt(collection->name(), collection));
+				_last_registered_id = std::max<unsigned long long>(
+					_last_registered_id,
+					collection->id()
+				);
 			}
 			collections_count--;
 		}
@@ -204,10 +208,6 @@ OBSManager::extractFromOBSCollections(std::map<std::string, std::shared_ptr<Coll
 						collection_it->second->id(),
 						collection_it->second
 					)
-				);
-				_last_registered_id = std::max<unsigned long long>(
-					_last_registered_id,
-					collection_it->second->id()
 				);
 				collection_loaded = collection_it->second.get();
 				collections.erase(collection_it);
@@ -279,7 +279,7 @@ OBSManager::updateCollections(std::shared_ptr<Collection>& collection_updated) {
 			event = obs::collection_event::COLLECTION_RENAMED;
 		}
 	}
-	else {
+	else if(collections.size() > 0) {
 		collection_updated = collections.begin()->second;
 		m_collections.erase(collections.begin()->second->id());
 		m_activeCollection = nullptr;
