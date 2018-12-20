@@ -273,6 +273,9 @@ class Streamdeck : public QObject {
 		send(const rpc_event event, const QJsonDocument& json_quest);
 
 		bool
+		sendAcknowledge(const rpc_event event, const std::string& resource, bool event_mode = false);
+
+		bool
 		sendSubscription(const rpc_event event, const std::string& resource, bool event_mode = false);
 
 		template<typename T>

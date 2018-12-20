@@ -74,7 +74,7 @@ class CollectionsService : public ServiceT<CollectionsService> {
 		bool
 		onGetActiveCollection(const rpc_event_data& data);
 
-		/*bool
-		onMakeCollectionActive(const rpc_event_data& data);*/
+		bool
+		onMakeCollectionActive(const rpc_event_data& data);
 
 };

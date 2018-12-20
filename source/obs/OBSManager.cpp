@@ -105,6 +105,20 @@ OBSManager::FileLoader::write(char* buffer, size_t size) {
 ========================================================================================================
 */
 
+bool
+OBSManager::activeCollection(unsigned long long id) {
+	auto iter = m_collections.find(id);
+	if(iter != m_collections.end()) {
+		obs_frontend_set_current_scene_collection(iter->second->name().c_str());
+		const char* curr_collection = obs_frontend_get_current_scene_collection();
+		if(iter->second->name().compare(curr_collection) == 0) {
+			m_activeCollection = iter->second.get();
+			return true;
+		}
+	}
+	return false;
+}
+
 void
 OBSManager::saveCollections() {
 	std::vector<Memory> collection_blocks;

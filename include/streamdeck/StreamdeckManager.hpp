@@ -165,7 +165,10 @@ class StreamdeckManager : public QObject, public SafeEventObservable<Streamdeck:
 		);
 
 		bool
-		setSubscription(Streamdeck* client, const rpc_adv_response<std::string>& reponse);
+		setAcknowledge(Streamdeck* client, const rpc_adv_response<void>& response);
+
+		bool
+		setSubscription(Streamdeck* client, const rpc_adv_response<std::string>& response);
 
 		template<typename T>
 		bool

@@ -122,6 +122,19 @@ StreamdeckManager::close(Streamdeck* streamdeck) {
 }
 
 bool
+StreamdeckManager::setAcknowledge(Streamdeck* client, const rpc_adv_response<void>& response) {
+	QString resource = response.request != nullptr ?
+		QString("%1.%2")
+		.arg(response.request->serviceName.c_str())
+		.arg(response.request->method.c_str()) :
+		QString("%1.%2")
+		.arg(response.serviceName)
+		.arg(response.method);
+
+	return client->sendAcknowledge(response.event, resource.toStdString());
+}
+
+bool
 StreamdeckManager::setSubscription(Streamdeck* client, const rpc_adv_response<std::string>& response) {
 	return client->sendSubscription(response.event, response.data);
 }

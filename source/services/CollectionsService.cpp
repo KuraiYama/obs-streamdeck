@@ -27,8 +27,8 @@ CollectionsService::CollectionsService() : ServiceT("CollectionsService", "Scene
 	this->setupEvent<const rpc_event_data&>(Streamdeck::rpc_event::GET_ACTIVE_COLLECTION,
 		&CollectionsService::onGetActiveCollection);
 
-	/*this->setupEvent<const rpc_event_data&>(Streamdeck::rpc_event::RPC_ID_MAKE_COLLECTION_ACTIVE,
-		&CollectionsService::onMakeCollectionActive);*/
+	this->setupEvent<const rpc_event_data&>(Streamdeck::rpc_event::MAKE_COLLECTION_ACTIVE,
+		&CollectionsService::onMakeCollectionActive);
 
 	this->setupEvent<const rpc_event_data&>(Streamdeck::rpc_event::COLLECTION_ADDED_SUBSCRIBE,
 		&CollectionsService::subscribeCollectionChange);
@@ -236,20 +236,30 @@ CollectionsService::onGetActiveCollection(const rpc_event_data& data) {
 	return false;
 }
 
-/*bool
+bool
 CollectionsService::onMakeCollectionActive(const rpc_event_data& data) {
-	rpc_adv_response<bool> response = response_bool(&data, "onMakeCollectionActive");
-	if(data.event == Streamdeck::rpc_event::RPC_ID_MAKE_COLLECTION_ACTIVE) {
-		response.event = Streamdeck::rpc_event::RPC_ID_MAKE_COLLECTION_ACTIVE;
-		if(data.serviceName.compare("SceneCollectionsService") == 0
-				&& data.method.compare("activeCollection") == 0) {
+	rpc_adv_response<void> response = response_void(&data, "onMakeCollectionActive");
+	if(data.event == Streamdeck::rpc_event::MAKE_COLLECTION_ACTIVE) {
+		response.event = Streamdeck::rpc_event::MAKE_COLLECTION_ACTIVE;
 
-			// TODO
-
-			response.data = false;
-			return streamdeckManager()->commit_to(response, &StreamdeckManager::setError);
+		if(!checkResource(&data, QRegExp("load"))) {
+			logWarning("Unknown resource for makeCollectionActive.");
 		}
+
+		if(data.args.size() == 0) {
+			logError("No parameter provided for makeCollectionActive. Abort.");
+			return false;
+		}
+
+		unsigned long long id = data.args[0].toString().toLongLong();
+		if(!obsManager()->activeCollection(id)) {
+			logError("The required collection doesn't exist, or can't be switched to.");
+			return false;
+		}
+
+		return streamdeckManager()->commit_to(response, &StreamdeckManager::setAcknowledge);
 	}
 
-	return streamdeckManager()->commit_to(response, &StreamdeckManager::setError);
-}*/
+	logError("MakeCollectionActive not called by MAKE_COLLECTION_ACTIVE.");
+	return false;
+}
