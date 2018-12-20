@@ -19,10 +19,9 @@
  * Plugin Includes
  */
 #include "include/common/Memory.hpp"
+#include "include/obs/OBSStorage.h"
 #include "include/obs/OBSEvents.hpp"
 #include "include/obs/Collection.hpp"
-//#include "include/obs/Scene.hpp"
-//#include "include/obs/Item.hpp"
 
 /*
 ========================================================================================================
@@ -81,23 +80,16 @@ class OBSManager {
 
 	/*
 	====================================================================================================
-		Static Class Attributes
-	====================================================================================================
-	*/
-	private:
-
-		static unsigned long long _last_registered_id;
-
-	/*
-	====================================================================================================
 		Instance Data Members
 	====================================================================================================
 	*/
 	private:
 
-		std::map<unsigned long long, std::shared_ptr<Collection>> m_collections;
+		OBSStorage<Collection> m_collections;
 
 		mutable Collection* m_activeCollection;
+
+		uint16_t m_lastCollectionID;
 
 		bool m_isLoadingCollections;
 
@@ -119,12 +111,6 @@ class OBSManager {
 	*/
 	public:
 
-		void
-		loadCollections();
-
-		void
-		saveCollections();
-
 		obs::collection_event
 		updateCollections(std::shared_ptr<Collection>& collection_updated);
 
@@ -135,10 +121,10 @@ class OBSManager {
 		updateScenes(Collection& collection, std::shared_ptr<Scene>& scene_updated);
 
 		Collection*
-		activeCollection() const;
+		activeCollection(bool force_reset = false) const;
 
 		bool
-		activeCollection(unsigned long long id);
+		switchCollection(unsigned long long id);
 
 		Collection*
 		collection(unsigned long long id) const;
@@ -151,7 +137,13 @@ class OBSManager {
 
 	private:
 
+		std::map<std::string, Collection*>
+		loadCollections();
+
 		void
-		extractFromOBSCollections(std::map<std::string, std::shared_ptr<Collection>>& collections);
+		saveCollections();
+
+		void
+		extractFromOBSCollections(std::map<std::string, Collection*>& collections);
 
 };

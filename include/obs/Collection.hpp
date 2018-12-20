@@ -18,6 +18,7 @@
  * Plugin Includes
  */
 #include "include/common/Memory.hpp"
+#include "include/obs/OBSStorage.h"
 #include "include/obs/OBSEvents.hpp"
 #include "include/obs/Scene.hpp"
 
@@ -39,7 +40,7 @@ typedef Collection* CollectionPtr;
 
 typedef std::vector<Collection*> Collections;
 
-class Collection {
+class Collection : public OBSStorable {
 
 	/*
 	====================================================================================================
@@ -68,10 +69,6 @@ class Collection {
 
 		std::map<unsigned long long, std::shared_ptr<Scene>> m_scenes;
 
-		std::string m_name;
-
-		unsigned long long m_identifier;
-
 		mutable Scene* m_activeScene;
 
 	/*
@@ -81,7 +78,7 @@ class Collection {
 	*/
 	public:
 
-		Collection(unsigned long long id, std::string name);
+		Collection(uint16_t id, std::string name);
 
 		~Collection();
 
@@ -95,26 +92,27 @@ class Collection {
 		void
 		extractFromOBSScenes(unsigned long long& next_scene_identifier);
 
+		void
+		resourceScenes() const;
+
 		obs::scene_event
 		updateScenes(unsigned long long& next_scene_identifier, std::shared_ptr<Scene>& scene_updated);
 
 		Scene*
-		activeScene() const;
+		activeScene(bool force_reset = false) const;
 
 		bool
-		activeScene(unsigned long long id);
+		switchScene(unsigned long long id);
 
 		Memory
 		toMemory(size_t& size) const;
 
-		unsigned long long
-		id() const;
-
-		std::string
-		name() const;
-
-		void
-		name(std::string new_name);
+	/*
+	====================================================================================================
+		Accessors
+	====================================================================================================
+	*/
+	public:
 
 		Scenes
 		scenes() const;

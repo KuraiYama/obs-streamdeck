@@ -12,6 +12,8 @@
 
 CollectionsService::CollectionsService() : ServiceT("CollectionsService", "SceneCollectionsService") {
 
+	this->setupEvent(obs_save_event::OBS_SAVE_EVENT_LOADING, &CollectionsService::onCollectionLoading);
+
 	this->setupEvent(obs_frontend_event::OBS_FRONTEND_EVENT_SCENE_COLLECTION_LIST_CHANGED,
 		&CollectionsService::onCollectionsListChanged);
 
@@ -53,6 +55,13 @@ CollectionsService::~CollectionsService() {
 */
 
 bool
+CollectionsService::onCollectionLoading(const obs_data_t* data) {
+	//Collection* collection = obsManager()->activeCollection();
+	logInfo("Collection Loaded.");
+	return true;
+}
+
+bool
 CollectionsService::onCollectionsListChanged() {
 	std::shared_ptr<Collection> collection_updated = nullptr;
 	obs::collection_event evt = obsManager()->updateCollections(collection_updated);
@@ -78,6 +87,7 @@ CollectionsService::onCollectionSwitched() {
 		return true;
 
 	Collection* collection = obsManager()->activeCollection();
+
 	logInfo(QString("Collection switched to %1.")
 		.arg(collection->name().c_str())
 		.toStdString()
@@ -252,7 +262,7 @@ CollectionsService::onMakeCollectionActive(const rpc_event_data& data) {
 		}
 
 		unsigned long long id = data.args[0].toString().toLongLong();
-		if(!obsManager()->activeCollection(id)) {
+		if(!obsManager()->switchCollection(id)) {
 			logError("The required collection doesn't exist, or can't be switched to.");
 			return false;
 		}

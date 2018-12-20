@@ -71,6 +71,7 @@ Streamdeck::Streamdeck(StreamdeckClient& client) :
 	setEventAuthorizations(rpc_event::STOP_STREAMING, EVENT_READ);
 	setEventAuthorizations(rpc_event::START_RECORDING, EVENT_READ);
 	setEventAuthorizations(rpc_event::STOP_RECORDING, EVENT_READ);
+	setEventAuthorizations(rpc_event::MAKE_SCENE_ACTIVE, EVENT_READ);
 }
 
 Streamdeck::~Streamdeck() {
@@ -602,7 +603,7 @@ Streamdeck::lockEventAuthorizations(const rpc_event event) {
 			setEventAuthorizations(rpc_event::GET_ACTIVE_SCENE, 0x0);
 			setEventAuthorizations(rpc_event::SCENE_ADDED_SUBSCRIBE, 0x0);
 			setEventAuthorizations(rpc_event::SCENE_REMOVED_SUBSCRIBE, 0x0);
-			setEventAuthorizations(rpc_event::SCENE_SWITCHED_SUBSCRIBE, EVENT_WRITE);
+			setEventAuthorizations(rpc_event::SCENE_SWITCHED_SUBSCRIBE, 0x0);
 			break;
 
 		case rpc_event::MAKE_COLLECTION_ACTIVE:
@@ -638,7 +639,6 @@ Streamdeck::lockEventAuthorizations(const rpc_event event) {
 			setEventAuthorizations(rpc_event::SCENE_REMOVED_SUBSCRIBE, 0x0);
 			setEventAuthorizations(rpc_event::SCENE_SWITCHED_SUBSCRIBE, 0x0);
 			setEventAuthorizations(rpc_event::MAKE_COLLECTION_ACTIVE, 0x0);
-			setEventAuthorizations(rpc_event::MAKE_SCENE_ACTIVE, 0x0);
 			break;
 
 		default:
@@ -673,11 +673,15 @@ Streamdeck::unlockEventAuthorizations(const rpc_event event) {
 			setEventAuthorizations(rpc_event::RECORDING_STATUS_CHANGED_SUBSCRIBE, EVENT_READ_WRITE);
 			break;
 
+		case rpc_event::COLLECTION_SWITCHED_SUBSCRIBE:
+			setEventAuthorizations(rpc_event::MAKE_SCENE_ACTIVE, EVENT_READ);
+			break;
+
 		case rpc_event::MAKE_SCENE_ACTIVE:
+			setEventAuthorizations(rpc_event::MAKE_SCENE_ACTIVE, EVENT_READ);
 		case rpc_event::MAKE_COLLECTION_ACTIVE:
 		case rpc_event::GET_COLLECTIONS:
 		case rpc_event::GET_SCENES:
-			setEventAuthorizations(rpc_event::MAKE_SCENE_ACTIVE, EVENT_READ_WRITE);
 			setEventAuthorizations(rpc_event::MAKE_COLLECTION_ACTIVE, EVENT_READ_WRITE);
 			setEventAuthorizations(rpc_event::FETCH_COLLECTIONS_SCHEMA, EVENT_READ_WRITE);
 			setEventAuthorizations(rpc_event::GET_COLLECTIONS, EVENT_READ_WRITE);

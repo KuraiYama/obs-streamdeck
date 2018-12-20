@@ -3,6 +3,7 @@
  */
 #include "include/obs/Scene.hpp"
 #include "include/obs/Collection.hpp"
+#include "include/common/Logger.hpp"
 
 /*
  * Qt Includes
@@ -17,10 +18,8 @@
 
 Scene::Scene(Collection* collection, unsigned long long id, obs_source_t* source) :
 	m_parentCollection(collection),
-	m_identifier(id),
-	m_source(source) {
-	m_name = obs_source_get_name(m_source);
-	m_scene = obs_scene_from_source(m_source);
+	m_identifier(id) {
+	this->source(source);
 }
 
 Scene::Scene(Collection* collection, unsigned long long id, std::string name) :
@@ -134,7 +133,7 @@ void
 Scene::source(obs_source_t* obs_source) {
 	m_source = obs_source;
 	m_name = obs_source_get_name(m_source);
-	m_scene = obs_scene_from_source(obs_source);
+	m_scene = obs_scene_from_source(m_source);
 }
 
 CollectionPtr

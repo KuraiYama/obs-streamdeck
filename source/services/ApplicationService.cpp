@@ -251,7 +251,7 @@ ApplicationService::onApplicationLoaded() {
 
 	dialog.open();
 
-	obsManager()->loadCollections();
+	obsManager()->activeCollection(true)->resourceScenes();
 
 	logInfo("Application Loaded.");
 
@@ -260,7 +260,6 @@ ApplicationService::onApplicationLoaded() {
 
 bool
 ApplicationService::onApplicationExit() {
-	obsManager()->saveCollections();
 	disconnectStreamOutputHandler();
 	disconnectRecordOutputHandler();
 	return true;

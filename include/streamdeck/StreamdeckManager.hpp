@@ -132,7 +132,7 @@ class StreamdeckManager : public QObject, public SafeEventObservable<Streamdeck:
 	*/
 	public:
 
-		StreamdeckManager(short listen_port = OBS_PORT);
+		StreamdeckManager();
 		
 		~StreamdeckManager();
 
@@ -142,6 +142,9 @@ class StreamdeckManager : public QObject, public SafeEventObservable<Streamdeck:
 	====================================================================================================
 	*/
 	public:
+
+		void
+		listen(short listen_port = OBS_PORT);
 
 		template<typename T>
 		bool

@@ -29,7 +29,7 @@
 ========================================================================================================
 */
 
-enum class obs_save_event { OBS_SAVE_EVENT_SAVED, OBS_SAVE_EVENT_LOADED };
+enum class obs_save_event { OBS_SAVE_EVENT_SAVING, OBS_SAVE_EVENT_LOADING };
 
 class Service {
 
@@ -44,6 +44,8 @@ class Service {
 
 		static OBSManager* _obs_manager;
 
+		static bool _obs_started;
+
 	/*
 	====================================================================================================
 		Static Class Methods
@@ -52,7 +54,10 @@ class Service {
 	private:
 	
 		static void
-		OnObsFrontendEvent(obs_frontend_event event, void* service);
+		OnOBSFrontendEvent(obs_frontend_event event, void* service);
+
+		static void
+		OnOBSSaveEvent(obs_data_t* save_data, bool saving, void* private_data);
 
 	/*
 	====================================================================================================
@@ -68,6 +73,7 @@ class Service {
 	protected:
 
 		UnsafeEventObservable<obs_frontend_event> m_frontendEvent;
+		UnsafeEventObservable<obs_save_event> m_saveEvent;
 
 	/*
 	====================================================================================================
@@ -168,6 +174,9 @@ class ServiceT : private Service,
 
 		void
 		setupEvent(obs_frontend_event event, obs_frontend_callback handler);
+
+		void
+		setupEvent(obs_save_event event, obs_save_callback handler);
 
 		void
 		setupEvent(

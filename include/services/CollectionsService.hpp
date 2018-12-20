@@ -48,6 +48,9 @@ class CollectionsService : public ServiceT<CollectionsService> {
 	private:
 
 		bool
+		onCollectionLoading(const obs_data_t* data);
+
+		bool
 		onCollectionsListChanged();
 
 		bool

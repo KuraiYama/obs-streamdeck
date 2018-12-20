@@ -16,6 +16,7 @@
 /*
  * Plugin Includes
  */
+#include "include/obs/OBSStorage.h"
 #include "include/common/Memory.hpp"
 //#include "include/obs/Item.hpp"
 
@@ -42,7 +43,7 @@ typedef struct Scenes {
 	std::vector<ScenePtr> _scenes;
 } Scenes;
 
-class Scene {
+class Scene : public OBSStorable {
 
 	/*
 	====================================================================================================
