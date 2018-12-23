@@ -80,10 +80,10 @@ ScenesService::onSceneSwitched() {
 		.toStdString()
 	);
 
-	if(m_sceneUpdated != nullptr) {
+	/*if(m_sceneUpdated != nullptr) {
 		m_sceneUpdated = nullptr;
 		return true;
-	}
+	}*/
 
 	bool activ = true;
 	if(m_sceneToSwitch != 0x0) {
