@@ -399,7 +399,10 @@ Streamdeck::sendScenesMessage(
 	QJsonArray result;
 	for(auto iter = scenes._scenes.begin(); iter < scenes._scenes.end(); iter++) {
 		QJsonObject scene;
-		addToJsonObject(scene, "id", QString("%1").arg((*iter)->id()));
+		uint32_t id = (*iter)->id();
+		if(scenes._collection != nullptr)
+			id += (scenes._collection->id() << 16);
+		addToJsonObject(scene, "id", QString("%1").arg(id));
 		addToJsonObject(scene, "name", QString::fromStdString((*iter)->name()));
 
 		addToJsonArray(result, scene);
@@ -420,7 +423,8 @@ Streamdeck::sendSceneMessage(
 	bool event_mode
 ) {
 	QJsonObject response = buildJsonResponse(event, QString::fromStdString(resource), event_mode);
-	addToJsonObject(response, "result", QString("%1").arg(scene->id()));
+	uint32_t id = (scene->collection()->id() << 16) + scene->id();
+	addToJsonObject(response, "result", QString("%1").arg(id));
 	addToJsonObject(response, "collection", QString("%1").arg(scene->collection()->id()));
 
 	log_custom(LOG_STREAMDECK) << QString("Send scene (Event %1).").arg((int)event).toStdString();
@@ -678,8 +682,8 @@ Streamdeck::unlockEventAuthorizations(const rpc_event event) {
 			break;
 
 		case rpc_event::MAKE_SCENE_ACTIVE:
-			setEventAuthorizations(rpc_event::MAKE_SCENE_ACTIVE, EVENT_READ);
 		case rpc_event::MAKE_COLLECTION_ACTIVE:
+			setEventAuthorizations(rpc_event::MAKE_SCENE_ACTIVE, EVENT_READ);
 		case rpc_event::GET_COLLECTIONS:
 		case rpc_event::GET_SCENES:
 			setEventAuthorizations(rpc_event::MAKE_COLLECTION_ACTIVE, EVENT_READ_WRITE);

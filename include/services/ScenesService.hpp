@@ -36,7 +36,9 @@ class ScenesService : public ServiceT<ScenesService> {
 	*/
 	private:
 
-		unsigned long long m_sceneToSwitch;
+		std::shared_ptr<Scene> m_sceneUpdated;
+
+		uint16_t m_sceneToSwitch;
 
 	/*
 	====================================================================================================

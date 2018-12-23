@@ -16,8 +16,8 @@
 /*
  * Plugin Includes
  */
-#include "include/obs/OBSStorage.h"
 #include "include/common/Memory.hpp"
+#include "include/obs/OBSStorage.h"
 //#include "include/obs/Item.hpp"
 
 /*
@@ -72,10 +72,6 @@ class Scene : public OBSStorable {
 
 		//std::map<int64_t, Item> m_items;
 
-		unsigned long long m_identifier;
-
-		std::string m_name;
-
 		Collection* m_parentCollection;
 
 		obs_scene_t* m_scene;
@@ -89,9 +85,9 @@ class Scene : public OBSStorable {
 	*/
 	public:
 
-		Scene(Collection* collection, unsigned long long id, std::string name);
+		Scene(Collection* collection, uint16_t id, std::string name);
 
-		Scene(Collection* collection, unsigned long long id, obs_source_t* source);
+		Scene(Collection* collection, uint16_t id, obs_source_t* source);
 
 		~Scene();
 
@@ -102,28 +98,22 @@ class Scene : public OBSStorable {
 	*/
 	public:
 
-		Memory
-		toMemory(size_t& size) const;
-
-		/*void
-		buildItems();*/
-
-		std::string
-		name() const;
-
-		unsigned long long
-		id() const;
-
-		void
-		source(obs_source_t* obs_source);
-
-		obs_scene_t*
-		scene() const;
+		bool
+		makeActive();
 
 		Collection*
 		collection() const;
 
-		/*Items
-		items() const;*/
+		obs_scene_t*
+		scene() const;
+
+		obs_source_t*
+		source() const;
+
+		void
+		source(obs_source_t* obs_source);
+
+		Memory
+		toMemory(size_t& size) const;
 
 };

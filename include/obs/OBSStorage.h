@@ -115,12 +115,10 @@ class OBSStorage<T, true> {
 	====================================================================================================
 	*/
 	private:
+		
+		std::map<uint16_t, std::shared_ptr<T>> m_pointers;
 
-		std::set<std::shared_ptr<T>> m_pointers;
-
-		std::map<std::string, std::shared_ptr<T>*> m_ptrByName;
-
-		std::map<uint16_t, std::shared_ptr<T>*> m_ptrById;
+		std::map<std::string, uint16_t> m_idx;
 
 	/*
 	====================================================================================================
@@ -129,43 +127,78 @@ class OBSStorage<T, true> {
 	*/
 	public:
 
-		std::shared_ptr<T>
+		std::shared_ptr<T>&
 		push(T* storable) {
-			for(auto iter = m_pointers.begin(); iter != m_pointers.end(); iter++) {
-				if((*iter).get() == storable)
-					return (*iter);
+			std::map<uint16_t, std::shared_ptr<T>>::iterator iter = m_pointers.find(storable->id());
+			if(iter != m_pointers.end()) {
+				return iter->second;
 			}
-			auto iter = m_pointers.insert(std::shared_ptr<T>(storable));
-			m_ptrByName[storable->name()] = &(*iter);
-			m_ptrById[storable->id()] = &(*iter);
+			
+			m_idx[storable->name()] = storable->id();
+			return m_pointers.emplace(storable->id(), storable).first->second;
+		}
 
-			return *iter;
+		std::shared_ptr<T>&
+		push(const std::shared_ptr<T>& ptr) {
+			std::map<uint16_t, std::shared_ptr<T>>::iterator iter = m_pointers.find(ptr->id());
+			if(iter != m_pointers.end()) {
+				return iter->second;
+			}
+
+			m_idx[ptr->name()] = ptr->id();
+			return m_pointers.emplace(ptr->id(), ptr).first->second;
 		}
 
 		std::shared_ptr<T>
 		pop(uint16_t identifier) {
-			auto iter = m_ptrById.find(identifier);
-			if(iter != m_ptrById.end()) {
-				std::shared_ptr<T> value = *(iter->second);
-				m_ptrByName.erase(value->name());
-				m_ptrById.erase(value->id());
-				m_pointers.erase(value);
-				return value;
+			std::map<uint16_t, std::shared_ptr<T>>::iterator iter = m_pointers.find(identifier);
+			if(iter != m_pointers.end()) {
+				std::shared_ptr<T> ptr = iter->second;
+				m_pointers.erase(iter);
+				m_idx.erase(ptr->name());
+				return ptr;
 			}
 			return nullptr;
 		}
 
 		std::shared_ptr<T>
 		pop(const std::string& name) {
-			auto iter = m_ptrByName.find(name);
-			if(iter != m_ptrByName.end()) {
-				std::shared_ptr<T> value = *(iter->second);
-				m_ptrByName.erase(value->name());
-				m_ptrById.erase(value->id());
-				m_pointers.erase(value);
-				return value;
+			std::map<std::string, uint16_t>::iterator iter = m_idx.find(name);
+			if(iter != m_idx.end()) {
+				std::shared_ptr<T> ptr = m_pointers[iter->second];
+				m_pointers.erase(iter->second);
+				m_idx.erase(iter);
+				return ptr;
 			}
 			return nullptr;
+		}
+
+		std::shared_ptr<T>
+		move(const std::string name, const std::string new_name) {
+			std::map<std::string, uint16_t>::iterator iter = m_idx.find(name);
+			if(iter != m_idx.end()) {
+				m_idx.emplace(new_name, iter->second);
+				auto ptr = m_pointers.find(iter->second)->second;
+				ptr->name(new_name);
+				m_idx.erase(iter);
+				return ptr;
+			}
+			return nullptr;
+		}
+
+		typename std::map<uint16_t, std::shared_ptr<T>>::const_iterator
+		begin() const {
+			return m_pointers.begin();
+		}
+
+		typename std::map<uint16_t, std::shared_ptr<T>>::const_iterator
+		end() const {
+			return m_pointers.end();
+		}
+
+		size_t
+		size() const {
+			return m_pointers.size();
 		}
 
 	/*
@@ -176,19 +209,19 @@ class OBSStorage<T, true> {
 	public:
 
 		T*
-		operator [](const std::string& name) {
-			auto iter = m_ptrByName.find(name);
-			if(iter != m_ptrByName.end()) {
-				return *(iter->second).get();
+		operator[](const std::string& name) const {
+			std::map<std::string, uint16_t>::const_iterator iter = m_idx.find(name);
+			if(iter != m_idx.end()) {
+				return m_pointers.find(iter->second)->second.get();
 			}
 			return nullptr;
 		}
 
 		T*
-		operator [](uint16_t identifier) {
-			auto iter = m_ptrById.find(identifier);
-			if(iter != m_ptrById.end()) {
-				return *(iter->second).get();
+		operator[](uint16_t identifier) const {
+			std::map<uint16_t, std::shared_ptr<T>>::const_iterator iter = m_pointers.find(identifier);
+			if(iter != m_pointers.end()) {
+				return iter->second.get();
 			}
 			return nullptr;
 		}

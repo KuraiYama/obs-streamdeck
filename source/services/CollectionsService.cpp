@@ -10,7 +10,10 @@
 ========================================================================================================
 */
 
-CollectionsService::CollectionsService() : ServiceT("CollectionsService", "SceneCollectionsService") {
+CollectionsService::CollectionsService() :
+	ServiceT("CollectionsService", "SceneCollectionsService"),
+	m_collectionToSwitch(0x0),
+	m_collectionUpdated(nullptr) {
 
 	this->setupEvent(obs_save_event::OBS_SAVE_EVENT_LOADING, &CollectionsService::onCollectionLoading);
 
@@ -56,24 +59,35 @@ CollectionsService::~CollectionsService() {
 
 bool
 CollectionsService::onCollectionLoading(const obs_data_t* data) {
-	//Collection* collection = obsManager()->activeCollection();
+
+	Q_UNUSED(data);
+
+	obsManager()->makeActive();
+
+	// OBS Manager is loading collections, we don't do anything
+	if(obsManager()->isLoadingCollection())
+		return true;
+
+	obsManager()->activeCollection()->switching = true;
+
+	obsManager()->activeCollection()->synchronize();
+
 	logInfo("Collection Loaded.");
 	return true;
 }
 
 bool
 CollectionsService::onCollectionsListChanged() {
-	std::shared_ptr<Collection> collection_updated = nullptr;
-	obs::collection_event evt = obsManager()->updateCollections(collection_updated);
+	obs::collection_event evt = obsManager()->updateCollections(m_collectionUpdated);
 	switch(evt) {
 		case obs::collection_event::COLLECTION_ADDED:
-			return onCollectionAdded(*collection_updated.get());
+			return onCollectionAdded(*m_collectionUpdated.get());
 			break;
 		case obs::collection_event::COLLECTION_REMOVED:
-			return onCollectionRemoved(*collection_updated.get());
+			return onCollectionRemoved(*m_collectionUpdated.get());
 			break;
 		case obs::collection_event::COLLECTION_RENAMED:
-			return onCollectionUpdated(*collection_updated.get());
+			return onCollectionUpdated(*m_collectionUpdated.get());
 			break;
 	}
 	return false;
@@ -82,22 +96,37 @@ CollectionsService::onCollectionsListChanged() {
 bool
 CollectionsService::onCollectionSwitched() {
 
-	// During loading, we don't send anything to the streamdecks
-	if(obsManager()->isLoadingCollections())
+	// OBS Manager is loading collections, we don't notify anything
+	if(obsManager()->isLoadingCollection())
 		return true;
 
-	Collection* collection = obsManager()->activeCollection();
+	obsManager()->activeCollection()->switching = false;
+	obsManager()->activeCollection()->makeActive();
 
+	Collection* collection = obsManager()->activeCollection();
 	logInfo(QString("Collection switched to %1.")
 		.arg(collection->name().c_str())
 		.toStdString()
 	);
 
+	if(m_collectionUpdated != nullptr) {
+		m_collectionUpdated = nullptr;
+		return true;
+	}
+
+	bool active = true;
+	if(m_collectionToSwitch != 0x0) {
+		rpc_adv_response<void> response = response_void(nullptr, "onMakeCollectionActive");
+		response.event = Streamdeck::rpc_event::MAKE_COLLECTION_ACTIVE;
+		m_collectionToSwitch = 0x0;
+		active &= streamdeckManager()->commit_all(response, &StreamdeckManager::setAcknowledge);
+	}
+
 	rpc_adv_response<CollectionPtr> response = response_collection(nullptr, "onCollectionSwitched");
 	response.event = Streamdeck::rpc_event::COLLECTION_SWITCHED_SUBSCRIBE;
 	response.data = collection;
 
-	return streamdeckManager()->commit_all(response, &StreamdeckManager::setEvent);
+	return active && streamdeckManager()->commit_all(response, &StreamdeckManager::setEvent);
 }
 
 bool
@@ -261,13 +290,17 @@ CollectionsService::onMakeCollectionActive(const rpc_event_data& data) {
 			return false;
 		}
 
-		unsigned long long id = data.args[0].toString().toLongLong();
-		if(!obsManager()->switchCollection(id)) {
+		m_collectionToSwitch = data.args[0].toString().toShort();
+		if(!obsManager()->switchCollection(m_collectionToSwitch)) {
 			logError("The required collection doesn't exist, or can't be switched to.");
+			m_collectionToSwitch = 0x0;
 			return false;
 		}
 
-		return streamdeckManager()->commit_to(response, &StreamdeckManager::setAcknowledge);
+		// Acknowledge is sent when collection has been switched
+		return true;
+
+		//return streamdeckManager()->commit_to(response, &StreamdeckManager::setAcknowledge);
 	}
 
 	logError("MakeCollectionActive not called by MAKE_COLLECTION_ACTIVE.");

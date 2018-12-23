@@ -33,53 +33,6 @@ class OBSManager {
 
 	/*
 	====================================================================================================
-		Types Definitions
-	====================================================================================================
-	*/
-	private:
-
-		class FileLoader {
-
-			/*
-			============================================================================================
-				Instance Data Members
-			============================================================================================
-			*/
-			private:
-
-				std::fstream m_stream;
-
-			/*
-			============================================================================================
-				Constructors / Destructor
-			============================================================================================
-			*/
-			public:
-
-				FileLoader(const char* filename, std::ios_base::openmode mode = std::ios::in);
-
-				~FileLoader();
-
-			/*
-			============================================================================================
-				Instance Methods
-			============================================================================================
-			*/
-			public:
-
-				bool
-				open(const char* filename, std::ios_base::openmode mode);
-
-				size_t
-				read(char* buffer, size_t size);
-
-				size_t
-				write(char* buffer, size_t size);
-
-		};
-
-	/*
-	====================================================================================================
 		Instance Data Members
 	====================================================================================================
 	*/
@@ -91,7 +44,7 @@ class OBSManager {
 
 		uint16_t m_lastCollectionID;
 
-		bool m_isLoadingCollections;
+		bool m_isLoadingCollection;
 
 	/*
 	====================================================================================================
@@ -111,39 +64,37 @@ class OBSManager {
 	*/
 	public:
 
+		void
+		loadCollections(OBSStorage<Collection>& collections, const uint16_t last_collection_id);
+
+		bool
+		isLoadingCollection() const;
+
 		obs::collection_event
 		updateCollections(std::shared_ptr<Collection>& collection_updated);
 
 		void
-		loadScenes(Collection& collection);
-
-		obs::scene_event
-		updateScenes(Collection& collection, std::shared_ptr<Scene>& scene_updated);
-
-		Collection*
-		activeCollection(bool force_reset = false) const;
+		makeActive();
 
 		bool
-		switchCollection(unsigned long long id);
+		switchCollection(Collection* collection);
+
+		bool
+		switchCollection(uint16_t id);
+
+		bool
+		switchCollection(const char* name);
 
 		Collection*
-		collection(unsigned long long id) const;
+		activeCollection() const;
+
+		Collection*
+		collection(uint16_t id) const;
 
 		Collections
 		collections() const;
 
-		bool
-		isLoadingCollections() const;
-
-	private:
-
-		std::map<std::string, Collection*>
-		loadCollections();
-
-		void
-		saveCollections();
-
-		void
-		extractFromOBSCollections(std::map<std::string, Collection*>& collections);
+		obs::scene_event
+		updateScenes(Collection& collection, std::shared_ptr<Scene>& scene_updated);
 
 };

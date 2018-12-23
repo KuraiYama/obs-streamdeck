@@ -34,6 +34,17 @@ class CollectionsService : public ServiceT<CollectionsService> {
 		Constructors / Destructor
 	====================================================================================================
 	*/
+	private:
+
+		std::shared_ptr<Collection> m_collectionUpdated;
+
+		uint16_t m_collectionToSwitch;
+
+	/*
+	====================================================================================================
+		Constructors / Destructor
+	====================================================================================================
+	*/
 	public:
 
 		CollectionsService();

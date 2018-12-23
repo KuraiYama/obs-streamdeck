@@ -65,11 +65,17 @@ class Collection : public OBSStorable {
 		Instance Data Members
 	====================================================================================================
 	*/
+	public:
+
+		bool switching;
+
 	private:
 
-		std::map<unsigned long long, std::shared_ptr<Scene>> m_scenes;
+		OBSStorage<Scene> m_scenes;
 
 		mutable Scene* m_activeScene;
+
+		uint16_t m_lastSceneID;
 
 	/*
 	====================================================================================================
@@ -90,31 +96,30 @@ class Collection : public OBSStorable {
 	public:
 
 		void
-		extractFromOBSScenes(unsigned long long& next_scene_identifier);
+		makeActive();
 
 		void
-		resourceScenes() const;
+		loadScenes();
+
+		void
+		synchronize();
 
 		obs::scene_event
-		updateScenes(unsigned long long& next_scene_identifier, std::shared_ptr<Scene>& scene_updated);
-
-		Scene*
-		activeScene(bool force_reset = false) const;
+		updateScenes(std::shared_ptr<Scene>& scene_updated);
 
 		bool
-		switchScene(unsigned long long id);
+		switchScene(uint16_t id);
 
-		Memory
-		toMemory(size_t& size) const;
+		bool
+		switchScene(const char* name);
 
-	/*
-	====================================================================================================
-		Accessors
-	====================================================================================================
-	*/
-	public:
+		Scene*
+		activeScene() const;
 
 		Scenes
 		scenes() const;
+
+		Memory
+		toMemory(size_t& size) const;
 
 };
