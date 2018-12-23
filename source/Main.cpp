@@ -65,7 +65,7 @@ obs_module_load(void) {
 	Service::_streamdeck_manager = new StreamdeckManager();
 	Service::_obs_manager = new OBSManager();
 
-	services.push_back((Service*)new ApplicationService(parent));
+	services.push_back((Service*)new ApplicationService(parent, "database.dat"));
 	services.push_back((Service*)new StreamingService());
 	services.push_back((Service*)new RecordingService());
 	services.push_back((Service*)new CollectionsService());

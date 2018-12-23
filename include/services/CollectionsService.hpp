@@ -34,6 +34,17 @@ class CollectionsService : public ServiceT<CollectionsService> {
 		Constructors / Destructor
 	====================================================================================================
 	*/
+	private:
+
+		std::shared_ptr<Collection> m_collectionUpdated;
+
+		uint16_t m_collectionToSwitch;
+
+	/*
+	====================================================================================================
+		Constructors / Destructor
+	====================================================================================================
+	*/
 	public:
 
 		CollectionsService();
@@ -46,6 +57,9 @@ class CollectionsService : public ServiceT<CollectionsService> {
 	====================================================================================================
 	*/
 	private:
+
+		bool
+		onCollectionLoading(const obs_data_t* data);
 
 		bool
 		onCollectionsListChanged();

@@ -18,6 +18,7 @@
  * Plugin Includes
  */
 #include "include/common/Memory.hpp"
+#include "include/obs/OBSStorage.h"
 #include "include/obs/OBSEvents.hpp"
 #include "include/obs/Scene.hpp"
 
@@ -39,7 +40,7 @@ typedef Collection* CollectionPtr;
 
 typedef std::vector<Collection*> Collections;
 
-class Collection {
+class Collection : public OBSStorable {
 
 	/*
 	====================================================================================================
@@ -64,15 +65,17 @@ class Collection {
 		Instance Data Members
 	====================================================================================================
 	*/
+	public:
+
+		bool switching;
+
 	private:
 
-		std::map<unsigned long long, std::shared_ptr<Scene>> m_scenes;
-
-		std::string m_name;
-
-		unsigned long long m_identifier;
+		OBSStorage<Scene> m_scenes;
 
 		mutable Scene* m_activeScene;
+
+		uint16_t m_lastSceneID;
 
 	/*
 	====================================================================================================
@@ -81,7 +84,7 @@ class Collection {
 	*/
 	public:
 
-		Collection(unsigned long long id, std::string name);
+		Collection(uint16_t id, std::string name);
 
 		~Collection();
 
@@ -93,30 +96,30 @@ class Collection {
 	public:
 
 		void
-		extractFromOBSScenes(unsigned long long& next_scene_identifier);
+		makeActive();
+
+		void
+		loadScenes();
+
+		void
+		synchronize();
 
 		obs::scene_event
-		updateScenes(unsigned long long& next_scene_identifier, std::shared_ptr<Scene>& scene_updated);
+		updateScenes(std::shared_ptr<Scene>& scene_updated);
+
+		bool
+		switchScene(uint16_t id);
+
+		bool
+		switchScene(const char* name);
 
 		Scene*
 		activeScene() const;
 
-		bool
-		activeScene(unsigned long long id);
+		Scenes
+		scenes() const;
 
 		Memory
 		toMemory(size_t& size) const;
-
-		unsigned long long
-		id() const;
-
-		std::string
-		name() const;
-
-		void
-		name(std::string new_name);
-
-		Scenes
-		scenes() const;
 
 };

@@ -43,7 +43,8 @@ template<>
 inline bool
 rpc2json(QJsonObject& response, const ScenePtr& data) {
 	QJsonObject data_json;
-	Streamdeck::addToJsonObject(data_json, "id", QString("%1").arg(data->id()));
+	uint32_t id = (data->collection()->id() << 16) + data->id();
+	Streamdeck::addToJsonObject(data_json, "id", QString("%1").arg(id));
 	Streamdeck::addToJsonObject(data_json, "name", data->name().c_str());
 	Streamdeck::addToJsonObject(response["result"], "data", data_json);
 	return true;

@@ -11,7 +11,9 @@
 */
 
 ScenesService::ScenesService() : 
-	ServiceT("ScenesService", "ScenesService") {
+	ServiceT("ScenesService", "ScenesService"),
+	m_sceneUpdated(nullptr),
+	m_sceneToSwitch(0x0) {
 
 	this->setupEvent(obs_frontend_event::OBS_FRONTEND_EVENT_SCENE_LIST_CHANGED,
 		&ScenesService::onScenesListChanged);
@@ -49,45 +51,54 @@ ScenesService::~ScenesService() {
 
 bool
 ScenesService::onScenesListChanged() {
-	std::shared_ptr<Scene> scene_updated = nullptr;
-	obs::scene_event evt = obsManager()->updateScenes(*obsManager()->activeCollection(), scene_updated);
+	obs::scene_event evt = obsManager()->activeCollection()->updateScenes(m_sceneUpdated);
 	switch(evt) {
-		case obs::scene_event::SCENE_ADDED:
-			return onSceneAdded(*scene_updated.get());
-			break;
-		case obs::scene_event::SCENE_REMOVED:
-			return onSceneRemoved(*scene_updated.get());
-			break;
-		case obs::scene_event::SCENE_RENAMED:
-			return onSceneUpdated(*scene_updated.get());
-			break;
+	case obs::scene_event::SCENE_ADDED:
+		return onSceneAdded(*m_sceneUpdated.get());
+		break;
+	case obs::scene_event::SCENE_REMOVED:
+		return onSceneRemoved(*m_sceneUpdated.get());
+		break;
+	case obs::scene_event::SCENE_RENAMED:
+		return onSceneUpdated(*m_sceneUpdated.get());
+		break;
 	}
 	return true;
 }
 
 bool
 ScenesService::onSceneSwitched() {
-	// During loading, we don't send anything to the streamdecks
-	if(obsManager()->isLoadingCollections())
+
+	// We are loading or switching collections - we don't notify the switch scene
+	if(obsManager()->isLoadingCollection() || obsManager()->activeCollection()->switching)
 		return true;
 
-	Collection* current_collection = obsManager()->activeCollection();
-
-	// No switch when current collection is not computed
-	if(current_collection == nullptr)
-		return true;
-
-	Scene* scene = current_collection->activeScene();
+	obsManager()->activeCollection()->makeActive();
+	Scene* scene = obsManager()->activeCollection()->activeScene();
 	logInfo(QString("Scene switched to %1.")
 		.arg(scene->name().c_str())
 		.toStdString()
 	);
 
+	if(m_sceneUpdated != nullptr) {
+		m_sceneUpdated = nullptr;
+		return true;
+	}
+
+	bool activ = true;
+	if(m_sceneToSwitch != 0x0) {
+		rpc_adv_response<bool> response_switch = response_bool(nullptr, "onSceneSwitched");
+		response_switch.event = Streamdeck::rpc_event::MAKE_SCENE_ACTIVE;
+		response_switch.data = m_sceneToSwitch == obsManager()->activeCollection()->activeScene()->id();
+		m_sceneToSwitch = 0x0;
+		activ &= streamdeckManager()->commit_all(response_switch, &StreamdeckManager::setResult);
+	}
+
 	rpc_adv_response<ScenePtr> response = response_scene(nullptr, "onSceneSwitched");
 	response.event = Streamdeck::rpc_event::SCENE_SWITCHED_SUBSCRIBE;
 	response.data = scene;
 
-	return streamdeckManager()->commit_all(response, &StreamdeckManager::setEvent);
+	return activ && streamdeckManager()->commit_all(response, &StreamdeckManager::setEvent);
 }
 
 bool
@@ -188,7 +199,7 @@ ScenesService::onGetScenes(const rpc_event_data& data) {
 		logInfo("Scenes list required.");
 
 		if(!checkResource(&data, QRegExp("getScenes"))) {
-			logWarning("Unknown resource for activeCollection.");
+			logWarning("Unknown resource for getScenes.");
 		}
 
 		if(data.args.size() <= 0) {
@@ -211,7 +222,7 @@ ScenesService::onGetScenes(const rpc_event_data& data) {
 #endif
 		}
 		else {
-			unsigned long long id = QString(data.args[0].toString()).toLongLong();
+			uint16_t id = QString(data.args[0].toString()).toShort();
 			collection = obsManager()->collection(id);
 		}
 
@@ -248,6 +259,7 @@ ScenesService::onGetActiveScene(const rpc_event_data& data) {
 bool
 ScenesService::onMakeSceneActive(const rpc_event_data& data) {
 	rpc_adv_response<bool> response = response_bool(&data, "onMakeSceneActive");
+
 	if(data.event == Streamdeck::rpc_event::MAKE_SCENE_ACTIVE) {
 		response.event = Streamdeck::rpc_event::MAKE_SCENE_ACTIVE;
 
@@ -260,9 +272,31 @@ ScenesService::onMakeSceneActive(const rpc_event_data& data) {
 			return false;
 		}
 
-		unsigned long long id = data.args[0].toString().toLongLong();
-		response.data = obsManager()->activeCollection()->activeScene(id);
+		uint32_t id = data.args[0].toString().toInt();
+		uint16_t collection_id = (id & 0xFFFF0000) >> 16;
+		uint16_t scene_id = id & 0x0000FFFF;
 
+		if(collection_id != obsManager()->activeCollection()->id()) {
+			logWarning("Scene doesn't belong to the active collection. Abort.");
+		}
+
+		response.data = scene_id == obsManager()->activeCollection()->activeScene()->id();
+
+		// Return when switched is finished
+		if(!response.data && collection_id == obsManager()->activeCollection()->id() &&
+			obsManager()->activeCollection()->switchScene(scene_id)) {
+			m_sceneToSwitch = scene_id;
+			return true;
+		}
+		else if(response.data) {
+			rpc_adv_response<ScenePtr> response_switch = response_scene(nullptr, "onSceneSwitched");
+			response_switch.event = Streamdeck::rpc_event::SCENE_SWITCHED_SUBSCRIBE;
+			response_switch.data = obsManager()->activeCollection()->activeScene();
+
+			return streamdeckManager()->commit_to(response, &StreamdeckManager::setResult) &&
+				streamdeckManager()->commit_all(response_switch, &StreamdeckManager::setEvent);
+		}
+		
 		return streamdeckManager()->commit_to(response, &StreamdeckManager::setResult);
 	}
 

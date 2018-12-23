@@ -21,17 +21,13 @@ StreamdeckServer::~StreamdeckServer() {
 	log_info << "[Streamdeck Server] Close.";
 }
 
-StreamdeckManager::StreamdeckManager(short listen_port) : 
+StreamdeckManager::StreamdeckManager() : 
 	m_internalServer(this) {
 	for(int i = 1; i < (int)Streamdeck::rpc_event::COUNT; i++)
 		this->addEvent((Streamdeck::rpc_event)i);
 	
 	m_internalServer.connect(&m_internalServer, &StreamdeckServer::newConnection, this, 
 		&StreamdeckManager::onClientConnected);
-
-	m_internalServer.listen(QHostAddress::LocalHost, listen_port);
-
-	log_custom(LOG_STREAMDECK_MANAGER) << "[Streamdeck Manager] Server is listening.";
 }
 
 StreamdeckManager::~StreamdeckManager() {
@@ -57,6 +53,12 @@ StreamdeckManager::~StreamdeckManager() {
 	Connection Management
 ========================================================================================================
 */
+
+void
+StreamdeckManager::listen(short listen_port) {
+	m_internalServer.listen(QHostAddress::LocalHost, listen_port);
+	log_custom(LOG_STREAMDECK_MANAGER) << "[Streamdeck Manager] Server is listening.";
+}
 
 void
 StreamdeckServer::incomingConnection(qintptr socketDescriptor) {

@@ -41,6 +41,18 @@ ServiceT<T>::setupEvent(obs_frontend_event event, obs_frontend_callback handler)
 
 template<typename T>
 void
+ServiceT<T>::setupEvent(obs_save_event event, obs_save_callback handler) {
+	m_saveEvent.addEvent(event);
+	this->EventObserver<T, obs_save_event>::registerCallback<const obs_data_t*>(
+		event,
+		(obs_save_callback)handler,
+		reinterpret_cast<T*>(this)
+	);
+	m_saveEvent.addEventHandler(event, this);
+}
+
+template<typename T>
+void
 ServiceT<T>::setupEvent(
 	Streamdeck::rpc_event event, 
 	typename RPCHandler::template FuncWrapperB<void>::Callback handler
