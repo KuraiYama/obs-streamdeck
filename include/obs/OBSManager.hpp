@@ -19,7 +19,7 @@
  * Plugin Includes
  */
 #include "include/common/Memory.hpp"
-#include "include/obs/OBSStorage.h"
+#include "include/obs/OBSStorage.hpp"
 #include "include/obs/OBSEvents.hpp"
 #include "include/obs/Collection.hpp"
 

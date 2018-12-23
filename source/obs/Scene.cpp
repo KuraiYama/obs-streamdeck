@@ -102,6 +102,24 @@ Scene::makeActive() {
 ========================================================================================================
 */
 
+void
+Scene::synchronize() {
+	typedef bool (*callback_type)(obs_scene_t* scene, obs_sceneitem_t* item, void* private_data);
+	auto func = [](obs_scene_t* scene, obs_sceneitem_t* item, void* private_data) -> bool {
+		Scene& scene_ref = *reinterpret_cast<Scene*>(private_data);
+		if(scene != scene_ref.scene()) return false;
+		auto iter = scene_ref.m_items[obs_sceneitem_get_id(item)];
+		if(iter != nullptr) {
+			iter->item(item);
+		}
+		else {
+			scene_ref.m_items.push(new Item(&scene_ref, obs_sceneitem_get_id(item), item));
+		}
+		return true;
+	};
+	obs_scene_enum_items(m_scene, func, this);
+}
+
 /*
 ========================================================================================================
 	Accessors
@@ -128,4 +146,5 @@ Scene::source(obs_source_t* obs_source) {
 	m_source = obs_source;
 	m_name = obs_source_get_name(m_source);
 	m_scene = obs_scene_from_source(m_source);
+	this->synchronize();
 }

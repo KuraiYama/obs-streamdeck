@@ -14,6 +14,11 @@
 #include <obs-module.h>
 
 /*
+ * Plugin Includes
+ */
+#include "include/obs/OBSStorage.hpp"
+
+/*
 ========================================================================================================
 	Types Predeclarations
 ========================================================================================================
@@ -29,9 +34,14 @@ class Scene;
 ========================================================================================================
 */
 
-typedef std::vector<Item*> Items;
+typedef Item* ItemPtr;
 
-class Item {
+typedef struct Items {
+	Scene* _scene;
+	std::vector<Item*> _items;
+} Items;
+
+class Item : public OBSStorable {
 
 	/*
 	====================================================================================================
@@ -40,13 +50,11 @@ class Item {
 	*/
 	private:
 
-		std::string m_name;
-
 		Scene* m_parentScene;
 
 		obs_source_t* m_source;
 
-		obs_sceneitem_t* m_sceneItem;
+		obs_sceneitem_t* m_item;
 
 	/*
 	====================================================================================================
@@ -55,11 +63,9 @@ class Item {
 	*/
 	public:
 
-		Item(Scene* scene, obs_sceneitem_t* item);
+		Item(Scene* scene, uint16_t id, obs_sceneitem_t* item);
 
-		Item(const Item& item);
-
-		Item(const Item&& item);
+		Item(Scene* scene, uint16_t id, std::string name);
 
 		virtual ~Item();
 
@@ -70,17 +76,14 @@ class Item {
 	*/
 	public:
 
-		std::string
-		name() const;
-
-		std::string
-		completeName() const;
-
 		virtual const char*
 		type() const;
 
-		int64_t
-		id() const;
+		obs_sceneitem_t*
+		item() const;
+
+		void
+		item(obs_sceneitem_t* item);
 
 		bool
 		visible() const;
