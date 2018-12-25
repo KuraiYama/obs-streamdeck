@@ -27,7 +27,7 @@
 ========================================================================================================
 */
 
-class CollectionsService : public ServiceT<CollectionsService> {
+class CollectionsService : public ServiceImpl<CollectionsService> {
 
 	/*
 	====================================================================================================
@@ -59,7 +59,7 @@ class CollectionsService : public ServiceT<CollectionsService> {
 	private:
 
 		bool
-		onCollectionLoading(const obs_data_t* data);
+		onCollectionLoading(const obs::save::data& data);
 
 		bool
 		onCollectionsListChanged();
@@ -77,18 +77,18 @@ class CollectionsService : public ServiceT<CollectionsService> {
 		onCollectionSwitched();
 
 		bool
-		subscribeCollectionChange(const rpc_event_data& data);
+		subscribeCollectionChange(const rpc::request& data);
 
 		bool
-		onFetchCollectionsSchema(const rpc_event_data& data);
+		onFetchCollectionsSchema(const rpc::request& data);
 
 		bool
-		onGetCollections(const rpc_event_data& data);
+		onGetCollections(const rpc::request& data);
 
 		bool
-		onGetActiveCollection(const rpc_event_data& data);
+		onGetActiveCollection(const rpc::request& data);
 
 		bool
-		onMakeCollectionActive(const rpc_event_data& data);
+		onMakeCollectionActive(const rpc::request& data);
 
 };

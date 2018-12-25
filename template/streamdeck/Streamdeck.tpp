@@ -58,12 +58,12 @@ rpc2json(QJsonObject& response, const ScenePtr& data) {
 
 template<typename T>
 bool
-Streamdeck::sendEvent(const rpc_event event, const T& data, bool event_mode) {
+Streamdeck::sendEvent(const rpc::event event, const T& data, bool event_mode) {
 	if(m_subscribedResources.find(event) == m_subscribedResources.end())
 		return false;
 
 	QJsonObject response = buildJsonResult(
-		rpc_event::NO_EVENT,
+		rpc::event::NO_EVENT,
 		QString::fromStdString(m_subscribedResources[event]),
 		event_mode
 	);
@@ -83,7 +83,7 @@ Streamdeck::sendEvent(const rpc_event event, const T& data, bool event_mode) {
 template<typename T>
 bool
 Streamdeck::sendResult(
-	const rpc_event event,
+	const rpc::event event,
 	const std::string& resource,
 	const T& data,
 	bool event_mode

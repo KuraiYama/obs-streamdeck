@@ -103,6 +103,10 @@ Scene::makeActive() {
 */
 
 void
+Scene::loadItems() {
+}
+
+void
 Scene::synchronize() {
 	typedef bool (*callback_type)(obs_scene_t* scene, obs_sceneitem_t* item, void* private_data);
 	auto func = [](obs_scene_t* scene, obs_sceneitem_t* item, void* private_data) -> bool {

@@ -23,6 +23,7 @@
 /*
  * Plugin Includes
  */
+#include "include/rpc/RPCEvents.hpp"
 #include "include/obs/Collection.hpp"
 
 /*
@@ -138,55 +139,6 @@ class Streamdeck : public QObject {
 
 	/*
 	====================================================================================================
-		Types Definitions
-	====================================================================================================
-	*/
-	public:
-
-		enum class rpc_event {
-			ERROR = -1,
-			NO_EVENT = 0,
-			START_STREAMING = 1,
-			STOP_STREAMING = 2,
-			START_RECORDING = 3,
-			STOP_RECORDING = 4,
-			GET_COLLECTIONS = 5,
-			MAKE_COLLECTION_ACTIVE = 6,
-
-			MISSING_NO = 7,
-
-			FETCH_COLLECTIONS_SCHEMA = 8,
-			GET_SCENES = 9,
-			GET_SOURCES = 10,
-			MAKE_SCENE_ACTIVE = 11,
-			GET_ACTIVE_SCENE = 12,
-			MUTE_AUDIO_SOURCE = 13,
-			UNMUTE_AUDIO_SOURCE = 14,
-			HIDE_ITEM = 15,
-			SHOW_ITEM = 16,
-			SCENE_SWITCHED_SUBSCRIBE = 17,
-			SCENE_ADDED_SUBSCRIBE = 18,
-			SCENE_REMOVED_SUBSCRIBE = 19,
-			SOURCE_ADDED_SUBSCRIBE = 20,
-			SOURCE_REMOVED_SUBSCRIBE = 21,
-			SOURCE_UPDATED_SUBSCRIBE = 22,
-			ITEM_ADDED_SUBSCRIBED = 23,
-			ITEM_REMOVED_SUBSCRIBE = 24,
-			ITEM_UPDATED_SUBSCRIBE = 25,
-			STREAMING_STATUS_CHANGED_SUBSCRIBE = 26,
-			GET_ACTIVE_COLLECTION = 27,
-			COLLECTION_ADDED_SUBSCRIBE = 28,
-			COLLECTION_REMOVED_SUBSCRIBE = 29,
-			COLLECTION_SWITCHED_SUBSCRIBE = 30,
-			GET_RECORD_STREAM_STATE = 31,
-			COLLECTION_UPDATED_SUBSCRIBE = 32,
-			RECORDING_STATUS_CHANGED_SUBSCRIBE = 33,
-
-			COUNT,
-		};
-
-	/*
-	====================================================================================================
 		Static Class Constants
 	====================================================================================================
 	*/
@@ -209,10 +161,10 @@ class Streamdeck : public QObject {
 		createClient(qintptr socket_descriptor);
 
 		static QJsonObject
-		buildJsonResponse(const rpc_event event, const QString& resource, bool event_mode = false);
+		buildJsonResponse(const rpc::event event, const QString& resource, bool event_mode = false);
 
 		static QJsonObject
-		buildJsonResult(const rpc_event event, const QString& resource, bool event_mode = false);
+		buildJsonResult(const rpc::event event, const QString& resource, bool event_mode = false);
 
 		static void
 		addToJsonObject(QJsonObject& json_object, QString key, QJsonValue&& value);
@@ -233,9 +185,9 @@ class Streamdeck : public QObject {
 	*/
 	private:
 
-		std::map<rpc_event, std::string> m_subscribedResources;
+		std::map<rpc::event, std::string> m_subscribedResources;
 
-		byte m_authorizedEvents[1+(((int)rpc_event::COUNT-1)*2/8)];
+		byte m_authorizedEvents[1+(((int)rpc::event::COUNT-1)*2/8)];
 
 		StreamdeckClient& m_internalClient;
 
@@ -263,40 +215,58 @@ class Streamdeck : public QObject {
 		void
 		parse(
 			const QJsonDocument& json_quest,
-			Streamdeck::rpc_event& event,
+			rpc::event& event,
 			QString& service,
 			QString& method,
 			QVector<QVariant>& args
 		);
 
 		void
-		send(const rpc_event event, const QJsonDocument& json_quest);
+		send(
+			const rpc::event event,
+			const QJsonDocument& json_quest
+		);
 
 		bool
-		sendAcknowledge(const rpc_event event, const std::string& resource, bool event_mode = false);
+		sendAcknowledge(
+			const rpc::event event,
+			const std::string& resource,
+			bool event_mode = false
+		);
 
 		template<typename T>
 		bool
 		sendResult(
-			const rpc_event event,
+			const rpc::event event,
 			const std::string& resource,
 			const T& data,
 			bool event_mode = false
 		);
 
 		bool
-		sendSubscription(const rpc_event event, const std::string& resource, bool event_mode = false);
+		sendSubscription(
+			const rpc::event event,
+			const std::string& resource,
+			bool event_mode = false
+		);
 
 		template<typename T>
 		bool
-		sendEvent(const rpc_event event, const T& data, bool event_mode = false);
+		sendEvent(
+			const rpc::event event,
+			const T& data,
+			bool event_mode = false
+		);
 
 		bool
-		sendEvent(const rpc_event event, bool event_mode = false);
+		sendEvent(
+			const rpc::event event,
+			bool event_mode = false
+		);
 
 		bool
 		sendRecordStreamState(
-			const rpc_event event,
+			const rpc::event event,
 			const std::string& resource,
 			const std::string& streaming,
 			const std::string& recording,
@@ -305,14 +275,14 @@ class Streamdeck : public QObject {
 
 		bool
 		sendError(
-			const rpc_event event,
+			const rpc::event event,
 			const std::string& resource,
 			bool error,
 			bool event_mode = false
 		);
 
 		bool sendSchemaMessage(
-			const rpc_event event,
+			const rpc::event event,
 			const std::string& resource,
 			const Collections& collections,
 			bool event_mode = false
@@ -320,7 +290,7 @@ class Streamdeck : public QObject {
 
 		bool
 		sendCollectionsMessage(
-			const rpc_event event,
+			const rpc::event event,
 			const std::string& resource,
 			const Collections& collections,
 			bool event_mode = false
@@ -328,7 +298,7 @@ class Streamdeck : public QObject {
 
 		bool
 		sendCollectionMessage(
-			const rpc_event event,
+			const rpc::event event,
 			const std::string& resource,
 			const CollectionPtr& collection,
 			bool event_mode = false
@@ -336,7 +306,7 @@ class Streamdeck : public QObject {
 
 		bool
 		sendScenesMessage(
-			const rpc_event event,
+			const rpc::event event,
 			const std::string& resource,
 			const Scenes& scenes,
 			bool event_mode = false
@@ -344,28 +314,34 @@ class Streamdeck : public QObject {
 
 		bool
 		sendSceneMessage(
-			const rpc_event event,
+			const rpc::event event,
 			const std::string& resource,
 			const ScenePtr& scene,
 			bool event_mode = false
 		);
 
 		bool
-		checkEventAuthorizations(const rpc_event event, byte flag);
+		checkEventAuthorizations(
+			const rpc::event event,
+			byte flag
+		);
 
 		void
-		setEventAuthorizations(const rpc_event event, byte flag);
+		setEventAuthorizations(
+			const rpc::event event,
+			byte flag
+		);
 
 		void
-		lockEventAuthorizations(const rpc_event event);
+		lockEventAuthorizations(const rpc::event event);
 
 		void
-		unlockEventAuthorizations(const rpc_event event);
+		unlockEventAuthorizations(const rpc::event event);
 
 	private:
 
 		void
-		logEvent(const rpc_event event, const QJsonDocument& json_quest);
+		logEvent(const rpc::event event, const QJsonDocument& json_quest);
 
 	/*
 	====================================================================================================
@@ -400,7 +376,7 @@ class Streamdeck : public QObject {
 		void
 		received(
 			Streamdeck* client,
-			rpc_event event,
+			rpc::event event,
 			QString service,
 			QString method, 
 			QVector<QVariant>,

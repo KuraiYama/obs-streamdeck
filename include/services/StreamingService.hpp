@@ -23,7 +23,7 @@
  ========================================================================================================
  */
 
-class StreamingService : public ServiceT<StreamingService> {
+class StreamingService : public ServiceImpl<StreamingService> {
 	
 	/*
 	====================================================================================================
@@ -78,6 +78,9 @@ class StreamingService : public ServiceT<StreamingService> {
 	private:
 
 		bool
+		onExit();
+
+		bool
 		checkOutput(calldata_t* data) const;
 
 		bool
@@ -102,12 +105,12 @@ class StreamingService : public ServiceT<StreamingService> {
 		onStreamStopped();
 
 		bool
-		startStreaming(const rpc_event_data& data);
+		startStreaming(const rpc::request& data);
 
 		bool
-		stopStreaming(const rpc_event_data& data);
+		stopStreaming(const rpc::request& data);
 
 		bool
-		subscribeStreamStatusChange(const rpc_event_data& data);
+		subscribeStreamStatusChange(const rpc::request& data);
 
 };

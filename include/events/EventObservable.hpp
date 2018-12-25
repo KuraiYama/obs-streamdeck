@@ -60,10 +60,10 @@ class EventObservable<T> {
 
 		virtual void
 		addEvent(const T& event) = 0;
-		
+
 		virtual void
 		removeEvent(const T& event) = 0;
-		
+
 		virtual bool
 		notifyEvent(const T& event) const = 0;
 

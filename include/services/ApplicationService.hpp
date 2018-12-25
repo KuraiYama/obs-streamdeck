@@ -26,7 +26,7 @@
 ========================================================================================================
 */
 
-class ApplicationService : public ServiceT<ApplicationService> {
+class ApplicationService : public ServiceImpl<ApplicationService> {
 
 	/*
 	====================================================================================================
@@ -77,47 +77,14 @@ class ApplicationService : public ServiceT<ApplicationService> {
 
 	/*
 	====================================================================================================
-		Static Class Functions
-	====================================================================================================
-	*/
-	private:
-
-		static void
-		onRecordStarting(void* streaming_service, calldata_t* data);
-
-		static void
-		onRecordStarted(void* streaming_service, calldata_t* data);
-
-		static void
-		onRecordStopping(void* streaming_service, calldata_t* data);
-
-		static void
-		onRecordStopped(void* streaming_service, calldata_t* data);
-
-		static void
-		onStreamStarting(void* streaming_service, calldata_t* data);
-
-		static void
-		onStreamStarted(void* streaming_service, calldata_t* data);
-
-		static void
-		onStreamStopping(void* streaming_service, calldata_t* data);
-
-		static void
-		onStreamStopped(void* streaming_service, calldata_t* data);
-
-		static void
-		onStreamReconnecting(void* streaming_service, calldata_t* data);
-
-		static void
-		onStreamReconnected(void* streaming_service, calldata_t* data);
-
-	/*
-	====================================================================================================
 		Instance Data Members
 	====================================================================================================
 	*/
 	private:
+
+		std::map<std::string, std::string> m_streamingStates;
+
+		std::map<std::string, std::string> m_recordingStates;
 
 		std::string m_streamingState;
 
@@ -149,21 +116,6 @@ class ApplicationService : public ServiceT<ApplicationService> {
 	*/
 	private:
 
-		bool
-		connectStreamOutputHandler();
-
-		bool
-		connectRecordOutputHandler();
-
-		void
-		disconnectStreamOutputHandler();
-
-		void
-		disconnectRecordOutputHandler();
-
-		bool
-		checkOutput(calldata_t* data, obs_output_t* output) const;
-
 		void
 		addPluginWindows();
 
@@ -186,6 +138,9 @@ class ApplicationService : public ServiceT<ApplicationService> {
 		onRecordStarting();
 
 		bool
-		onGetRecordStreamState(const rpc_event_data& data);
+		onGetRecordStreamState(const rpc::request& data);
+
+		bool
+		onOutputEvent(const obs::output::data& data);
 
 };

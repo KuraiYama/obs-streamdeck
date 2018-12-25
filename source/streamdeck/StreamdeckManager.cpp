@@ -23,16 +23,16 @@ StreamdeckServer::~StreamdeckServer() {
 
 StreamdeckManager::StreamdeckManager() : 
 	m_internalServer(this) {
-	for(int i = 1; i < (int)Streamdeck::rpc_event::COUNT; i++)
-		this->addEvent((Streamdeck::rpc_event)i);
+	for(int i = 1; i < (int)rpc::event::COUNT; i++)
+		this->addEvent((rpc::event)i);
 	
 	m_internalServer.connect(&m_internalServer, &StreamdeckServer::newConnection, this, 
 		&StreamdeckManager::onClientConnected);
 }
 
 StreamdeckManager::~StreamdeckManager() {
-	for(int i = 1; i < (int)Streamdeck::rpc_event::COUNT; i++)
-		this->removeEvent((Streamdeck::rpc_event)i);
+	for(int i = 1; i < (int)rpc::event::COUNT; i++)
+		this->removeEvent((rpc::event)i);
 
 	for(auto i = m_streamdecks.begin(); i != m_streamdecks.end();) {
 		Streamdeck* cl = *i;
@@ -124,7 +124,7 @@ StreamdeckManager::close(Streamdeck* streamdeck) {
 }
 
 bool
-StreamdeckManager::setAcknowledge(Streamdeck* client, const rpc_adv_response<void>& response) {
+StreamdeckManager::setAcknowledge(Streamdeck* client, const rpc::response<void>& response) {
 	QString resource = response.request != nullptr ?
 		QString("%1.%2")
 		.arg(response.request->serviceName.c_str())
@@ -137,12 +137,12 @@ StreamdeckManager::setAcknowledge(Streamdeck* client, const rpc_adv_response<voi
 }
 
 bool
-StreamdeckManager::setSubscription(Streamdeck* client, const rpc_adv_response<std::string>& response) {
+StreamdeckManager::setSubscription(Streamdeck* client, const rpc::response<std::string>& response) {
 	return client->sendSubscription(response.event, response.data);
 }
 
 bool
-StreamdeckManager::setError(Streamdeck* client, const rpc_adv_response<bool>& response) {
+StreamdeckManager::setError(Streamdeck* client, const rpc::response<bool>& response) {
 	QString resource = response.request != nullptr ?
 		QString("%1.%2")
 			.arg(response.request->serviceName.c_str())
@@ -157,7 +157,7 @@ StreamdeckManager::setError(Streamdeck* client, const rpc_adv_response<bool>& re
 bool
 StreamdeckManager::setRecordStreamState(
 	Streamdeck* client, 
-	const rpc_adv_response<std::pair<std::string, std::string>>& response
+	const rpc::response<std::pair<std::string, std::string>>& response
 ) {
 	QString resource = QString("%1.%2")
 		.arg(response.request->serviceName.c_str())
@@ -172,7 +172,7 @@ StreamdeckManager::setRecordStreamState(
 }
 
 bool
-StreamdeckManager::setSchema(Streamdeck* client, const rpc_adv_response<Collections>& response) {
+StreamdeckManager::setSchema(Streamdeck* client, const rpc::response<Collections>& response) {
 	QString resource = response.request != nullptr ?
 		QString("%1.%2")
 		.arg(response.request->serviceName.c_str())
@@ -185,7 +185,7 @@ StreamdeckManager::setSchema(Streamdeck* client, const rpc_adv_response<Collecti
 }
 
 bool
-StreamdeckManager::setCollections(Streamdeck* client, const rpc_adv_response<Collections>& response) {
+StreamdeckManager::setCollections(Streamdeck* client, const rpc::response<Collections>& response) {
 	QString resource = response.request != nullptr ?
 		QString("%1.%2")
 			.arg(response.request->serviceName.c_str())
@@ -198,7 +198,7 @@ StreamdeckManager::setCollections(Streamdeck* client, const rpc_adv_response<Col
 }
 
 bool
-StreamdeckManager::setCollection(Streamdeck* client, const rpc_adv_response<CollectionPtr>& response) {
+StreamdeckManager::setCollection(Streamdeck* client, const rpc::response<CollectionPtr>& response) {
 	QString resource = response.request != nullptr ?
 		QString("%1.%2")
 		.arg(response.request->serviceName.c_str())
@@ -211,7 +211,7 @@ StreamdeckManager::setCollection(Streamdeck* client, const rpc_adv_response<Coll
 }
 
 bool
-StreamdeckManager::setScenes(Streamdeck* client, const rpc_adv_response<Scenes>& response) {
+StreamdeckManager::setScenes(Streamdeck* client, const rpc::response<Scenes>& response) {
 	QString resource = response.request != nullptr ?
 		QString("%1.%2")
 		.arg(response.request->serviceName.c_str())
@@ -224,7 +224,7 @@ StreamdeckManager::setScenes(Streamdeck* client, const rpc_adv_response<Scenes>&
 }
 
 bool
-StreamdeckManager::setScene(Streamdeck* client, const rpc_adv_response<ScenePtr>& response) {
+StreamdeckManager::setScene(Streamdeck* client, const rpc::response<ScenePtr>& response) {
 	QString resource = response.request != nullptr ?
 		QString("%1.%2")
 		.arg(response.request->serviceName.c_str())
@@ -237,32 +237,13 @@ StreamdeckManager::setScene(Streamdeck* client, const rpc_adv_response<ScenePtr>
 }
 
 /*
-bool
-StreamdeckManager::setScenes(
-	Streamdeck* client,
-	const rpc_adv_response<std::tuple<Collection*,Scenes>>& response
-) {
-	QString resource = response.request != nullptr ?
-		QString("%1.%2")
-		.arg(response.request->serviceName.c_str())
-		.arg(response.request->method.c_str()) :
-		QString("%1.%2")
-		.arg(response.serviceName)
-		.arg(response.method);
-
-	return client->sendScenesMessage(response.event, resource.toStdString(), 
-		std::get<0>(response.data), std::get<1>(response.data));
-}
-*/
-
-/*
 ========================================================================================================
 	Messages Handling
 ========================================================================================================
 */
 
 bool
-StreamdeckManager::validate(rpc_response& response) {
+StreamdeckManager::validate(rpc::response_base& response) {
 	bool result = (response.request == nullptr) ||
 		(response.request != nullptr && response.event == response.request->event);
 	if(!result) {
@@ -279,7 +260,7 @@ StreamdeckManager::validate(rpc_response& response) {
 void
 StreamdeckManager::receiveMessage(
 	Streamdeck* streamdeck,
-	Streamdeck::rpc_event event, 
+	rpc::event event, 
 	QString service,
 	QString method,
 	QVector<QVariant> args,
@@ -291,8 +272,8 @@ StreamdeckManager::receiveMessage(
 	log_custom(LOG_STREAMDECK_MANAGER) << "[Streamdeck Manager] Message received. "
 		"Dispatching to services.";
 
-	error = !this->notifyEvent<const rpc_event_data&>(event, 
-		(rpc_event_data { event, streamdeck, service.toStdString(), method.toStdString(), args }));
+	error = !this->notifyEvent<const rpc::request&>(event, 
+		(rpc::request { event, streamdeck, service.toStdString(), method.toStdString(), args }));
 
 	if(error) {
 		log_error << "[Streamdeck Manager] Error when processing messages.";

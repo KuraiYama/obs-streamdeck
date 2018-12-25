@@ -16,7 +16,7 @@
 
 template<typename T>
 bool
-StreamdeckManager::setResult(Streamdeck* client, const rpc_adv_response<T>& response) {
+StreamdeckManager::setResult(Streamdeck* client, const rpc::response<T>& response) {
 	QString resource = response.request != nullptr ?
 		QString("%1.%2")
 		.arg(response.request->serviceName.c_str())
@@ -30,13 +30,13 @@ StreamdeckManager::setResult(Streamdeck* client, const rpc_adv_response<T>& resp
 
 template<typename T>
 bool
-StreamdeckManager::setEvent(Streamdeck* client, const rpc_adv_response<T>& response) {
+StreamdeckManager::setEvent(Streamdeck* client, const rpc::response<T>& response) {
 	return client->sendEvent(response.event, response.data);
 }
 
 template<>
 inline bool
-StreamdeckManager::setEvent(Streamdeck* client, const rpc_adv_response<void>& response) {
+StreamdeckManager::setEvent(Streamdeck* client, const rpc::response<void>& response) {
 	return client->sendEvent(response.event);
 }
 
@@ -49,8 +49,8 @@ StreamdeckManager::setEvent(Streamdeck* client, const rpc_adv_response<void>& re
 template<typename T>
 bool
 StreamdeckManager::commit_to(
-	rpc_adv_response<T>& response, 
-	bool(StreamdeckManager::*functor)(Streamdeck*, const rpc_adv_response<T>&)
+	rpc::response<T>& response, 
+	bool(StreamdeckManager::*functor)(Streamdeck*, const rpc::response<T>&)
 ) {
 	if(response.request == nullptr ||
 		(response.request != nullptr && response.request->client == nullptr)) {
@@ -74,8 +74,8 @@ StreamdeckManager::commit_to(
 template<typename T>
 bool
 StreamdeckManager::commit_all(
-	rpc_adv_response<T>& response, 
-	bool(StreamdeckManager::*functor)(Streamdeck*, const rpc_adv_response<T>&)
+	rpc::response<T>& response, 
+	bool(StreamdeckManager::*functor)(Streamdeck*, const rpc::response<T>&)
 ) {
 	bool result = this->validate(response);
 
@@ -98,8 +98,8 @@ StreamdeckManager::commit_all(
 template<typename T>
 bool
 StreamdeckManager::commit_any(
-	rpc_adv_response<T>& response, 
-	bool(StreamdeckManager::*functor)(Streamdeck*, const rpc_adv_response<T>&)
+	rpc::response<T>& response, 
+	bool(StreamdeckManager::*functor)(Streamdeck*, const rpc::response<T>&)
 ) {
 	bool result = this->validate(response);
 

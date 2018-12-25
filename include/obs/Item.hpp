@@ -37,8 +37,8 @@ class Scene;
 typedef Item* ItemPtr;
 
 typedef struct Items {
-	Scene* _scene;
-	std::vector<Item*> _items;
+	Scene* scene;
+	std::vector<Item*> items;
 } Items;
 
 class Item : public OBSStorable {

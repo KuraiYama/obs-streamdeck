@@ -20,16 +20,28 @@
  * Plugin Includes
  */
 #include "include/events/EventObservable.hpp"
-#include "include/obs/OBSManager.hpp"
-#include "include/streamdeck/StreamDeckManager.hpp"
+#include "include/obs/OBSEvents.hpp"
+#include "include/rpc/RPCEvents.hpp"
+
+#include "include/obs/Collection.hpp"
+#include "include/obs/Scene.hpp"
+#include "include/obs/Item.hpp"
+
+/*
+========================================================================================================
+	Types Predeclarations
+========================================================================================================
+*/
+
+class OBSManager;
+
+class StreamdeckManager;
 
 /*
 ========================================================================================================
 	 Types Definitions
 ========================================================================================================
 */
-
-enum class obs_save_event { OBS_SAVE_EVENT_SAVING, OBS_SAVE_EVENT_LOADING };
 
 class Service {
 
@@ -48,19 +60,6 @@ class Service {
 
 	/*
 	====================================================================================================
-		Static Class Methods
-	====================================================================================================
-	*/
-	private:
-	
-		static void
-		OnOBSFrontendEvent(obs_frontend_event event, void* service);
-
-		static void
-		OnOBSSaveEvent(obs_data_t* save_data, bool saving, void* private_data);
-
-	/*
-	====================================================================================================
 		Instance Data Members
 	====================================================================================================
 	*/
@@ -70,11 +69,6 @@ class Service {
 
 		const char* m_remoteName;
 
-	protected:
-
-		UnsafeEventObservable<obs_frontend_event> m_frontendEvent;
-		UnsafeEventObservable<obs_save_event> m_saveEvent;
-
 	/*
 	====================================================================================================
 		Constructors / Destructor
@@ -82,7 +76,7 @@ class Service {
 	*/
 	public:
 
-		virtual ~Service();
+		virtual ~Service() = 0;
 
 	protected:
 
@@ -91,9 +85,10 @@ class Service {
 };
 
 template<typename T>
-class ServiceT : private Service, 
-	private EventObserver<T, obs_frontend_event>, 
-	private EventObserver<T, obs_save_event>  {
+class ServiceImpl : public Service, 
+	private EventObserver<T, obs::frontend::event>, 
+	private EventObserver<T, obs::save::event>,
+	private EventObserver<T, obs::output::event> {
 
 	/*
 	====================================================================================================
@@ -102,11 +97,13 @@ class ServiceT : private Service,
 	*/
 	private:
 
-		using FrontendHandler = EventObserver<T, obs_frontend_event>;
+		using FrontendHandler = EventObserver<T, obs::frontend::event>;
 
-		using SaveHandler = EventObserver<T, obs_save_event>;
+		using SaveHandler = EventObserver<T, obs::save::event>;
 
-		using RPCHandler = EventObserver<T, Streamdeck::rpc_event>;
+		using OutputHandler = EventObserver<T, obs::output::event>;
+
+		using RPCHandler = EventObserver<T, rpc::event>;
 
 	/*
 	====================================================================================================
@@ -116,10 +113,24 @@ class ServiceT : private Service,
 	private:
 
 		typedef 
-			typename FrontendHandler::template FuncWrapperB<void>::Callback obs_frontend_callback;
+		typename FrontendHandler::template FuncWrapperB<void>::Callback
+		obs_frontend_callback;
 
 		typedef 
-			typename SaveHandler::template FuncWrapperB<const obs_data_t*>::Callback obs_save_callback;
+		typename SaveHandler::template FuncWrapperB<const obs::save::data&>::Callback
+		obs_save_callback;
+
+		typedef
+		typename OutputHandler::template FuncWrapperB<const obs::output::data&>::Callback
+		obs_output_callback;
+
+		typedef
+		typename RPCHandler::template FuncWrapperB<void>::Callback
+		rpc_callback_void;
+
+		typedef
+		typename RPCHandler::template FuncWrapperB<const rpc::request&>::Callback
+		rpc_callback_typed;
 
 	/*
 	====================================================================================================
@@ -137,9 +148,9 @@ class ServiceT : private Service,
 	*/
 	protected:
 
-		ServiceT(const char* local_name, const char* remote_name);
+		ServiceImpl(const char* local_name, const char* remote_name);
 
-		virtual ~ServiceT() = 0;
+		virtual ~ServiceImpl() = 0;
 
 	/*
 	====================================================================================================
@@ -148,51 +159,47 @@ class ServiceT : private Service,
 	*/
 	protected:
 
-		rpc_adv_response<void>
-		response_void(const rpc_event_data* data, const char* method) const;
+		rpc::response<void>
+		response_void(const rpc::request* data, const char* method) const;
 
-		rpc_adv_response<std::string>
-		response_string(const rpc_event_data* data, const char* method) const;
+		rpc::response<std::string>
+		response_string(const rpc::request* data, const char* method) const;
 
-		rpc_adv_response<bool>
-		response_bool(const rpc_event_data* data, const char* method) const;
+		rpc::response<bool>
+		response_bool(const rpc::request* data, const char* method) const;
 
-		rpc_adv_response<std::pair<std::string, std::string>>
-		response_string2(const rpc_event_data* data, const char* method) const;
+		rpc::response<std::pair<std::string, std::string>>
+		response_string2(const rpc::request* data, const char* method) const;
 
-		rpc_adv_response<Collections>
-		response_collections(const rpc_event_data* data, const char* method) const;
+		rpc::response<Collections>
+		response_collections(const rpc::request* data, const char* method) const;
 
-		rpc_adv_response<CollectionPtr>
-		response_collection(const rpc_event_data* data, const char* method) const;
+		rpc::response<CollectionPtr>
+		response_collection(const rpc::request* data, const char* method) const;
 
-		rpc_adv_response<Scenes>
-		response_scenes(const rpc_event_data* data, const char* method) const;
+		rpc::response<Scenes>
+		response_scenes(const rpc::request* data, const char* method) const;
 
-		rpc_adv_response<ScenePtr>
-		response_scene(const rpc_event_data* data, const char* method) const;
-
-		void
-		setupEvent(obs_frontend_event event, obs_frontend_callback handler);
+		rpc::response<ScenePtr>
+		response_scene(const rpc::request* data, const char* method) const;
 
 		void
-		setupEvent(obs_save_event event, obs_save_callback handler);
+		setupEvent(obs::frontend::event event, obs_frontend_callback handler);
 
 		void
-		setupEvent(
-			Streamdeck::rpc_event event, 
-			typename RPCHandler::template FuncWrapperB<void>::Callback handler
-		);
+		setupEvent(obs::save::event event, obs_save_callback handler);
 
-		template<typename B>
 		void
-		setupEvent(
-			Streamdeck::rpc_event event, 
-			typename RPCHandler::template FuncWrapperB<B>::Callback handler
-		);
+		setupEvent(obs::output::event event, obs_output_callback handler);
+
+		void
+		setupEvent(rpc::event event, rpc_callback_void handler);
+
+		void
+		setupEvent(rpc::event event, rpc_callback_typed handler);
 
 		bool
-		checkResource(const rpc_event_data* data, const QRegExp& regex) const;
+		checkResource(const rpc::request* data, const QRegExp& regex) const;
 
 		void
 		logInfo(const std::string& message) const;
@@ -211,15 +218,6 @@ class ServiceT : private Service,
 
 		inline OBSManager*
 		obsManager() const;
-
-	/*
-	====================================================================================================
-		Operators
-	====================================================================================================
-	*/
-	public:
-
-		operator Service*() const;
 
 };
 

@@ -138,10 +138,10 @@ class Logger {
 	private:
 
 		Logger
-		operator=(const Logger&) = delete;
+			operator=(const Logger&) = delete;
 
 		Logger&
-		operator=(Logger&&) = delete;
+			operator=(Logger&&) = delete;
 
 };
 

@@ -42,31 +42,6 @@ class StreamdeckManager;
 ========================================================================================================
 */
 
-struct rpc_event_data {
-	Streamdeck::rpc_event event;
-	Streamdeck* client;
-	const std::string serviceName;
-	const std::string method;
-	const QVector<QVariant> args;
-};
-
-struct rpc_response {
-	const rpc_event_data* request;
-	Streamdeck::rpc_event event;
-	const char* serviceName;
-	const char* method;
-};
-
-template<typename T>
-struct rpc_adv_response : rpc_response {
-	T data;
-};
-
-template<>
-struct rpc_adv_response<void> : rpc_response {
-};
-
-
 class StreamdeckServer : private QTcpServer {
 	
 	friend class StreamdeckManager;
@@ -110,7 +85,7 @@ class StreamdeckServer : private QTcpServer {
 
 };
 
-class StreamdeckManager : public QObject, public SafeEventObservable<Streamdeck::rpc_event> {
+class StreamdeckManager : public QObject, public SafeEventObservable<rpc::event> {
 	
 	Q_OBJECT
 
@@ -149,74 +124,61 @@ class StreamdeckManager : public QObject, public SafeEventObservable<Streamdeck:
 		template<typename T>
 		bool
 		commit_to(
-			rpc_adv_response<T>& response,
-			bool(StreamdeckManager::*functor)(Streamdeck*, const rpc_adv_response<T>&)
+			rpc::response<T>& response,
+			bool(StreamdeckManager::*functor)(Streamdeck*, const rpc::response<T>&)
 		);
 
 		template<typename T>
 		bool
 		commit_all(
-			rpc_adv_response<T>& response,
-			bool(StreamdeckManager::*functor)(Streamdeck*, const rpc_adv_response<T>&)
+			rpc::response<T>& response,
+			bool(StreamdeckManager::*functor)(Streamdeck*, const rpc::response<T>&)
 		);
 
 		template<typename T>
 		bool
 		commit_any(
-			rpc_adv_response<T>& response,
-			bool(StreamdeckManager::*functor)(Streamdeck*, const rpc_adv_response<T>&)
+			rpc::response<T>& response,
+			bool(StreamdeckManager::*functor)(Streamdeck*, const rpc::response<T>&)
 		);
 
 		bool
-		setAcknowledge(Streamdeck* client, const rpc_adv_response<void>& response);
+		setAcknowledge(Streamdeck* client, const rpc::response<void>& response);
 
 		bool
-		setSubscription(Streamdeck* client, const rpc_adv_response<std::string>& response);
-
-		template<typename T>
-		bool
-		setResult(Streamdeck* client, const rpc_adv_response<T>& response);
+		setSubscription(Streamdeck* client, const rpc::response<std::string>& response);
 
 		template<typename T>
 		bool
-		setEvent(Streamdeck* client, const rpc_adv_response<T>& response);
+		setResult(Streamdeck* client, const rpc::response<T>& response);
+
+		template<typename T>
+		bool
+		setEvent(Streamdeck* client, const rpc::response<T>& response);
 
 		bool
 		setRecordStreamState(
 			Streamdeck* client, 
-			const rpc_adv_response<std::pair<std::string, std::string>>& response
+			const rpc::response<std::pair<std::string, std::string>>& response
 		);
 
 		bool
-		setError(Streamdeck* client, const rpc_adv_response<bool>& response);
+		setError(Streamdeck* client, const rpc::response<bool>& response);
 
 		bool
-		setSchema(Streamdeck* client, const rpc_adv_response<Collections>& response);
+		setSchema(Streamdeck* client, const rpc::response<Collections>& response);
 
 		bool
-		setCollections(Streamdeck* client, const rpc_adv_response<Collections>& response);
+		setCollections(Streamdeck* client, const rpc::response<Collections>& response);
 
 		bool
-		setCollection(Streamdeck* client, const rpc_adv_response<CollectionPtr>& response);
+		setCollection(Streamdeck* client, const rpc::response<CollectionPtr>& response);
 
 		bool
-		setScenes(Streamdeck* client, const rpc_adv_response<Scenes>& response);
+		setScenes(Streamdeck* client, const rpc::response<Scenes>& response);
 
 		bool
-		setScene(Streamdeck* client, const rpc_adv_response<ScenePtr>& response);
-
-		/*bool
-		setCollectionSwitched(
-			Streamdeck* client,
-			const rpc_adv_response<Collection*>& response
-		);
-
-		bool
-		setScenes(
-			Streamdeck* client,
-			const rpc_adv_response<std::tuple<Collection*,Scenes>>& response
-		);
-		*/
+		setScene(Streamdeck* client, const rpc::response<ScenePtr>& response);
 		
 	private:
 
@@ -224,7 +186,7 @@ class StreamdeckManager : public QObject, public SafeEventObservable<Streamdeck:
 		close(Streamdeck* streamdeck);
 
 		bool
-		validate(rpc_response& response);
+		validate(rpc::response_base& response);
 
 	/*
 	====================================================================================================
@@ -242,7 +204,7 @@ class StreamdeckManager : public QObject, public SafeEventObservable<Streamdeck:
 		void
 		receiveMessage(
 			Streamdeck* streamdeck,
-			Streamdeck::rpc_event event,
+			rpc::event event,
 			QString service, 
 			QString method,
 			QVector<QVariant> args,

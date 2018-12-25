@@ -135,11 +135,11 @@ class EventObserver<E> {
 				invoke(const FuncWrapperA<A>* inst, const A& data) {
 					return (*inst)(data);
 				}
-			
+
 			private:
 
 				static void*
-				classAddress() {
+					classAddress() {
 					return FuncWrapperA<A>::_dummy;
 				}
 

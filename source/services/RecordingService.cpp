@@ -11,35 +11,29 @@
 */
 
 RecordingService::RecordingService() :
-	ServiceT("RecordingService", "StreamingService"),
+	ServiceImpl("RecordingService", "StreamingService"),
 	m_recordingOutput(nullptr) {
-	this->setupEvent(obs_frontend_event::OBS_FRONTEND_EVENT_RECORDING_STARTING,
-		&RecordingService::onRecordStarting);
+	this->setupEvent(obs::frontend::event::RECORDING_STARTING, &RecordingService::onRecordStarting);
 
-	this->setupEvent(obs_frontend_event::OBS_FRONTEND_EVENT_RECORDING_STARTED,
-		&RecordingService::onRecordStarted);
+	this->setupEvent(obs::frontend::event::RECORDING_STARTED, &RecordingService::onRecordStarted);
 
-	this->setupEvent(obs_frontend_event::OBS_FRONTEND_EVENT_RECORDING_STOPPING,
-		&RecordingService::onRecordStopping);
+	this->setupEvent(obs::frontend::event::RECORDING_STOPPING, &RecordingService::onRecordStopping);
 
-	this->setupEvent(obs_frontend_event::OBS_FRONTEND_EVENT_RECORDING_STOPPED,
-		&RecordingService::onRecordStopped);
+	this->setupEvent(obs::frontend::event::RECORDING_STOPPED, &RecordingService::onRecordStopped);
 
-	this->setupEvent<const rpc_event_data&>(
-		Streamdeck::rpc_event::RECORDING_STATUS_CHANGED_SUBSCRIBE,
-		&RecordingService::subscribeRecordStatusChange);
+	this->setupEvent(
+		rpc::event::RECORDING_STATUS_CHANGED_SUBSCRIBE,
+		&RecordingService::subscribeRecordStatusChange
+	);
 
-	this->setupEvent<const rpc_event_data&>(
-		Streamdeck::rpc_event::START_RECORDING,
-		&RecordingService::startRecording);
+	this->setupEvent(rpc::event::START_RECORDING, &RecordingService::startRecording);
 
-	this->setupEvent<const rpc_event_data&>(
-		Streamdeck::rpc_event::STOP_RECORDING,
-		&RecordingService::stopRecording);
+	this->setupEvent(rpc::event::STOP_RECORDING, &RecordingService::stopRecording);
+
+	this->setupEvent(obs::frontend::event::EXIT, &RecordingService::onExit);
 }
 
 RecordingService::~RecordingService() {
-	disconnectOutputHandler();
 }
 
 /*
@@ -49,10 +43,10 @@ RecordingService::~RecordingService() {
 */
 
 bool
-RecordingService::subscribeRecordStatusChange(const rpc_event_data& data) {
-	rpc_adv_response<std::string> response = response_string(&data, "subscribeRecordStatusChange");
-	if(data.event == Streamdeck::rpc_event::RECORDING_STATUS_CHANGED_SUBSCRIBE) {
-		response.event = Streamdeck::rpc_event::RECORDING_STATUS_CHANGED_SUBSCRIBE;
+RecordingService::subscribeRecordStatusChange(const rpc::request& data) {
+	rpc::response<std::string> response = response_string(&data, "subscribeRecordStatusChange");
+	if(data.event == rpc::event::RECORDING_STATUS_CHANGED_SUBSCRIBE) {
+		response.event = rpc::event::RECORDING_STATUS_CHANGED_SUBSCRIBE;
 		logInfo("Subscription to recording event required.");
 
 		if(!checkResource(&data, QRegExp("(.+)"))) {
@@ -74,11 +68,11 @@ RecordingService::subscribeRecordStatusChange(const rpc_event_data& data) {
 }
 
 bool
-RecordingService::startRecording(const rpc_event_data& data) {
-	rpc_adv_response<bool> response = response_bool(&data, "startRecording");
+RecordingService::startRecording(const rpc::request& data) {
+	rpc::response<bool> response = response_bool(&data, "startRecording");
 
-	if(data.event == Streamdeck::rpc_event::START_RECORDING) {
-		response.event = Streamdeck::rpc_event::START_RECORDING;
+	if(data.event == rpc::event::START_RECORDING) {
+		response.event = rpc::event::START_RECORDING;
 		logInfo("Streamdeck has required start recording...");
 		if(checkResource(&data, QRegExp("startRecording"))) {
 			if(obs_frontend_recording_active() == false) {
@@ -99,11 +93,11 @@ RecordingService::startRecording(const rpc_event_data& data) {
 }
 
 bool
-RecordingService::stopRecording(const rpc_event_data& data) {
-	rpc_adv_response<bool> response = response_bool(&data, "stopRecording");
+RecordingService::stopRecording(const rpc::request& data) {
+	rpc::response<bool> response = response_bool(&data, "stopRecording");
 
-	if(data.event == Streamdeck::rpc_event::STOP_RECORDING) {
-		response.event = Streamdeck::rpc_event::STOP_RECORDING;
+	if(data.event == rpc::event::STOP_RECORDING) {
+		response.event = rpc::event::STOP_RECORDING;
 		logInfo("Streamdeck has required stop recording...");
 		if(checkResource(&data, QRegExp("stopRecording"))) {
 			if(obs_frontend_recording_active() == true) {
@@ -145,6 +139,7 @@ RecordingService::connectOutputHandler() {
 				RecordingService::onRecordStopping, this);
 			signal_handler_connect(signal_handler, "stop",
 				RecordingService::onRecordStopped, this);
+			obsManager()->registerOputput(m_recordingOutput);
 			return true;
 		}
 	}
@@ -165,6 +160,7 @@ RecordingService::disconnectOutputHandler() {
 			signal_handler_disconnect(signal_handler, "stop",
 				RecordingService::onRecordStopped, this);
 		}
+		obsManager()->unregisterOutput(m_recordingOutput);
 		obs_output_release(m_recordingOutput);
 		m_recordingOutput = nullptr;
 	}
@@ -191,6 +187,13 @@ RecordingService::checkOutput(calldata_t* data) const {
 */
 
 bool
+RecordingService::onExit() {
+	disconnectOutputHandler();
+	return true;
+}
+
+
+bool
 RecordingService::onRecordStarting() {
 	logInfo("OBS output is ready. OBS is launching record.");
 	if(connectOutputHandler()) {
@@ -209,13 +212,13 @@ RecordingService::onRecordStarting(void* recordingService, calldata_t* data) {
 	if(!service->checkOutput(data)) return;
 
 	service->logInfo("OBS output is starting record.");
-	rpc_adv_response<std::string> response = service->response_string(nullptr, "onRecordingStarting");
-	response.event = Streamdeck::rpc_event::RECORDING_STATUS_CHANGED_SUBSCRIBE;
+	rpc::response<std::string> response = service->response_string(nullptr, "onRecordingStarting");
+	response.event = rpc::event::RECORDING_STATUS_CHANGED_SUBSCRIBE;
 	response.data = "recording";
 	service->streamdeckManager()->commit_all(response, &StreamdeckManager::setEvent);
 
-	rpc_adv_response<bool> action = service->response_bool(nullptr, "onRecordingStarting");
-	action.event = Streamdeck::rpc_event::START_RECORDING;
+	rpc::response<bool> action = service->response_bool(nullptr, "onRecordingStarting");
+	action.event = rpc::event::START_RECORDING;
 	action.data = false;
 	service->streamdeckManager()->commit_all(action, &StreamdeckManager::setError);
 }
@@ -233,8 +236,8 @@ RecordingService::onRecordStarted(void* recording_service, calldata_t* data) {
 	if(!service->checkOutput(data)) return;
 
 	service->logInfo("OBS output has started record");
-	rpc_adv_response<std::string> response = service->response_string(nullptr, "onRecordingStarted");
-	response.event = Streamdeck::rpc_event::RECORDING_STATUS_CHANGED_SUBSCRIBE;
+	rpc::response<std::string> response = service->response_string(nullptr, "onRecordingStarted");
+	response.event = rpc::event::RECORDING_STATUS_CHANGED_SUBSCRIBE;
 	response.data = "starting";
 	service->streamdeckManager()->commit_all(response, &StreamdeckManager::setEvent);
 }
@@ -252,8 +255,8 @@ RecordingService::onRecordStopping(void* recording_service, calldata_t* data) {
 	if(!service->checkOutput(data)) return;
 
 	service->logInfo("OBS output is stopping record");
-	rpc_adv_response<std::string> response = service->response_string(nullptr, "onRecordingStopping");
-	response.event = Streamdeck::rpc_event::RECORDING_STATUS_CHANGED_SUBSCRIBE;
+	rpc::response<std::string> response = service->response_string(nullptr, "onRecordingStopping");
+	response.event = rpc::event::RECORDING_STATUS_CHANGED_SUBSCRIBE;
 	response.data = "stopping";
 	service->streamdeckManager()->commit_all(response, &StreamdeckManager::setEvent);
 }
@@ -270,24 +273,24 @@ RecordingService::onRecordStopped(void* recording_service, calldata_t* data) {
 
 	if(!service->checkOutput(data)) return;
 
-	service->disconnectOutputHandler();
+	//service->disconnectOutputHandler();
 
 	long long code = -1;
 	calldata_get_int(data, "code", &code);
 
 	service->logInfo("OBS output has stopped record.");
-	rpc_adv_response<std::string> response = service->response_string(nullptr, "onRecordingStopped");
-	response.event = Streamdeck::rpc_event::RECORDING_STATUS_CHANGED_SUBSCRIBE;
+	rpc::response<std::string> response = service->response_string(nullptr, "onRecordingStopped");
+	response.event = rpc::event::RECORDING_STATUS_CHANGED_SUBSCRIBE;
 	response.data = "offline";
 	service->streamdeckManager()->commit_all(response, &StreamdeckManager::setEvent);
 
-	rpc_adv_response<bool> action = service->response_bool(nullptr, "onRecordingStopped");
+	rpc::response<bool> action = service->response_bool(nullptr, "onRecordingStopped");
 	if(code == 0) {
-		action.event = Streamdeck::rpc_event::STOP_RECORDING;
+		action.event = rpc::event::STOP_RECORDING;
 		action.data = false;
 	}
 	else {
-		action.event = Streamdeck::rpc_event::START_RECORDING;
+		action.event = rpc::event::START_RECORDING;
 		action.data = true;
 	}
 	service->streamdeckManager()->commit_all(action, &StreamdeckManager::setError);

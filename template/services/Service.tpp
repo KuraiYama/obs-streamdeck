@@ -4,6 +4,8 @@
 #include "include/services/Service.hpp"
 #include "include/Global.h"
 #include "include/common/Logger.hpp"
+#include "include/obs/OBSManager.hpp"
+#include "include/streamdeck/StreamDeckManager.hpp"
 
 /*
 ========================================================================================================
@@ -12,13 +14,13 @@
 */
 
 template<typename T>
-ServiceT<T>::ServiceT(const char* local_name, const char* remote_name) : 
+ServiceImpl<T>::ServiceImpl(const char* local_name, const char* remote_name) : 
 	Service(local_name, remote_name) {
-	static_assert(std::is_base_of<ServiceT<T>, T>::value);
+	static_assert(std::is_base_of<ServiceImpl<T>, T>::value);
 }
 
 template<typename T>
-ServiceT<T>::~ServiceT() {
+ServiceImpl<T>::~ServiceImpl() {
 }
 
 /*
@@ -29,34 +31,40 @@ ServiceT<T>::~ServiceT() {
 
 template<typename T>
 void
-ServiceT<T>::setupEvent(obs_frontend_event event, obs_frontend_callback handler) {
-	m_frontendEvent.addEvent(event);
-	this->EventObserver<T, obs_frontend_event>::registerCallback(
+ServiceImpl<T>::setupEvent(obs::frontend::event event, obs_frontend_callback handler) {
+	this->EventObserver<T, obs::frontend::event>::registerCallback(
 		event,
 		(obs_frontend_callback)handler, 
 		reinterpret_cast<T*>(this)
 	);
-	m_frontendEvent.addEventHandler(event, this);
+	_obs_manager->addEventHandler(event, this);
 }
 
 template<typename T>
 void
-ServiceT<T>::setupEvent(obs_save_event event, obs_save_callback handler) {
-	m_saveEvent.addEvent(event);
-	this->EventObserver<T, obs_save_event>::registerCallback<const obs_data_t*>(
+ServiceImpl<T>::setupEvent(obs::save::event event, obs_save_callback handler) {
+	this->EventObserver<T, obs::save::event>::registerCallback<const obs::save::data&>(
 		event,
 		(obs_save_callback)handler,
 		reinterpret_cast<T*>(this)
 	);
-	m_saveEvent.addEventHandler(event, this);
+	_obs_manager->addEventHandler(event, this);
 }
 
 template<typename T>
 void
-ServiceT<T>::setupEvent(
-	Streamdeck::rpc_event event, 
-	typename RPCHandler::template FuncWrapperB<void>::Callback handler
-) {
+ServiceImpl<T>::setupEvent(obs::output::event event, obs_output_callback handler) {
+	this->EventObserver<T, obs::output::event>::registerCallback<const obs::output::data&>(
+		event,
+		(obs_output_callback)handler,
+		reinterpret_cast<T*>(this)
+	);
+	_obs_manager->addEventHandler(event, this);
+}
+
+template<typename T>
+void
+ServiceImpl<T>::setupEvent(rpc::event, rpc_callback_void handler) {
 	if(_streamdeck_manager == nullptr)
 		return;
 
@@ -68,18 +76,14 @@ ServiceT<T>::setupEvent(
 }
 
 template<typename T>
-template<typename B>
 void
-ServiceT<T>::setupEvent(
-	Streamdeck::rpc_event event, 
-	typename RPCHandler::template FuncWrapperB<B>::Callback handler
-) {
+ServiceImpl<T>::setupEvent(rpc::event event, rpc_callback_typed handler) {
 	if(_streamdeck_manager == nullptr)
 		return;
 
-	m_rpcEvent.registerCallback<B>(
+	m_rpcEvent.registerCallback<const rpc::request&>(
 		event, 
-		(RPCHandler::FuncWrapperB<B>::Callback)handler, reinterpret_cast<T*>(this)
+		(RPCHandler::FuncWrapperB<const rpc::request&>::Callback)handler, reinterpret_cast<T*>(this)
 	);
 	_streamdeck_manager->addEventHandler(event, &m_rpcEvent);
 }
@@ -92,7 +96,7 @@ ServiceT<T>::setupEvent(
 
 template<typename T>
 void
-ServiceT<T>::logInfo(const std::string& message) const {
+ServiceImpl<T>::logInfo(const std::string& message) const {
 	log_info << QString("[%1] %2")
 		.arg(QString(m_localName))
 		.arg(QString::fromStdString(message))
@@ -101,7 +105,7 @@ ServiceT<T>::logInfo(const std::string& message) const {
 
 template<typename T>
 void
-ServiceT<T>::logError(const std::string& message) const {
+ServiceImpl<T>::logError(const std::string& message) const {
 	log_error << QString("[%1] %2")
 		.arg(QString(m_localName))
 		.arg(QString::fromStdString(message))
@@ -110,7 +114,7 @@ ServiceT<T>::logError(const std::string& message) const {
 
 template<typename T>
 void
-ServiceT<T>::logWarning(const std::string& message) const {
+ServiceImpl<T>::logWarning(const std::string& message) const {
 	log_warn << QString("[%1] %2")
 		.arg(QString(m_localName))
 		.arg(QString::fromStdString(message))
@@ -125,7 +129,7 @@ ServiceT<T>::logWarning(const std::string& message) const {
 
 template<typename T>
 bool
-ServiceT<T>::checkResource(const rpc_event_data* data, const QRegExp& method) const {
+ServiceImpl<T>::checkResource(const rpc::request* data, const QRegExp& method) const {
 	return data == nullptr ||
 		(data->serviceName.compare(m_remoteName) == 0 && method.exactMatch(data->method.c_str()));
 }
@@ -137,80 +141,80 @@ ServiceT<T>::checkResource(const rpc_event_data* data, const QRegExp& method) co
 */
 
 template<typename T>
-rpc_adv_response<void>
-ServiceT<T>::response_void(const rpc_event_data* data, const char* method) const {
+rpc::response<void>
+ServiceImpl<T>::response_void(const rpc::request* data, const char* method) const {
 	return
-		rpc_adv_response<void>{
-			{data, Streamdeck::rpc_event::NO_EVENT, name(), method}
-	};
+		rpc::response<void>{
+			{data, rpc::event::NO_EVENT, name(), method}
+		};
 }
 
 template<typename T>
-rpc_adv_response<std::string>
-ServiceT<T>::response_string(const rpc_event_data* data, const char* method) const {
+rpc::response<std::string>
+ServiceImpl<T>::response_string(const rpc::request* data, const char* method) const {
 	return 
-		rpc_adv_response<std::string>{ 
-			{data, Streamdeck::rpc_event::NO_EVENT, name(), method},
+		rpc::response<std::string>{ 
+			{data, rpc::event::NO_EVENT, name(), method},
 			std::string("") 
 		};
 }
 
 template<typename T>
-rpc_adv_response<bool>
-ServiceT<T>::response_bool(const rpc_event_data* data, const char* method) const {
+rpc::response<bool>
+ServiceImpl<T>::response_bool(const rpc::request* data, const char* method) const {
 	return
-		rpc_adv_response<bool>{
-			{data, Streamdeck::rpc_event::NO_EVENT, name(), method},
+		rpc::response<bool>{
+			{data, rpc::event::NO_EVENT, name(), method},
 			true
 		};
 }
 
 template<typename T>
-rpc_adv_response<std::pair<std::string,std::string>>
-ServiceT<T>::response_string2(const rpc_event_data* data, const char* method) const {
+rpc::response<std::pair<std::string,std::string>>
+ServiceImpl<T>::response_string2(const rpc::request* data, const char* method) const {
 	return
-		rpc_adv_response<std::pair<std::string,std::string>>{
-			{data, Streamdeck::rpc_event::NO_EVENT, name(), method},
+		rpc::response<std::pair<std::string,std::string>>{
+			{data, rpc::event::NO_EVENT, name(), method},
 			std::pair<std::string,std::string>("","")
 		};
 }
 
 template<typename T>
-rpc_adv_response<CollectionPtr>
-ServiceT<T>::response_collection(const rpc_event_data* data, const char* method) const {
+rpc::response<CollectionPtr>
+ServiceImpl<T>::response_collection(const rpc::request* data, const char* method) const {
 	return
-		rpc_adv_response<Collection*>{
-			{data, Streamdeck::rpc_event::NO_EVENT, name(), method},
+		rpc::response<Collection*>{
+			{data, rpc::event::NO_EVENT, name(), method},
 			nullptr
 	};
 }
 
 template<typename T>
-rpc_adv_response<Collections>
-ServiceT<T>::response_collections(const rpc_event_data* data, const char* method) const {
+rpc::response<Collections>
+ServiceImpl<T>::response_collections(const rpc::request* data, const char* method) const {
 	return
-		rpc_adv_response<Collections>{
-			{data, Streamdeck::rpc_event::NO_EVENT, name(), method},
+		rpc::response<Collections>{
+			{data, rpc::event::NO_EVENT, name(), method},
 			Collections()
 		};
 }
 
 template<typename T>
-rpc_adv_response<ScenePtr>
-ServiceT<T>::response_scene(const rpc_event_data* data, const char* method) const {
+rpc::response<ScenePtr>
+ServiceImpl<T>::response_scene(const rpc::request* data, const char* method) const {
 	return
-		rpc_adv_response<Scene*>{
-			{data, Streamdeck::rpc_event::NO_EVENT, name(), method},
+		rpc::response<Scene*>{
+			{data, rpc::event::NO_EVENT, name(), method},
 			nullptr
 	};
 }
 
 template<typename T>
-rpc_adv_response<Scenes>
-ServiceT<T>::response_scenes(const rpc_event_data* data, const char* method) const {
+rpc::response<Scenes>
+ServiceImpl<T>::response_scenes(const rpc::request* data, const char* method) const {
 	return
-		rpc_adv_response<Scenes>{
-			{data, Streamdeck::rpc_event::NO_EVENT, name(), method},
+		rpc::response<Scenes>{
+			{data, rpc::event::NO_EVENT, name(), method},
 			{ nullptr, std::vector<ScenePtr>() }
 	};
 }
@@ -223,29 +227,18 @@ ServiceT<T>::response_scenes(const rpc_event_data* data, const char* method) con
 
 template<typename T>
 const char*
-ServiceT<T>::name() const {
+ServiceImpl<T>::name() const {
 	return m_localName;
 }
 
 template<typename T>
 StreamdeckManager*
-ServiceT<T>::streamdeckManager() const {
+ServiceImpl<T>::streamdeckManager() const {
 	return _streamdeck_manager;
 }
 
 template<typename T>
 OBSManager*
-ServiceT<T>::obsManager() const {
+ServiceImpl<T>::obsManager() const {
 	return _obs_manager;
-}
-
-/*
-========================================================================================================
-	Operators
-========================================================================================================
-*/
-
-template<typename T>
-ServiceT<T>::operator Service *() const {
-	return this;
 }

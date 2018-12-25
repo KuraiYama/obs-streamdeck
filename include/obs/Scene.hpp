@@ -98,6 +98,9 @@ class Scene : public OBSStorable {
 	*/
 	public:
 
+		void
+		loadItems();
+
 		bool
 		makeActive();
 

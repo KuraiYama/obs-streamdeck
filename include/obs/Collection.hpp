@@ -104,7 +104,7 @@ class Collection : public OBSStorable {
 		void
 		synchronize();
 
-		obs::scene_event
+		obs::scene::event
 		updateScenes(std::shared_ptr<Scene>& scene_updated);
 
 		bool

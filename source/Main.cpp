@@ -65,11 +65,11 @@ obs_module_load(void) {
 	Service::_streamdeck_manager = new StreamdeckManager();
 	Service::_obs_manager = new OBSManager();
 
-	services.push_back((Service*)new ApplicationService(parent, "database.dat"));
-	services.push_back((Service*)new StreamingService());
-	services.push_back((Service*)new RecordingService());
-	services.push_back((Service*)new CollectionsService());
-	services.push_back((Service*)new ScenesService());
+	services.push_back(new ApplicationService(parent, "database.dat"));
+	services.push_back(new StreamingService());
+	services.push_back(new RecordingService());
+	services.push_back(new CollectionsService());
+	services.push_back(new ScenesService());
 
 	return true;
 }
@@ -83,20 +83,4 @@ obs_module_unload(void) {
 		delete *i;
 
 	services.clear();
-}
-
-/*
-========================================================================================================
-	Utility Function
-========================================================================================================
-*/
-
-std::string
-ptr_to_string(void* ptr) {
-	return std::to_string(reinterpret_cast<unsigned long long>(ptr));
-}
-
-void*
-string_to_ptr(const char* str) {
-	return reinterpret_cast<void*>(std::atoll(str));
 }
