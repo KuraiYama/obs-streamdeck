@@ -11,33 +11,25 @@
 */
 
 ScenesService::ScenesService() : 
-	ServiceT("ScenesService", "ScenesService"),
+	ServiceImpl("ScenesService", "ScenesService"),
 	m_sceneUpdated(nullptr),
 	m_sceneToSwitch(0x0) {
 
-	this->setupEvent(obs_frontend_event::OBS_FRONTEND_EVENT_SCENE_LIST_CHANGED,
-		&ScenesService::onScenesListChanged);
+	this->setupEvent(obs::frontend::event::SCENE_LIST_CHANGED, &ScenesService::onScenesListChanged);
 
-	this->setupEvent(obs_frontend_event::OBS_FRONTEND_EVENT_SCENE_CHANGED,
-		&ScenesService::onSceneSwitched);
+	this->setupEvent(obs::frontend::event::SCENE_CHANGED, &ScenesService::onSceneSwitched);
 
-	this->setupEvent<const rpc_event_data&>(Streamdeck::rpc_event::SCENE_ADDED_SUBSCRIBE,
-		&ScenesService::subscribeSceneChange);
+	this->setupEvent(rpc::event::SCENE_ADDED_SUBSCRIBE, &ScenesService::subscribeSceneChange);
 
-	this->setupEvent<const rpc_event_data&>(Streamdeck::rpc_event::SCENE_REMOVED_SUBSCRIBE,
-		&ScenesService::subscribeSceneChange);
+	this->setupEvent(rpc::event::SCENE_REMOVED_SUBSCRIBE, &ScenesService::subscribeSceneChange);
 
-	this->setupEvent<const rpc_event_data&>(Streamdeck::rpc_event::SCENE_SWITCHED_SUBSCRIBE,
-		&ScenesService::subscribeSceneChange);
+	this->setupEvent(rpc::event::SCENE_SWITCHED_SUBSCRIBE, &ScenesService::subscribeSceneChange);
 
-	this->setupEvent<const rpc_event_data&>(Streamdeck::rpc_event::GET_SCENES,
-		&ScenesService::onGetScenes);
+	this->setupEvent(rpc::event::GET_SCENES, &ScenesService::onGetScenes);
 
-	this->setupEvent<const rpc_event_data&>(Streamdeck::rpc_event::GET_ACTIVE_SCENE,
-		&ScenesService::onGetActiveScene);
+	this->setupEvent(rpc::event::GET_ACTIVE_SCENE, &ScenesService::onGetActiveScene);
 
-	this->setupEvent<const rpc_event_data&>(Streamdeck::rpc_event::MAKE_SCENE_ACTIVE,
-		&ScenesService::onMakeSceneActive);
+	this->setupEvent(rpc::event::MAKE_SCENE_ACTIVE, &ScenesService::onMakeSceneActive);
 }
 
 ScenesService::~ScenesService() {
@@ -51,15 +43,15 @@ ScenesService::~ScenesService() {
 
 bool
 ScenesService::onScenesListChanged() {
-	obs::scene_event evt = obsManager()->activeCollection()->updateScenes(m_sceneUpdated);
+	obs::scene::event evt = obsManager()->activeCollection()->updateScenes(m_sceneUpdated);
 	switch(evt) {
-	case obs::scene_event::SCENE_ADDED:
+	case obs::scene::event::ADDED:
 		return onSceneAdded(*m_sceneUpdated.get());
 		break;
-	case obs::scene_event::SCENE_REMOVED:
+	case obs::scene::event::REMOVED:
 		return onSceneRemoved(*m_sceneUpdated.get());
 		break;
-	case obs::scene_event::SCENE_RENAMED:
+	case obs::scene::event::RENAMED:
 		return onSceneUpdated(*m_sceneUpdated.get());
 		break;
 	}
@@ -87,15 +79,15 @@ ScenesService::onSceneSwitched() {
 
 	bool activ = true;
 	if(m_sceneToSwitch != 0x0) {
-		rpc_adv_response<bool> response_switch = response_bool(nullptr, "onSceneSwitched");
-		response_switch.event = Streamdeck::rpc_event::MAKE_SCENE_ACTIVE;
+		rpc::response<bool> response_switch = response_bool(nullptr, "onSceneSwitched");
+		response_switch.event = rpc::event::MAKE_SCENE_ACTIVE;
 		response_switch.data = m_sceneToSwitch == obsManager()->activeCollection()->activeScene()->id();
 		m_sceneToSwitch = 0x0;
 		activ &= streamdeckManager()->commit_all(response_switch, &StreamdeckManager::setResult);
 	}
 
-	rpc_adv_response<ScenePtr> response = response_scene(nullptr, "onSceneSwitched");
-	response.event = Streamdeck::rpc_event::SCENE_SWITCHED_SUBSCRIBE;
+	rpc::response<ScenePtr> response = response_scene(nullptr, "onSceneSwitched");
+	response.event = rpc::event::SCENE_SWITCHED_SUBSCRIBE;
 	response.data = scene;
 
 	return activ && streamdeckManager()->commit_all(response, &StreamdeckManager::setEvent);
@@ -109,8 +101,8 @@ ScenesService::onSceneAdded(const Scene& scene) {
 		.toStdString()
 	);
 
-	rpc_adv_response<void> response = response_void(nullptr, "onSceneAdded");
-	response.event = Streamdeck::rpc_event::SCENE_ADDED_SUBSCRIBE;
+	rpc::response<void> response = response_void(nullptr, "onSceneAdded");
+	response.event = rpc::event::SCENE_ADDED_SUBSCRIBE;
 
 	return streamdeckManager()->commit_all(response, &StreamdeckManager::setEvent);
 }
@@ -123,8 +115,8 @@ ScenesService::onSceneRemoved(const Scene& scene) {
 		.toStdString()
 	);
 
-	rpc_adv_response<void> response = response_void(nullptr, "onSceneRemoved");
-	response.event = Streamdeck::rpc_event::SCENE_REMOVED_SUBSCRIBE;
+	rpc::response<void> response = response_void(nullptr, "onSceneRemoved");
+	response.event = rpc::event::SCENE_REMOVED_SUBSCRIBE;
 
 	return streamdeckManager()->commit_all(response, &StreamdeckManager::setEvent);
 }
@@ -137,8 +129,8 @@ ScenesService::onSceneUpdated(const Scene& scene) {
 	// We can use both scene removed/scene added to handle that, but each of them
 	// implies GET_SCENES message. Then we send directly the GET_SCENES message instead.
 
-	rpc_adv_response<Scenes> response = response_scenes(nullptr, "onSceneUpdated");
-	response.event = Streamdeck::rpc_event::GET_SCENES;
+	rpc::response<Scenes> response = response_scenes(nullptr, "onSceneUpdated");
+	response.event = rpc::event::GET_SCENES;
 #if !defined(COMPLETE_MODE)
 	Collection* collection = scene.collection();
 	response.data = collection->scenes();
@@ -162,11 +154,11 @@ ScenesService::onSceneUpdated(const Scene& scene) {
 */
 
 bool
-ScenesService::subscribeSceneChange(const rpc_event_data& data) {
-	rpc_adv_response<std::string> response = response_string(&data, "subscribeSceneChange");
-	if(data.event == Streamdeck::rpc_event::SCENE_ADDED_SUBSCRIBE ||
-		data.event == Streamdeck::rpc_event::SCENE_REMOVED_SUBSCRIBE ||
-		data.event == Streamdeck::rpc_event::SCENE_SWITCHED_SUBSCRIBE
+ScenesService::subscribeSceneChange(const rpc::request& data) {
+	rpc::response<std::string> response = response_string(&data, "subscribeSceneChange");
+	if(data.event == rpc::event::SCENE_ADDED_SUBSCRIBE ||
+		data.event == rpc::event::SCENE_REMOVED_SUBSCRIBE ||
+		data.event == rpc::event::SCENE_SWITCHED_SUBSCRIBE
 	) {
 		response.event = data.event;
 		logInfo("Subscription to scene event required");
@@ -190,12 +182,12 @@ ScenesService::subscribeSceneChange(const rpc_event_data& data) {
 }
 
 bool
-ScenesService::onGetScenes(const rpc_event_data& data) {
+ScenesService::onGetScenes(const rpc::request& data) {
 
-	rpc_adv_response<Scenes> response = response_scenes(&data, "onGetScenes");
+	rpc::response<Scenes> response = response_scenes(&data, "onGetScenes");
 
-	if(data.event == Streamdeck::rpc_event::GET_SCENES) {
-		response.event = Streamdeck::rpc_event::GET_SCENES;
+	if(data.event == rpc::event::GET_SCENES) {
+		response.event = rpc::event::GET_SCENES;
 		logInfo("Scenes list required.");
 
 		if(!checkResource(&data, QRegExp("getScenes"))) {
@@ -237,10 +229,10 @@ ScenesService::onGetScenes(const rpc_event_data& data) {
 }
 
 bool
-ScenesService::onGetActiveScene(const rpc_event_data& data) {
-	rpc_adv_response<ScenePtr> response = response_scene(&data, "onGetActiveScene");
-	if(data.event == Streamdeck::rpc_event::GET_ACTIVE_SCENE) {
-		response.event = Streamdeck::rpc_event::GET_ACTIVE_SCENE;
+ScenesService::onGetActiveScene(const rpc::request& data) {
+	rpc::response<ScenePtr> response = response_scene(&data, "onGetActiveScene");
+	if(data.event == rpc::event::GET_ACTIVE_SCENE) {
+		response.event = rpc::event::GET_ACTIVE_SCENE;
 		logInfo("Active Scene required.");
 
 		if(!checkResource(&data, QRegExp("activeSceneId"))) {
@@ -257,11 +249,11 @@ ScenesService::onGetActiveScene(const rpc_event_data& data) {
 }
 
 bool
-ScenesService::onMakeSceneActive(const rpc_event_data& data) {
-	rpc_adv_response<bool> response = response_bool(&data, "onMakeSceneActive");
+ScenesService::onMakeSceneActive(const rpc::request& data) {
+	rpc::response<bool> response = response_bool(&data, "onMakeSceneActive");
 
-	if(data.event == Streamdeck::rpc_event::MAKE_SCENE_ACTIVE) {
-		response.event = Streamdeck::rpc_event::MAKE_SCENE_ACTIVE;
+	if(data.event == rpc::event::MAKE_SCENE_ACTIVE) {
+		response.event = rpc::event::MAKE_SCENE_ACTIVE;
 
 		if(!checkResource(&data, QRegExp("makeSceneActive"))) {
 			logWarning("Unknown resource for makeSceneActive.");
@@ -289,8 +281,8 @@ ScenesService::onMakeSceneActive(const rpc_event_data& data) {
 			return true;
 		}
 		else if(response.data) {
-			rpc_adv_response<ScenePtr> response_switch = response_scene(nullptr, "onSceneSwitched");
-			response_switch.event = Streamdeck::rpc_event::SCENE_SWITCHED_SUBSCRIBE;
+			rpc::response<ScenePtr> response_switch = response_scene(nullptr, "onSceneSwitched");
+			response_switch.event = rpc::event::SCENE_SWITCHED_SUBSCRIBE;
 			response_switch.data = obsManager()->activeCollection()->activeScene();
 
 			return streamdeckManager()->commit_to(response, &StreamdeckManager::setResult) &&

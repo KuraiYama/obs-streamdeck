@@ -27,6 +27,49 @@ OBSManager::~OBSManager() {
 
 /*
 ========================================================================================================
+	Events Management
+========================================================================================================
+*/
+
+void
+OBSManager::addEventHandler(
+	const obs::frontend::event event,
+	EventObserver<obs::frontend::event>* handler
+) {
+	m_frontendEvent.addHandler(std::make_pair(event, handler));
+}
+
+void
+OBSManager::addEventHandler(const obs::save::event event, EventObserver<obs::save::event>* handler) {
+	m_saveEvent.addHandler(std::make_pair(event, handler));
+}
+
+void
+OBSManager::addEventHandler(
+	const obs::output::event event,
+	EventObserver<obs::output::event>* handler
+) {
+	m_outputEvent.addHandler(std::make_pair(event, handler));
+}
+
+/*
+========================================================================================================
+	Outputs Management
+========================================================================================================
+*/
+
+void
+OBSManager::registerOputput(obs_output_t* output) {
+	m_outputEvent.addOutput(output);
+}
+
+void
+OBSManager::unregisterOutput(obs_output_t* output) {
+	m_outputEvent.removeOutput(output);
+}
+
+/*
+========================================================================================================
 	Collections Management
 ========================================================================================================
 */
@@ -78,9 +121,9 @@ OBSManager::loadCollections(OBSStorage<Collection>& collections, const uint16_t 
 	}
 }
 
-obs::collection_event
+obs::collection::event
 OBSManager::updateCollections(std::shared_ptr<Collection>& collection_updated) {
-	obs::collection_event event = obs::collection_event::COLLECTIONS_LIST_BUILD;
+	obs::collection::event event = obs::collection::event::LIST_BUILD;
 
 	std::set<std::string> collections;
 	for(auto iter = m_collections.begin(); iter != m_collections.end(); iter++) {
@@ -105,7 +148,7 @@ OBSManager::updateCollections(std::shared_ptr<Collection>& collection_updated) {
 
 	if(j == -1) {
 		collection_updated = m_collections.pop(*collections.begin());
-		event = obs::collection_event::COLLECTION_REMOVED;
+		event = obs::collection::event::REMOVED;
 	}
 	else {
 		const char* name = obs_collections[j];
@@ -117,11 +160,11 @@ OBSManager::updateCollections(std::shared_ptr<Collection>& collection_updated) {
 			collection_updated->loadScenes();
 			this->makeActive();
 			collection_updated->synchronize();
-			event = obs::collection_event::COLLECTION_ADDED;
+			event = obs::collection::event::ADDED;
 		}
 		else {
 			collection_updated = m_collections.move(*collections.begin(), name);
-			event = obs::collection_event::COLLECTION_RENAMED;
+			event = obs::collection::event::RENAMED;
 		}
 	}
 
@@ -146,18 +189,6 @@ bool
 OBSManager::switchCollection(const char* name) {
 	if(name == NULL) return false;
 	return switchCollection(m_collections[name]);
-}
-
-/*
-========================================================================================================
-	Scenes Management
-========================================================================================================
-*/
-
-obs::scene_event
-OBSManager::updateScenes(Collection& collection, std::shared_ptr<Scene>& scene_updated) {
-	size_t size = m_lastCollectionID;
-	return obs::scene_event::SCENES_LIST_BUILD; //collection.updateScenes(size, scene_updated);
 }
 
 /*

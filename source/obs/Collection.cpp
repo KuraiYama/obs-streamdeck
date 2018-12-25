@@ -134,7 +134,8 @@ Collection::synchronize() {
 
 	for(size_t i = 0; i < scenes.sources.num; i++) {
 		const char* scene = obs_source_get_name(scenes.sources.array[i]);
-		m_scenes[scene]->source(scenes.sources.array[i]);
+		Scene* scene_ptr = m_scenes[scene];
+		scene_ptr->source(scenes.sources.array[i]);
 	}
 
 	obs_frontend_source_list_free(&scenes);
@@ -158,19 +159,22 @@ Collection::loadScenes() {
 		}
 		else {
 			scenes.erase(iter->second->name());
+			iter->second->loadItems();
 			iter++;
 		}
 	}
 	for(auto iter = scenes.begin(); iter != scenes.end(); iter++) {
 		m_lastSceneID++;
-		m_scenes.push(new Scene(this, m_lastSceneID, *iter));
+		m_scenes.push(new Scene(this, m_lastSceneID, *iter))->loadItems();
 	}
 	bfree(obs_scenes);
+
+	// We synchronized the first time
 }
 
-obs::scene_event
+obs::scene::event
 Collection::updateScenes(std::shared_ptr<Scene>& scene_updated) {
-	obs::scene_event event = obs::scene_event::SCENES_LIST_BUILD;
+	obs::scene::event event = obs::scene::event::LIST_BUILD;
 	std::set<std::string> scenes;
 	for(auto iter = m_scenes.begin(); iter != m_scenes.end(); iter++) {
 		scenes.insert(iter->second->name());
@@ -192,7 +196,7 @@ Collection::updateScenes(std::shared_ptr<Scene>& scene_updated) {
 
 	if(j == -1) {
 		scene_updated = m_scenes.pop(*scenes.begin());
-		event = obs::scene_event::SCENE_REMOVED;
+		event = obs::scene::event::REMOVED;
 	}
 	else {
 		const char* name = obs_source_get_name(obs_scenes.sources.array[j]);
@@ -200,12 +204,13 @@ Collection::updateScenes(std::shared_ptr<Scene>& scene_updated) {
 			m_lastSceneID++;
 			scene_updated = std::shared_ptr<Scene>(new Scene(this, m_lastSceneID, name));
 			m_scenes.push(scene_updated);
+			scene_updated->source(obs_scenes.sources.array[j]);
 			this->makeActive();
-			event = obs::scene_event::SCENE_ADDED;
+			event = obs::scene::event::ADDED;
 		}
 		else {
 			scene_updated = m_scenes.move(*scenes.begin(), name);
-			event = obs::scene_event::SCENE_RENAMED;
+			event = obs::scene::event::RENAMED;
 		}
 	}
 

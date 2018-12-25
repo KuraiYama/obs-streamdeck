@@ -23,7 +23,7 @@
 ========================================================================================================
 */
 
-class RecordingService : public ServiceT<RecordingService> {
+class RecordingService : public ServiceImpl<RecordingService> {
 
 	/*
 	====================================================================================================
@@ -72,6 +72,9 @@ class RecordingService : public ServiceT<RecordingService> {
 	private:
 
 		bool
+		onExit();
+
+		bool
 		checkOutput(calldata_t* data) const;
 
 		bool
@@ -93,12 +96,12 @@ class RecordingService : public ServiceT<RecordingService> {
 		onRecordStopped();
 
 		bool
-		startRecording(const rpc_event_data& data);
+		startRecording(const rpc::request& data);
 
 		bool
-		stopRecording(const rpc_event_data& data);
+		stopRecording(const rpc::request& data);
 
 		bool
-		subscribeRecordStatusChange(const rpc_event_data& data);
+		subscribeRecordStatusChange(const rpc::request& data);
 
 };

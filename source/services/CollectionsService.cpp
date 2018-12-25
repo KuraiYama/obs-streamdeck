@@ -11,41 +11,52 @@
 */
 
 CollectionsService::CollectionsService() :
-	ServiceT("CollectionsService", "SceneCollectionsService"),
+	ServiceImpl("CollectionsService", "SceneCollectionsService"),
 	m_collectionToSwitch(0x0),
 	m_collectionUpdated(nullptr) {
 
-	this->setupEvent(obs_save_event::OBS_SAVE_EVENT_LOADING, &CollectionsService::onCollectionLoading);
+	this->setupEvent(obs::save::event::LOADING, &CollectionsService::onCollectionLoading);
 
-	this->setupEvent(obs_frontend_event::OBS_FRONTEND_EVENT_SCENE_COLLECTION_LIST_CHANGED,
-		&CollectionsService::onCollectionsListChanged);
+	this->setupEvent(
+		obs::frontend::event::SCENE_COLLECTION_LIST_CHANGED,
+		&CollectionsService::onCollectionsListChanged
+	);
 
-	this->setupEvent(obs_frontend_event::OBS_FRONTEND_EVENT_SCENE_COLLECTION_CHANGED,
-		&CollectionsService::onCollectionSwitched);
+	this->setupEvent(
+		obs::frontend::event::SCENE_COLLECTION_CHANGED,
+		&CollectionsService::onCollectionSwitched
+	);
 
-	this->setupEvent<const rpc_event_data&>(Streamdeck::rpc_event::FETCH_COLLECTIONS_SCHEMA,
-		&CollectionsService::onFetchCollectionsSchema);
+	this->setupEvent(
+		rpc::event::FETCH_COLLECTIONS_SCHEMA,
+		&CollectionsService::onFetchCollectionsSchema
+	);
 
-	this->setupEvent<const rpc_event_data&>(Streamdeck::rpc_event::GET_COLLECTIONS,
-		&CollectionsService::onGetCollections);
+	this->setupEvent(rpc::event::GET_COLLECTIONS, &CollectionsService::onGetCollections);
 
-	this->setupEvent<const rpc_event_data&>(Streamdeck::rpc_event::GET_ACTIVE_COLLECTION,
-		&CollectionsService::onGetActiveCollection);
+	this->setupEvent(rpc::event::GET_ACTIVE_COLLECTION, &CollectionsService::onGetActiveCollection);
 
-	this->setupEvent<const rpc_event_data&>(Streamdeck::rpc_event::MAKE_COLLECTION_ACTIVE,
-		&CollectionsService::onMakeCollectionActive);
+	this->setupEvent(rpc::event::MAKE_COLLECTION_ACTIVE, &CollectionsService::onMakeCollectionActive);
 
-	this->setupEvent<const rpc_event_data&>(Streamdeck::rpc_event::COLLECTION_ADDED_SUBSCRIBE,
-		&CollectionsService::subscribeCollectionChange);
+	this->setupEvent(
+		rpc::event::COLLECTION_ADDED_SUBSCRIBE,
+		&CollectionsService::subscribeCollectionChange
+	);
 
-	this->setupEvent<const rpc_event_data&>(Streamdeck::rpc_event::COLLECTION_REMOVED_SUBSCRIBE,
-		&CollectionsService::subscribeCollectionChange);
+	this->setupEvent(
+		rpc::event::COLLECTION_REMOVED_SUBSCRIBE,
+		&CollectionsService::subscribeCollectionChange
+	);
 
-	this->setupEvent<const rpc_event_data&>(Streamdeck::rpc_event::COLLECTION_UPDATED_SUBSCRIBE,
-		&CollectionsService::subscribeCollectionChange);
+	this->setupEvent(
+		rpc::event::COLLECTION_UPDATED_SUBSCRIBE,
+		&CollectionsService::subscribeCollectionChange
+	);
 
-	this->setupEvent<const rpc_event_data&>(Streamdeck::rpc_event::COLLECTION_SWITCHED_SUBSCRIBE,
-		&CollectionsService::subscribeCollectionChange);
+	this->setupEvent(
+		rpc::event::COLLECTION_SWITCHED_SUBSCRIBE,
+		&CollectionsService::subscribeCollectionChange
+	);
 }
 
 CollectionsService::~CollectionsService() {
@@ -58,7 +69,7 @@ CollectionsService::~CollectionsService() {
 */
 
 bool
-CollectionsService::onCollectionLoading(const obs_data_t* data) {
+CollectionsService::onCollectionLoading(const obs::save::data& data) {
 
 	Q_UNUSED(data);
 
@@ -78,15 +89,15 @@ CollectionsService::onCollectionLoading(const obs_data_t* data) {
 
 bool
 CollectionsService::onCollectionsListChanged() {
-	obs::collection_event evt = obsManager()->updateCollections(m_collectionUpdated);
+	obs::collection::event evt = obsManager()->updateCollections(m_collectionUpdated);
 	switch(evt) {
-		case obs::collection_event::COLLECTION_ADDED:
+		case obs::collection::event::ADDED:
 			return onCollectionAdded(*m_collectionUpdated.get());
 			break;
-		case obs::collection_event::COLLECTION_REMOVED:
+		case obs::collection::event::REMOVED:
 			return onCollectionRemoved(*m_collectionUpdated.get());
 			break;
-		case obs::collection_event::COLLECTION_RENAMED:
+		case obs::collection::event::RENAMED:
 			return onCollectionUpdated(*m_collectionUpdated.get());
 			break;
 	}
@@ -116,14 +127,14 @@ CollectionsService::onCollectionSwitched() {
 
 	bool active = true;
 	if(m_collectionToSwitch != 0x0) {
-		rpc_adv_response<void> response = response_void(nullptr, "onMakeCollectionActive");
-		response.event = Streamdeck::rpc_event::MAKE_COLLECTION_ACTIVE;
+		rpc::response<void> response = response_void(nullptr, "onMakeCollectionActive");
+		response.event = rpc::event::MAKE_COLLECTION_ACTIVE;
 		m_collectionToSwitch = 0x0;
 		active &= streamdeckManager()->commit_all(response, &StreamdeckManager::setAcknowledge);
 	}
 
-	rpc_adv_response<CollectionPtr> response = response_collection(nullptr, "onCollectionSwitched");
-	response.event = Streamdeck::rpc_event::COLLECTION_SWITCHED_SUBSCRIBE;
+	rpc::response<CollectionPtr> response = response_collection(nullptr, "onCollectionSwitched");
+	response.event = rpc::event::COLLECTION_SWITCHED_SUBSCRIBE;
 	response.data = collection;
 
 	return active && streamdeckManager()->commit_all(response, &StreamdeckManager::setEvent);
@@ -137,8 +148,8 @@ CollectionsService::onCollectionAdded(const Collection& collection) {
 		.toStdString()
 	);
 
-	rpc_adv_response<void> response = response_void(nullptr, "onCollectionAdded");
-	response.event = Streamdeck::rpc_event::COLLECTION_ADDED_SUBSCRIBE;
+	rpc::response<void> response = response_void(nullptr, "onCollectionAdded");
+	response.event = rpc::event::COLLECTION_ADDED_SUBSCRIBE;
 
 	return streamdeckManager()->commit_all(response, &StreamdeckManager::setEvent);
 }
@@ -151,8 +162,8 @@ CollectionsService::onCollectionRemoved(const Collection& collection) {
 		.toStdString()
 	);
 
-	rpc_adv_response<void> response = response_void(nullptr, "onCollectionRemoved");
-	response.event = Streamdeck::rpc_event::COLLECTION_REMOVED_SUBSCRIBE;
+	rpc::response<void> response = response_void(nullptr, "onCollectionRemoved");
+	response.event = rpc::event::COLLECTION_REMOVED_SUBSCRIBE;
 
 	return streamdeckManager()->commit_all(response, &StreamdeckManager::setEvent);
 }
@@ -165,8 +176,8 @@ CollectionsService::onCollectionUpdated(const Collection& collection) {
 		.toStdString()
 	);
 
-	rpc_adv_response<CollectionPtr> response = response_collection(nullptr, "onCollectionUpdated");
-	response.event = Streamdeck::rpc_event::COLLECTION_UPDATED_SUBSCRIBE;
+	rpc::response<CollectionPtr> response = response_collection(nullptr, "onCollectionUpdated");
+	response.event = rpc::event::COLLECTION_UPDATED_SUBSCRIBE;
 	response.data = const_cast<CollectionPtr>(&collection);
 
 	return streamdeckManager()->commit_all(response, &StreamdeckManager::setEvent);
@@ -179,12 +190,12 @@ CollectionsService::onCollectionUpdated(const Collection& collection) {
 */
 
 bool
-CollectionsService::subscribeCollectionChange(const rpc_event_data& data) {
-	rpc_adv_response<std::string> response = response_string(&data, "subscribeCollectionChange");
-	if(data.event == Streamdeck::rpc_event::COLLECTION_ADDED_SUBSCRIBE ||
-		data.event == Streamdeck::rpc_event::COLLECTION_REMOVED_SUBSCRIBE || 
-		data.event == Streamdeck::rpc_event::COLLECTION_UPDATED_SUBSCRIBE ||
-		data.event == Streamdeck::rpc_event::COLLECTION_SWITCHED_SUBSCRIBE
+CollectionsService::subscribeCollectionChange(const rpc::request& data) {
+	rpc::response<std::string> response = response_string(&data, "subscribeCollectionChange");
+	if(data.event == rpc::event::COLLECTION_ADDED_SUBSCRIBE ||
+		data.event == rpc::event::COLLECTION_REMOVED_SUBSCRIBE || 
+		data.event == rpc::event::COLLECTION_UPDATED_SUBSCRIBE ||
+		data.event == rpc::event::COLLECTION_SWITCHED_SUBSCRIBE
 	) {
 		response.event = data.event;
 		logInfo("Subscription to collection event required");
@@ -208,10 +219,10 @@ CollectionsService::subscribeCollectionChange(const rpc_event_data& data) {
 }
 
 bool
-CollectionsService::onFetchCollectionsSchema(const rpc_event_data& data) {
-	rpc_adv_response<std::string> response = response_string(&data, "onFetchCollectionsSchema");
-	if(data.event == Streamdeck::rpc_event::FETCH_COLLECTIONS_SCHEMA) {
-		response.event = Streamdeck::rpc_event::FETCH_COLLECTIONS_SCHEMA;
+CollectionsService::onFetchCollectionsSchema(const rpc::request& data) {
+	rpc::response<std::string> response = response_string(&data, "onFetchCollectionsSchema");
+	if(data.event == rpc::event::FETCH_COLLECTIONS_SCHEMA) {
+		response.event = rpc::event::FETCH_COLLECTIONS_SCHEMA;
 		logInfo("Fetching schemas required...");
 
 		if(!checkResource(&data, QRegExp("(.+)"))) {
@@ -229,19 +240,19 @@ CollectionsService::onFetchCollectionsSchema(const rpc_event_data& data) {
 	if(!streamdeckManager()->commit_to(response, &StreamdeckManager::setSubscription))
 		return false;
 
-	rpc_adv_response<Collections> response2 = response_collections(&data, "onFetchCollectionsSchema");
-	response2.event = Streamdeck::rpc_event::FETCH_COLLECTIONS_SCHEMA;
+	rpc::response<Collections> response2 = response_collections(&data, "onFetchCollectionsSchema");
+	response2.event = rpc::event::FETCH_COLLECTIONS_SCHEMA;
 	response2.data = obsManager()->collections();
 
 	return streamdeckManager()->commit_to(response2, &StreamdeckManager::setSchema);
 }
 
 bool
-CollectionsService::onGetCollections(const rpc_event_data& data) {
+CollectionsService::onGetCollections(const rpc::request& data) {
 	
-	rpc_adv_response<Collections> response = response_collections(&data, "onGetCollections");
-	if(data.event == Streamdeck::rpc_event::GET_COLLECTIONS) {
-		response.event = Streamdeck::rpc_event::GET_COLLECTIONS;
+	rpc::response<Collections> response = response_collections(&data, "onGetCollections");
+	if(data.event == rpc::event::GET_COLLECTIONS) {
+		response.event = rpc::event::GET_COLLECTIONS;
 		logInfo("Collections list required.");
 
 		if(!checkResource(&data, QRegExp("getCollections"))) {
@@ -257,10 +268,10 @@ CollectionsService::onGetCollections(const rpc_event_data& data) {
 }
 
 bool
-CollectionsService::onGetActiveCollection(const rpc_event_data& data) {
-	rpc_adv_response<CollectionPtr> response = response_collection(&data, "onGetActiveCollection");
-	if(data.event == Streamdeck::rpc_event::GET_ACTIVE_COLLECTION) {
-		response.event = Streamdeck::rpc_event::GET_ACTIVE_COLLECTION;
+CollectionsService::onGetActiveCollection(const rpc::request& data) {
+	rpc::response<CollectionPtr> response = response_collection(&data, "onGetActiveCollection");
+	if(data.event == rpc::event::GET_ACTIVE_COLLECTION) {
+		response.event = rpc::event::GET_ACTIVE_COLLECTION;
 		logInfo("Active Collection required.");
 
 		if(!checkResource(&data, QRegExp("activeCollection"))) {
@@ -276,10 +287,10 @@ CollectionsService::onGetActiveCollection(const rpc_event_data& data) {
 }
 
 bool
-CollectionsService::onMakeCollectionActive(const rpc_event_data& data) {
-	rpc_adv_response<void> response = response_void(&data, "onMakeCollectionActive");
-	if(data.event == Streamdeck::rpc_event::MAKE_COLLECTION_ACTIVE) {
-		response.event = Streamdeck::rpc_event::MAKE_COLLECTION_ACTIVE;
+CollectionsService::onMakeCollectionActive(const rpc::request& data) {
+	rpc::response<void> response = response_void(&data, "onMakeCollectionActive");
+	if(data.event == rpc::event::MAKE_COLLECTION_ACTIVE) {
+		response.event = rpc::event::MAKE_COLLECTION_ACTIVE;
 
 		if(!checkResource(&data, QRegExp("load"))) {
 			logWarning("Unknown resource for makeCollectionActive.");

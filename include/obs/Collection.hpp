@@ -18,7 +18,7 @@
  * Plugin Includes
  */
 #include "include/common/Memory.hpp"
-#include "include/obs/OBSStorage.h"
+#include "include/obs/OBSStorage.hpp"
 #include "include/obs/OBSEvents.hpp"
 #include "include/obs/Scene.hpp"
 
@@ -104,7 +104,7 @@ class Collection : public OBSStorable {
 		void
 		synchronize();
 
-		obs::scene_event
+		obs::scene::event
 		updateScenes(std::shared_ptr<Scene>& scene_updated);
 
 		bool

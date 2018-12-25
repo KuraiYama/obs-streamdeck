@@ -27,7 +27,7 @@
 ========================================================================================================
 */
 
-class ScenesService : public ServiceT<ScenesService> {
+class ScenesService : public ServiceImpl<ScenesService> {
 
 	/*
 	====================================================================================================
@@ -62,7 +62,7 @@ class ScenesService : public ServiceT<ScenesService> {
 		onScenesListChanged();
 
 		bool
-		subscribeSceneChange(const rpc_event_data& data);
+		subscribeSceneChange(const rpc::request& data);
 
 		bool
 		onSceneAdded(const Scene& scene);
@@ -77,12 +77,12 @@ class ScenesService : public ServiceT<ScenesService> {
 		onSceneSwitched();
 
 		bool
-		onGetScenes(const rpc_event_data& data);
+		onGetScenes(const rpc::request& data);
 
 		bool
-		onGetActiveScene(const rpc_event_data& data);
+		onGetActiveScene(const rpc::request& data);
 
 		bool
-		onMakeSceneActive(const rpc_event_data& data);
+		onMakeSceneActive(const rpc::request& data);
 
 };

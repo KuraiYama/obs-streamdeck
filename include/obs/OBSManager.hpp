@@ -18,10 +18,15 @@
 /*
  * Plugin Includes
  */
+#include "include/events/EventTrigger.hpp"
 #include "include/common/Memory.hpp"
-#include "include/obs/OBSStorage.h"
+#include "include/obs/OBSStorage.hpp"
 #include "include/obs/OBSEvents.hpp"
 #include "include/obs/Collection.hpp"
+
+#include "include/triggers/FrontendEventTrigger.hpp"
+#include "include/triggers/SaveEventTrigger.hpp"
+#include "include/triggers/OutputEventTrigger.hpp"
 
 /*
 ========================================================================================================
@@ -39,6 +44,12 @@ class OBSManager {
 	private:
 
 		OBSStorage<Collection> m_collections;
+
+		FrontendEventTrigger m_frontendEvent;
+
+		SaveEventTrigger m_saveEvent;
+
+		OutputEventTrigger m_outputEvent;
 
 		mutable Collection* m_activeCollection;
 
@@ -65,12 +76,27 @@ class OBSManager {
 	public:
 
 		void
+		addEventHandler(const obs::frontend::event event, EventObserver<obs::frontend::event>* handler);
+
+		void
+		addEventHandler(const obs::save::event event, EventObserver<obs::save::event>* handler);
+
+		void
+		addEventHandler(const obs::output::event event, EventObserver<obs::output::event>* handler);
+
+		void
+		registerOputput(obs_output_t* output);
+
+		void
+		unregisterOutput(obs_output_t* output);
+
+		void
 		loadCollections(OBSStorage<Collection>& collections, const uint16_t last_collection_id);
 
 		bool
 		isLoadingCollection() const;
 
-		obs::collection_event
+		obs::collection::event
 		updateCollections(std::shared_ptr<Collection>& collection_updated);
 
 		void
@@ -93,8 +119,5 @@ class OBSManager {
 
 		Collections
 		collections() const;
-
-		obs::scene_event
-		updateScenes(Collection& collection, std::shared_ptr<Scene>& scene_updated);
 
 };

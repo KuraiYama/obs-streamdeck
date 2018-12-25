@@ -17,8 +17,8 @@
  * Plugin Includes
  */
 #include "include/common/Memory.hpp"
-#include "include/obs/OBSStorage.h"
-//#include "include/obs/Item.hpp"
+#include "include/obs/OBSStorage.hpp"
+#include "include/obs/Item.hpp"
 
 /*
 ========================================================================================================
@@ -70,7 +70,7 @@ class Scene : public OBSStorable {
 	*/
 	private:
 
-		//std::map<int64_t, Item> m_items;
+		OBSStorage<Item> m_items;
 
 		Collection* m_parentCollection;
 
@@ -98,8 +98,14 @@ class Scene : public OBSStorable {
 	*/
 	public:
 
+		void
+		loadItems();
+
 		bool
 		makeActive();
+
+		void
+		synchronize();
 
 		Collection*
 		collection() const;
