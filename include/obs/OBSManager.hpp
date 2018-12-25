@@ -27,6 +27,7 @@
 #include "include/triggers/FrontendEventTrigger.hpp"
 #include "include/triggers/SaveEventTrigger.hpp"
 #include "include/triggers/OutputEventTrigger.hpp"
+#include "include/triggers/SceneItemEventTrigger.hpp"
 
 /*
 ========================================================================================================
@@ -50,6 +51,8 @@ class OBSManager {
 		SaveEventTrigger m_saveEvent;
 
 		OutputEventTrigger m_outputEvent;
+
+		SceneItemEventTrigger m_sceneitemEvent;
 
 		mutable Collection* m_activeCollection;
 
@@ -85,10 +88,28 @@ class OBSManager {
 		addEventHandler(const obs::output::event event, EventObserver<obs::output::event>* handler);
 
 		void
-		registerOputput(obs_output_t* output);
+		addEventHandler(const obs::item::event event, EventObserver<obs::item::event>* handler);
+
+		void
+		registerOutput(obs_output_t* output);
 
 		void
 		unregisterOutput(obs_output_t* output);
+
+		void
+		registerScene(const Scene* scene);
+
+		void
+		unregisterScene(const Scene* scene);
+
+		void
+		registerItem(const Item* item);
+
+		void
+		unregisterItem(const Item* item);
+
+		void
+		cleanRegisteredScenes();
 
 		void
 		loadCollections(OBSStorage<Collection>& collections, const uint16_t last_collection_id);

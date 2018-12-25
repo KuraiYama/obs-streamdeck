@@ -98,6 +98,12 @@ class Scene : public OBSStorable {
 	*/
 	public:
 
+		Item*
+		createItem(obs_sceneitem_t* item);
+
+		std::shared_ptr<Item>
+		deleteItem(Item* item);
+
 		void
 		loadItems();
 

@@ -139,7 +139,7 @@ RecordingService::connectOutputHandler() {
 				RecordingService::onRecordStopping, this);
 			signal_handler_connect(signal_handler, "stop",
 				RecordingService::onRecordStopped, this);
-			obsManager()->registerOputput(m_recordingOutput);
+			obsManager()->registerOutput(m_recordingOutput);
 			return true;
 		}
 	}

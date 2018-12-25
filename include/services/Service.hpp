@@ -88,7 +88,8 @@ template<typename T>
 class ServiceImpl : public Service, 
 	private EventObserver<T, obs::frontend::event>, 
 	private EventObserver<T, obs::save::event>,
-	private EventObserver<T, obs::output::event> {
+	private EventObserver<T, obs::output::event>,
+	private EventObserver<T, obs::item::event> {
 
 	/*
 	====================================================================================================
@@ -102,6 +103,8 @@ class ServiceImpl : public Service,
 		using SaveHandler = EventObserver<T, obs::save::event>;
 
 		using OutputHandler = EventObserver<T, obs::output::event>;
+
+		using ItemHandler = EventObserver<T, obs::item::event>;
 
 		using RPCHandler = EventObserver<T, rpc::event>;
 
@@ -123,6 +126,10 @@ class ServiceImpl : public Service,
 		typedef
 		typename OutputHandler::template FuncWrapperB<const obs::output::data&>::Callback
 		obs_output_callback;
+
+		typedef
+		typename ItemHandler::template FuncWrapperB<const obs::item::data&>::Callback
+		obs_item_callback;
 
 		typedef
 		typename RPCHandler::template FuncWrapperB<void>::Callback
@@ -191,6 +198,9 @@ class ServiceImpl : public Service,
 
 		void
 		setupEvent(obs::output::event event, obs_output_callback handler);
+
+		void
+		setupEvent(obs::item::event event, obs_item_callback handler);
 
 		void
 		setupEvent(rpc::event event, rpc_callback_void handler);

@@ -102,6 +102,19 @@ Scene::makeActive() {
 ========================================================================================================
 */
 
+Item*
+Scene::createItem(obs_sceneitem_t* item) {
+	uint16_t item_id = static_cast<uint16_t>(obs_sceneitem_get_id(item));
+	Item* item_ptr = m_items.push(new Item(this, item_id, item)).get();
+	return item_ptr;
+}
+
+std::shared_ptr<Item>
+Scene::deleteItem(Item* item) {
+	std::shared_ptr<Item> item_ptr = m_items.pop(item->id());
+	return item_ptr;
+}
+
 void
 Scene::loadItems() {
 }

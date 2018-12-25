@@ -145,7 +145,7 @@ StreamingService::connectOutputHandler() {
 				StreamingService::onStreamReconnecting, this);
 			signal_handler_connect(signal_handler, "reconnect_success",
 				StreamingService::onStreamReconnected, this);
-			obsManager()->registerOputput(m_streamingOutput);
+			obsManager()->registerOutput(m_streamingOutput);
 			return true;
 		}
 	}

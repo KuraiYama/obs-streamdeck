@@ -101,6 +101,8 @@ ScenesService::onSceneAdded(const Scene& scene) {
 		.toStdString()
 	);
 
+	obsManager()->registerScene(&scene);
+
 	rpc::response<void> response = response_void(nullptr, "onSceneAdded");
 	response.event = rpc::event::SCENE_ADDED_SUBSCRIBE;
 
@@ -114,6 +116,8 @@ ScenesService::onSceneRemoved(const Scene& scene) {
 		.arg(scene.id())
 		.toStdString()
 	);
+
+	obsManager()->unregisterScene(&scene);
 
 	rpc::response<void> response = response_void(nullptr, "onSceneRemoved");
 	response.event = rpc::event::SCENE_REMOVED_SUBSCRIBE;

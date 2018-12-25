@@ -79,8 +79,11 @@ class OutputEventTrigger : public EventTrigger<OutputEventTrigger, obs::output::
 		}
 
 		~OutputEventTrigger() {
-			for(auto iter = m_outputs.begin(); iter != m_outputs.end(); iter++)
-				removeOutput(*iter);
+			for(auto iter = m_outputs.begin(); iter != m_outputs.end();) {
+				auto remove = iter;
+				iter++;
+				removeOutput(*remove);
+			}
 		}
 
 	/*

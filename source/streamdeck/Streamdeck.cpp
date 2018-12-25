@@ -331,8 +331,8 @@ Streamdeck::sendSchema(
 			for(auto iter_it = items.items.begin(); iter_it < items.items.end(); iter_it++) {
 				QJsonObject item;
 				uint64_t item_id = (scene_id << 24) + /* type << 8 */ + (*iter_it)->id();
-				addToJsonObject(item, "sceneItemId", QString("%1").arg(item_id));
-				addToJsonObject(item, "sourceId", QString::fromStdString((*iter_it)->name()));
+				addToJsonObject(item, "sceneItemId", QString("%1").arg((*iter_it)->id()));
+				addToJsonObject(item, "sourceId", QString("%1").arg(item_id));
 				addToJsonObject(item, "visible", (*iter_it)->visible());
 				addToJsonArray(items_json, item);
 			}
@@ -425,8 +425,8 @@ Streamdeck::sendScenes(
 			Item* item_ptr = (*iter_it);
 			QJsonObject item;
 			uint64_t item_id = (scene_id << 24) + /* type << 8 */ + item_ptr->id();
-			addToJsonObject(item, "sceneItemId", QString("%1").arg(item_id));
-			addToJsonObject(item, "sourceId", QString::fromStdString(item_ptr->name()));
+			addToJsonObject(item, "sceneItemId", QString("%1").arg(item_ptr->id()));
+			addToJsonObject(item, "sourceId", QString("%1").arg(item_id));
 			addToJsonObject(item, "visible", item_ptr->visible());
 			addToJsonObject(item, "sceneNodeType", item_ptr->type());
 
@@ -637,6 +637,9 @@ Streamdeck::lockEventAuthorizations(const rpc::event event) {
 			setEventAuthorizations(rpc::event::SCENE_ADDED_SUBSCRIBE, 0x0);
 			setEventAuthorizations(rpc::event::SCENE_REMOVED_SUBSCRIBE, 0x0);
 			setEventAuthorizations(rpc::event::SCENE_SWITCHED_SUBSCRIBE, 0x0);
+			setEventAuthorizations(rpc::event::ITEM_ADDED_SUBSCRIBE, 0x0);
+			setEventAuthorizations(rpc::event::ITEM_REMOVED_SUBSCRIBE, 0x0);
+			setEventAuthorizations(rpc::event::ITEM_UPDATED_SUBSCRIBE, 0x0);
 			break;
 
 		case rpc::event::MAKE_COLLECTION_ACTIVE:
@@ -654,6 +657,9 @@ Streamdeck::lockEventAuthorizations(const rpc::event event) {
 			setEventAuthorizations(rpc::event::SCENE_ADDED_SUBSCRIBE, 0x0);
 			setEventAuthorizations(rpc::event::SCENE_REMOVED_SUBSCRIBE, 0x0);
 			setEventAuthorizations(rpc::event::SCENE_SWITCHED_SUBSCRIBE, 0x0);
+			setEventAuthorizations(rpc::event::ITEM_ADDED_SUBSCRIBE, 0x0);
+			setEventAuthorizations(rpc::event::ITEM_REMOVED_SUBSCRIBE, 0x0);
+			setEventAuthorizations(rpc::event::ITEM_UPDATED_SUBSCRIBE, 0x0);
 			break;
 
 		case rpc::event::FETCH_COLLECTIONS_SCHEMA:
@@ -671,6 +677,9 @@ Streamdeck::lockEventAuthorizations(const rpc::event event) {
 			setEventAuthorizations(rpc::event::SCENE_ADDED_SUBSCRIBE, 0x0);
 			setEventAuthorizations(rpc::event::SCENE_REMOVED_SUBSCRIBE, 0x0);
 			setEventAuthorizations(rpc::event::SCENE_SWITCHED_SUBSCRIBE, 0x0);
+			setEventAuthorizations(rpc::event::ITEM_ADDED_SUBSCRIBE, 0x0);
+			setEventAuthorizations(rpc::event::ITEM_REMOVED_SUBSCRIBE, 0x0);
+			setEventAuthorizations(rpc::event::ITEM_UPDATED_SUBSCRIBE, 0x0);
 			setEventAuthorizations(rpc::event::MAKE_COLLECTION_ACTIVE, 0x0);
 			break;
 
@@ -728,6 +737,9 @@ Streamdeck::unlockEventAuthorizations(const rpc::event event) {
 			setEventAuthorizations(rpc::event::SCENE_ADDED_SUBSCRIBE, EVENT_READ_WRITE);
 			setEventAuthorizations(rpc::event::SCENE_REMOVED_SUBSCRIBE, EVENT_READ_WRITE);
 			setEventAuthorizations(rpc::event::SCENE_SWITCHED_SUBSCRIBE, EVENT_READ_WRITE);
+			setEventAuthorizations(rpc::event::ITEM_ADDED_SUBSCRIBE, EVENT_READ_WRITE);
+			setEventAuthorizations(rpc::event::ITEM_REMOVED_SUBSCRIBE, EVENT_READ_WRITE);
+			setEventAuthorizations(rpc::event::ITEM_UPDATED_SUBSCRIBE, EVENT_READ_WRITE);
 			break;
 
 		default:
@@ -841,6 +853,9 @@ Streamdeck::logEvent(const rpc::event event, const QJsonDocument& json_quest) {
 		case rpc::event::SCENE_ADDED_SUBSCRIBE:
 		case rpc::event::SCENE_REMOVED_SUBSCRIBE:
 		case rpc::event::SCENE_SWITCHED_SUBSCRIBE:
+		case rpc::event::ITEM_ADDED_SUBSCRIBE:
+		case rpc::event::ITEM_REMOVED_SUBSCRIBE:
+		case rpc::event::ITEM_UPDATED_SUBSCRIBE:
 			log_custom(0xffb520) << QString("Subscribe Event (%1)").arg((int)event).toStdString();
 			break;
 

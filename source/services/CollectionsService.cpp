@@ -17,6 +17,8 @@ CollectionsService::CollectionsService() :
 
 	this->setupEvent(obs::save::event::LOADING, &CollectionsService::onCollectionLoading);
 
+	this->setupEvent(obs::frontend::event::EXIT, &CollectionsService::onExit);
+
 	this->setupEvent(
 		obs::frontend::event::SCENE_COLLECTION_LIST_CHANGED,
 		&CollectionsService::onCollectionsListChanged
@@ -69,6 +71,12 @@ CollectionsService::~CollectionsService() {
 */
 
 bool
+CollectionsService::onExit() {
+	obsManager()->cleanRegisteredScenes();
+	return true;
+}
+
+bool
 CollectionsService::onCollectionLoading(const obs::save::data& data) {
 
 	Q_UNUSED(data);
@@ -119,6 +127,11 @@ CollectionsService::onCollectionSwitched() {
 		.arg(collection->name().c_str())
 		.toStdString()
 	);
+
+	obsManager()->cleanRegisteredScenes();
+	Scenes scenes = collection->scenes();
+	for(auto iter = scenes.scenes.begin(); iter < scenes.scenes.end(); iter++)
+		obsManager()->registerScene(*iter);
 
 	if(m_collectionUpdated != nullptr) {
 		m_collectionUpdated = nullptr;

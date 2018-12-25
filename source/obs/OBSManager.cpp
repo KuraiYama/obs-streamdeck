@@ -52,6 +52,11 @@ OBSManager::addEventHandler(
 	m_outputEvent.addHandler(std::make_pair(event, handler));
 }
 
+void
+OBSManager::addEventHandler(const obs::item::event event, EventObserver<obs::item::event>* handler) {
+	m_sceneitemEvent.addHandler(std::make_pair(event, handler));
+}
+
 /*
 ========================================================================================================
 	Outputs Management
@@ -59,13 +64,56 @@ OBSManager::addEventHandler(
 */
 
 void
-OBSManager::registerOputput(obs_output_t* output) {
+OBSManager::registerOutput(obs_output_t* output) {
 	m_outputEvent.addOutput(output);
 }
 
 void
 OBSManager::unregisterOutput(obs_output_t* output) {
 	m_outputEvent.removeOutput(output);
+}
+
+/*
+========================================================================================================
+	Scenes Management
+========================================================================================================
+*/
+
+void
+OBSManager::registerScene(const Scene* scene) {
+	m_sceneitemEvent.addScene(scene);
+	Items items = scene->items();
+	for(auto iter = items.items.begin(); iter < items.items.end(); iter++)
+		m_sceneitemEvent.addItem(*iter);
+}
+
+void
+OBSManager::unregisterScene(const Scene* scene) {
+	m_sceneitemEvent.removeScene(scene->scene());
+	Items items = scene->items();
+	for(auto iter = items.items.begin(); iter < items.items.end(); iter++)
+		m_sceneitemEvent.removeItem((*iter)->item());
+}
+
+void
+OBSManager::cleanRegisteredScenes() {
+	m_sceneitemEvent.removeAll();
+}
+
+/*
+========================================================================================================
+	Items Management
+========================================================================================================
+*/
+
+void
+OBSManager::registerItem(const Item* item) {
+	m_sceneitemEvent.addItem(item);
+}
+
+void
+OBSManager::unregisterItem(const Item* item) {
+	m_sceneitemEvent.removeItem(item->item());
 }
 
 /*
@@ -115,6 +163,9 @@ OBSManager::loadCollections(OBSStorage<Collection>& collections, const uint16_t 
 		this->makeActive();
 		this->m_activeCollection->synchronize();
 		this->m_activeCollection->makeActive();
+		Scenes scenes = m_activeCollection->scenes();
+		for(auto iter = scenes.scenes.begin(); iter < scenes.scenes.end(); iter++)
+			registerScene(*iter);
 	}
 	else {
 		this->switchCollection(current_collection_bf);

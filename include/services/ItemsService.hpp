@@ -27,18 +27,7 @@
 ========================================================================================================
 */
 
-class CollectionsService : public ServiceImpl<CollectionsService> {
-
-	/*
-	====================================================================================================
-		Constructors / Destructor
-	====================================================================================================
-	*/
-	private:
-
-		std::shared_ptr<Collection> m_collectionUpdated;
-
-		uint16_t m_collectionToSwitch;
+class ItemsService : public ServiceImpl<ItemsService> {
 
 	/*
 	====================================================================================================
@@ -47,9 +36,9 @@ class CollectionsService : public ServiceImpl<CollectionsService> {
 	*/
 	public:
 
-		CollectionsService();
+		ItemsService();
 
-		virtual ~CollectionsService();
+		virtual ~ItemsService();
 
 	/*
 	====================================================================================================
@@ -59,39 +48,15 @@ class CollectionsService : public ServiceImpl<CollectionsService> {
 	private:
 
 		bool
-		onExit();
+		subscribeItemChange(const rpc::request& data);
 
 		bool
-		onCollectionLoading(const obs::save::data& data);
+		onItemAdded(const obs::item::data& data);
 
 		bool
-		onCollectionsListChanged();
+		onItemRemoved(const obs::item::data& data);
 
 		bool
-		onCollectionAdded(const Collection& collection);
-
-		bool
-		onCollectionRemoved(const Collection& collection);
-
-		bool
-		onCollectionUpdated(const Collection& collection);
-
-		bool
-		onCollectionSwitched();
-
-		bool
-		subscribeCollectionChange(const rpc::request& data);
-
-		bool
-		onFetchCollectionsSchema(const rpc::request& data);
-
-		bool
-		onGetCollections(const rpc::request& data);
-
-		bool
-		onGetActiveCollection(const rpc::request& data);
-
-		bool
-		onMakeCollectionActive(const rpc::request& data);
+		onItemUpdated(const obs::item::data& data);
 
 };

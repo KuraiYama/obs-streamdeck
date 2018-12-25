@@ -64,6 +64,17 @@ ServiceImpl<T>::setupEvent(obs::output::event event, obs_output_callback handler
 
 template<typename T>
 void
+ServiceImpl<T>::setupEvent(obs::item::event event, obs_item_callback handler) {
+	this->EventObserver<T, obs::item::event>::registerCallback<const obs::item::data&>(
+		event,
+		(obs_item_callback)handler,
+		reinterpret_cast<T*>(this)
+	);
+	_obs_manager->addEventHandler(event, this);
+}
+
+template<typename T>
+void
 ServiceImpl<T>::setupEvent(rpc::event, rpc_callback_void handler) {
 	if(_streamdeck_manager == nullptr)
 		return;
