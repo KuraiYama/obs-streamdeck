@@ -112,12 +112,13 @@ Scene::synchronize() {
 	auto func = [](obs_scene_t* scene, obs_sceneitem_t* item, void* private_data) -> bool {
 		Scene& scene_ref = *reinterpret_cast<Scene*>(private_data);
 		if(scene != scene_ref.scene()) return false;
-		auto iter = scene_ref.m_items[obs_sceneitem_get_id(item)];
+		uint16_t id = static_cast<uint16_t>(obs_sceneitem_get_id(item));
+		auto iter = scene_ref.m_items[id];
 		if(iter != nullptr) {
 			iter->item(item);
 		}
 		else {
-			scene_ref.m_items.push(new Item(&scene_ref, obs_sceneitem_get_id(item), item));
+			scene_ref.m_items.push(new Item(&scene_ref, id, item));
 		}
 		return true;
 	};
@@ -151,4 +152,14 @@ Scene::source(obs_source_t* obs_source) {
 	m_name = obs_source_get_name(m_source);
 	m_scene = obs_scene_from_source(m_source);
 	this->synchronize();
+}
+
+Items
+Scene::items() const {
+	Items items;
+	items.scene = this;
+	for(auto iter = m_items.begin(); iter != m_items.end(); iter++)
+		if(iter->second->scene() == this)
+			items.items.push_back(const_cast<Item*>(iter->second.get()));
+	return items;
 }

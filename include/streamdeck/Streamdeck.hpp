@@ -281,7 +281,7 @@ class Streamdeck : public QObject {
 			bool event_mode = false
 		);
 
-		bool sendSchemaMessage(
+		bool sendSchema(
 			const rpc::event event,
 			const std::string& resource,
 			const Collections& collections,
@@ -289,7 +289,7 @@ class Streamdeck : public QObject {
 		);
 
 		bool
-		sendCollectionsMessage(
+		sendCollections(
 			const rpc::event event,
 			const std::string& resource,
 			const Collections& collections,
@@ -297,7 +297,7 @@ class Streamdeck : public QObject {
 		);
 
 		bool
-		sendCollectionMessage(
+		sendCollection(
 			const rpc::event event,
 			const std::string& resource,
 			const CollectionPtr& collection,
@@ -305,7 +305,7 @@ class Streamdeck : public QObject {
 		);
 
 		bool
-		sendScenesMessage(
+		sendScenes(
 			const rpc::event event,
 			const std::string& resource,
 			const Scenes& scenes,
@@ -313,7 +313,7 @@ class Streamdeck : public QObject {
 		);
 
 		bool
-		sendSceneMessage(
+		sendScene(
 			const rpc::event event,
 			const std::string& resource,
 			const ScenePtr& scene,

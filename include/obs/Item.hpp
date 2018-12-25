@@ -37,8 +37,8 @@ class Scene;
 typedef Item* ItemPtr;
 
 typedef struct Items {
-	Scene* scene;
-	std::vector<Item*> items;
+	const Scene* scene;
+	std::vector<ItemPtr> items;
 } Items;
 
 class Item : public OBSStorable {
@@ -75,6 +75,9 @@ class Item : public OBSStorable {
 	====================================================================================================
 	*/
 	public:
+
+		Scene*
+		scene() const;
 
 		virtual const char*
 		type() const;

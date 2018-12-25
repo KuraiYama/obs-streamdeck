@@ -37,6 +37,11 @@ Item::~Item() {
 ========================================================================================================
 */
 
+Scene*
+Item::scene() const {
+	return m_parentScene;
+}
+
 obs_sceneitem_t*
 Item::item() const {
 	return m_item;

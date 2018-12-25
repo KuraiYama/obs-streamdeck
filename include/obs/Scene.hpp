@@ -39,8 +39,8 @@ class Collection;
 typedef Scene* ScenePtr;
 
 typedef struct Scenes {
-	const Collection* _collection;
-	std::vector<ScenePtr> _scenes;
+	const Collection* collection;
+	std::vector<ScenePtr> scenes;
 } Scenes;
 
 class Scene : public OBSStorable {
@@ -109,6 +109,9 @@ class Scene : public OBSStorable {
 
 		Collection*
 		collection() const;
+
+		Items
+		items() const;
 
 		obs_scene_t*
 		scene() const;

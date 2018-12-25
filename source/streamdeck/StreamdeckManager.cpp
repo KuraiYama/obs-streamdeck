@@ -181,7 +181,7 @@ StreamdeckManager::setSchema(Streamdeck* client, const rpc::response<Collections
 		.arg(response.serviceName)
 		.arg(response.method);
 
-	return client->sendSchemaMessage(response.event, resource.toStdString(), response.data);
+	return client->sendSchema(response.event, resource.toStdString(), response.data);
 }
 
 bool
@@ -194,7 +194,7 @@ StreamdeckManager::setCollections(Streamdeck* client, const rpc::response<Collec
 			.arg(response.serviceName)
 			.arg(response.method);
 
-	return client->sendCollectionsMessage(response.event, resource.toStdString(), response.data);
+	return client->sendCollections(response.event, resource.toStdString(), response.data);
 }
 
 bool
@@ -207,7 +207,7 @@ StreamdeckManager::setCollection(Streamdeck* client, const rpc::response<Collect
 		.arg(response.serviceName)
 		.arg(response.method);
 
-	return client->sendCollectionMessage(response.event, resource.toStdString(), response.data);
+	return client->sendCollection(response.event, resource.toStdString(), response.data);
 }
 
 bool
@@ -220,7 +220,7 @@ StreamdeckManager::setScenes(Streamdeck* client, const rpc::response<Scenes>& re
 		.arg(response.serviceName)
 		.arg(response.method);
 
-	return client->sendScenesMessage(response.event, resource.toStdString(), response.data);
+	return client->sendScenes(response.event, resource.toStdString(), response.data);
 }
 
 bool
@@ -233,7 +233,7 @@ StreamdeckManager::setScene(Streamdeck* client, const rpc::response<ScenePtr>& r
 		.arg(response.serviceName)
 		.arg(response.method);
 
-	return client->sendSceneMessage(response.event, resource.toStdString(), response.data);
+	return client->sendScene(response.event, resource.toStdString(), response.data);
 }
 
 /*

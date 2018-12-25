@@ -65,13 +65,13 @@ class ApplicationService : public ServiceImpl<ApplicationService> {
 			public:
 
 				bool
-					open(const char* filename, std::ios_base::openmode mode);
+				open(const char* filename, std::ios_base::openmode mode);
 
 				size_t
-					read(char* buffer, size_t size);
+				read(char* buffer, size_t size);
 
 				size_t
-					write(char* buffer, size_t size);
+				write(char* buffer, size_t size);
 
 		};
 

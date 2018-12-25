@@ -245,10 +245,10 @@ Collection::switchScene(const char* name) {
 Scenes
 Collection::scenes() const {
 	Scenes scenes;
-	scenes._collection = this;
+	scenes.collection = this;
 	for(auto iter = m_scenes.begin(); iter != m_scenes.end(); iter++)
 		if(iter->second->collection() == this)
-			scenes._scenes.push_back(const_cast<Scene*>(iter->second.get()));
+			scenes.scenes.push_back(const_cast<Scene*>(iter->second.get()));
 	return scenes;
 }
 

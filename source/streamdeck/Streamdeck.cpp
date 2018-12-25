@@ -289,7 +289,7 @@ Streamdeck::sendError(
 }
 
 bool
-Streamdeck::sendSchemaMessage(
+Streamdeck::sendSchema(
 	const rpc::event event,
 	const std::string& resource,
 	const Collections& collections,
@@ -316,18 +316,31 @@ Streamdeck::sendSchemaMessage(
 	for(auto iter = collections.begin(); iter < collections.end(); iter++) {
 		QJsonObject collection;
 		addToJsonObject(collection, "name", (*iter)->name().c_str());
-		addToJsonObject(collection, "id", QString("%1").arg((*iter)->id()));
+		uint16_t collection_id = (*iter)->id();
+		addToJsonObject(collection, "id", QString("%1").arg(collection_id));
 		QJsonArray scenes_json;
 		Scenes scenes = (*iter)->scenes();
-		for(auto iter_sc = scenes._scenes.begin(); iter_sc < scenes._scenes.end(); iter_sc++) {
+		for(auto iter_sc = scenes.scenes.begin(); iter_sc < scenes.scenes.end(); iter_sc++) {
 			QJsonObject scene;
-			addToJsonObject(scene, "id", QString("%1").arg((*iter_sc)->id()));
+			uint32_t scene_id = (collection_id << 16) + (*iter_sc)->id();
+			addToJsonObject(scene, "id", QString("%1").arg(scene_id));
 			addToJsonObject(scene, "name", QString::fromStdString((*iter_sc)->name()));
 
+			QJsonArray items_json;
+			Items items = (*iter_sc)->items();
+			for(auto iter_it = items.items.begin(); iter_it < items.items.end(); iter_it++) {
+				QJsonObject item;
+				uint64_t item_id = (scene_id << 24) + /* type << 8 */ + (*iter_it)->id();
+				addToJsonObject(item, "sceneItemId", QString("%1").arg(item_id));
+				addToJsonObject(item, "sourceId", QString::fromStdString((*iter_it)->name()));
+				addToJsonObject(item, "visible", (*iter_it)->visible());
+				addToJsonArray(items_json, item);
+			}
+			addToJsonObject(scene, "sceneItems", items_json);
 			addToJsonArray(scenes_json, scene);
 		}
 		addToJsonObject(collection, "scenes", scenes_json);
-		// TODO
+		// TODO Sources
 		addToJsonArray(data, collection);
 	}
 	addToJsonObject(response["result"], "data", data);
@@ -338,13 +351,13 @@ Streamdeck::sendSchemaMessage(
 	return true;
 #else
 
-	return this->sendCollectionsMessage(ev, res, collections, event_mode);
+	return this->sendCollections(ev, res, collections, event_mode);
 
 #endif
 }
 
 bool
-Streamdeck::sendCollectionsMessage(
+Streamdeck::sendCollections(
 	const rpc::event event,
 	const std::string& resource,
 	const Collections& collections,
@@ -368,7 +381,7 @@ Streamdeck::sendCollectionsMessage(
 }
 
 bool
-Streamdeck::sendCollectionMessage(
+Streamdeck::sendCollection(
 	const rpc::event event,
 	const std::string& resource,
 	const CollectionPtr& collection,
@@ -384,7 +397,7 @@ Streamdeck::sendCollectionMessage(
 }
 
 bool
-Streamdeck::sendScenesMessage(
+Streamdeck::sendScenes(
 	const rpc::event event,
 	const std::string& resource,
 	const Scenes& scenes,
@@ -392,18 +405,34 @@ Streamdeck::sendScenesMessage(
 ) {
 	QJsonObject response = buildJsonResponse(event, QString::fromStdString(resource), event_mode);
 	QString collection_id = "";
-	if(scenes._collection != nullptr)
-		collection_id = QString("%1").arg(scenes._collection->id());
+	if(scenes.collection != nullptr)
+		collection_id = QString("%1").arg(scenes.collection->id());
 	addToJsonObject(response, "collection", collection_id);
 
 	QJsonArray result;
-	for(auto iter = scenes._scenes.begin(); iter < scenes._scenes.end(); iter++) {
+	for(auto iter_sc = scenes.scenes.begin(); iter_sc < scenes.scenes.end(); iter_sc++) {
+		Scene* scene_ptr = (*iter_sc);
 		QJsonObject scene;
-		uint32_t id = (*iter)->id();
-		if(scenes._collection != nullptr)
-			id += (scenes._collection->id() << 16);
-		addToJsonObject(scene, "id", QString("%1").arg(id));
-		addToJsonObject(scene, "name", QString::fromStdString((*iter)->name()));
+		uint32_t scene_id = scene_ptr->id();
+		if(scenes.collection != nullptr)
+			scene_id += (scenes.collection->id() << 16);
+		addToJsonObject(scene, "id", QString("%1").arg(scene_id));
+		addToJsonObject(scene, "name", QString::fromStdString(scene_ptr->name()));
+
+		QJsonArray nodes_items;
+		std::vector<ItemPtr> items = std::move(scene_ptr->items().items);
+		for(auto iter_it = items.begin(); iter_it < items.end(); iter_it++) {
+			Item* item_ptr = (*iter_it);
+			QJsonObject item;
+			uint64_t item_id = (scene_id << 24) + /* type << 8 */ + item_ptr->id();
+			addToJsonObject(item, "sceneItemId", QString("%1").arg(item_id));
+			addToJsonObject(item, "sourceId", QString::fromStdString(item_ptr->name()));
+			addToJsonObject(item, "visible", item_ptr->visible());
+			addToJsonObject(item, "sceneNodeType", item_ptr->type());
+
+			addToJsonArray(nodes_items, item);
+		}
+		addToJsonObject(scene, ((std::rand() % 2) == 0 ? "nodes" : "items"), nodes_items);
 
 		addToJsonArray(result, scene);
 	}
@@ -416,7 +445,7 @@ Streamdeck::sendScenesMessage(
 }
 
 bool
-Streamdeck::sendSceneMessage(
+Streamdeck::sendScene(
 	const rpc::event event,
 	const std::string& resource,
 	const ScenePtr& scene,

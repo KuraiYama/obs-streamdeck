@@ -2,6 +2,7 @@
  * CRT Includes
  */
 #include <cstdlib>
+#include <ctime>
 
 /*
  * Qt Includes
@@ -60,6 +61,8 @@ OBSManager* collectionManager;
 
 bool
 obs_module_load(void) {
+	std::srand(std::time(nullptr));
+
 	QMainWindow *parent = (QMainWindow*)obs_frontend_get_main_window();
 
 	Service::_streamdeck_manager = new StreamdeckManager();
