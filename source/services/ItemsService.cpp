@@ -56,11 +56,10 @@ ItemsService::onItemAdded(const obs::item::data& data) {
 
 	obsManager()->registerItem(item);
 
-	/*rpc::response<void> response = response_void(nullptr, "onSceneAdded");
-	response.event = rpc::event::SCENE_ADDED_SUBSCRIBE;
+	rpc::response<void> response = response_void(nullptr, "onItemAdded");
+	response.event = rpc::event::ITEM_ADDED_SUBSCRIBE;
 
-	return streamdeckManager()->commit_all(response, &StreamdeckManager::setEvent);*/
-	return true;
+	return streamdeckManager()->commit_all(response, &StreamdeckManager::setEvent);
 }
 
 bool
@@ -81,11 +80,10 @@ ItemsService::onItemRemoved(const obs::item::data& data) {
 
 	obsManager()->unregisterItem(item_ptr.get());
 
-	/*rpc::response<void> response = response_void(nullptr, "onSceneRemoved");
-	response.event = rpc::event::SCENE_REMOVED_SUBSCRIBE;
+	rpc::response<void> response = response_void(nullptr, "onItemRemoved");
+	response.event = rpc::event::ITEM_REMOVED_SUBSCRIBE;
 
-	return streamdeckManager()->commit_all(response, &StreamdeckManager::setEvent);*/
-	return true;
+	return streamdeckManager()->commit_all(response, &StreamdeckManager::setEvent);
 }
 
 bool
@@ -111,19 +109,10 @@ ItemsService::onItemUpdated(const obs::item::data& data) {
 			break;
 	}
 
-	/*logInfo(QString("Scene renamed to %1").arg(scene.name().c_str()).toStdString());
+	rpc::response<void> response = response_void(nullptr, "onItemUpdated");
+	response.event = rpc::event::ITEM_UPDATED_SUBSCRIBE;
 
-	// The RPC protocol doesn't provide any resource for handling scene renaming.
-	// We can use both scene removed/scene added to handle that, but each of them
-	// implies GET_SCENES message. Then we send directly the GET_SCENES message instead.
-
-	rpc::response<Scenes> response = response_scenes(nullptr, "onSceneUpdated");
-	response.event = rpc::event::GET_SCENES;
-	Collection* collection = scene.collection();
-	response.data = collection->scenes();
-
-	return streamdeckManager()->commit_all(response, &StreamdeckManager::setScenes);*/
-	return true;
+	return streamdeckManager()->commit_all(response, &StreamdeckManager::setEvent);
 }
 
 /*
