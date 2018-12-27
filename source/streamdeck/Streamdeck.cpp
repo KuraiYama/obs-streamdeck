@@ -952,6 +952,7 @@ Streamdeck::logEvent(const rpc::event event, const QJsonDocument& json_quest) {
 
 		case rpc::event::GET_SOURCES:
 			log_custom(0x04ff86) << "Get sources" << log_end;
+			break;
 
 		case rpc::event::GET_RECORD_STREAM_STATE:
 			log_custom(0xed65e6) << "Get Recording and Streaming State" << log_end;

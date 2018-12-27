@@ -54,6 +54,8 @@ ScenesService::onScenesListChanged() {
 	case obs::scene::event::RENAMED:
 		return onSceneUpdated(*m_sceneUpdated.get());
 		break;
+	default:
+		break;
 	}
 	return true;
 }

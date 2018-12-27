@@ -218,7 +218,8 @@ class OBSStorage<T, true> {
 		operator[](const std::string& name) const {
 			std::map<std::string, uint16_t>::const_iterator iter = m_idx.find(name);
 			if(iter != m_idx.end()) {
-				return m_pointers.find(iter->second)->second.get();
+				T* ptr = m_pointers.find(iter->second)->second.get();
+				return ptr;
 			}
 			return nullptr;
 		}
@@ -227,7 +228,8 @@ class OBSStorage<T, true> {
 		operator[](uint16_t identifier) const {
 			std::map<uint16_t, std::shared_ptr<T>>::const_iterator iter = m_pointers.find(identifier);
 			if(iter != m_pointers.end()) {
-				return iter->second.get();
+				T* ptr = iter->second.get();
+				return ptr;
 			}
 			return nullptr;
 		}

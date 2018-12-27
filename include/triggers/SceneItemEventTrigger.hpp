@@ -19,7 +19,9 @@
 ========================================================================================================
 */
 
-class SceneItemEventTrigger : public EventTrigger<SceneItemEventTrigger, obs::item::event> {
+class SceneItemEventTrigger :
+	public EventTrigger<SceneItemEventTrigger, obs::item::event>,
+	public EventTrigger<SceneItemEventTrigger, obs::frontend::event> {
 
 	/*
 	====================================================================================================
@@ -27,6 +29,23 @@ class SceneItemEventTrigger : public EventTrigger<SceneItemEventTrigger, obs::it
 	====================================================================================================
 	*/
 	private:
+
+		static void
+		OnSceneRename(void* trigger, calldata_t* data) {
+			if(!Service::_obs_started) return;
+
+			obs_source_t* source = nullptr;
+			const char* name;
+			if(
+				calldata_get_ptr(data, "source", &source) &&
+				calldata_get_string(data, "new_name", &name)
+			) {
+				obs_scene_t* scene = obs_scene_from_source(source);
+	
+				SceneItemEventTrigger& trigger_ref = *reinterpret_cast<SceneItemEventTrigger*>(trigger);
+				trigger_ref.triggerRenamedScene(scene, name);
+			}
+		}
 
 		static void
 		OnItemAdded(void* trigger, calldata_t* data) {
@@ -111,6 +130,18 @@ class SceneItemEventTrigger : public EventTrigger<SceneItemEventTrigger, obs::it
 	public:
 
 		void
+		triggerRenamedScene(obs_scene_t* scene, const char* name) {
+			auto iter = m_scenes.find(scene);
+			if(iter == m_scenes.end()) return;
+
+			if(iter->second->name().compare(name) == 0) return;
+
+			UnsafeEventObservable<obs::frontend::event>& event_ref =
+				EventTrigger<SceneItemEventTrigger, obs::frontend::event>::m_event;
+			event_ref.notifyEvent(obs::frontend::event::SCENE_LIST_CHANGED);
+		}
+
+		void
 		triggerAddedItem(obs_scene_t* scene, obs_sceneitem_t* item) {
 			auto iter = m_scenes.find(scene);
 			if(iter == m_scenes.end()) return;
@@ -118,7 +149,9 @@ class SceneItemEventTrigger : public EventTrigger<SceneItemEventTrigger, obs::it
 			obs::item::data data = { obs::item::event::ADDED, iter->second };
 			data.sceneitem = item;
 
-			m_event.notifyEvent<const obs::item::data&>(obs::item::event::ADDED, data);
+			UnsafeEventObservable<obs::item::event>& event_ref =
+				EventTrigger<SceneItemEventTrigger, obs::item::event>::m_event;
+			event_ref.notifyEvent<const obs::item::data&>(obs::item::event::ADDED, data);
 		}
 
 		void
@@ -132,7 +165,9 @@ class SceneItemEventTrigger : public EventTrigger<SceneItemEventTrigger, obs::it
 			obs::item::data data = { obs::item::event::REMOVED, scene_ref->second };
 			data.item = const_cast<Item*>(item_ref->second);
 
-			m_event.notifyEvent<const obs::item::data&>(obs::item::event::REMOVED, data);
+			UnsafeEventObservable<obs::item::event>& event_ref =
+				EventTrigger<SceneItemEventTrigger, obs::item::event>::m_event;
+			event_ref.notifyEvent<const obs::item::data&>(obs::item::event::REMOVED, data);
 		}
 
 		void
@@ -148,7 +183,9 @@ class SceneItemEventTrigger : public EventTrigger<SceneItemEventTrigger, obs::it
 			obs::item::data data = { event , scene_ref->second };
 			data.item = item_ref->second;
 
-			m_event.notifyEvent<const obs::item::data&>(event, data);
+			UnsafeEventObservable<obs::item::event>& event_ref =
+				EventTrigger<SceneItemEventTrigger, obs::item::event>::m_event;
+			event_ref.notifyEvent<const obs::item::data&>(event, data);
 		}
 
 		void
@@ -163,6 +200,13 @@ class SceneItemEventTrigger : public EventTrigger<SceneItemEventTrigger, obs::it
 			if(m_scenes.find(scene->scene()) == m_scenes.end()) {
 				signal_handler_t* signal_handler = obs_source_get_signal_handler(scene->source());
 				if(signal_handler != nullptr) {
+
+					signal_handler_connect(
+						signal_handler,
+						"rename",
+						SceneItemEventTrigger::OnSceneRename,
+						this
+					);
 
 					signal_handler_connect(
 						signal_handler,
@@ -208,6 +252,13 @@ class SceneItemEventTrigger : public EventTrigger<SceneItemEventTrigger, obs::it
 					scene->second->source()
 				);
 				if(signal_handler != nullptr) {
+
+					signal_handler_disconnect(
+						signal_handler,
+						"rename",
+						SceneItemEventTrigger::OnSceneRename,
+						this
+					);
 
 					signal_handler_disconnect(
 						signal_handler,

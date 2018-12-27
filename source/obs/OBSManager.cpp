@@ -37,6 +37,9 @@ OBSManager::addEventHandler(
 	EventObserver<obs::frontend::event>* handler
 ) {
 	m_frontendEvent.addHandler(std::make_pair(event, handler));
+	m_sceneitemEvent.EventTrigger<SceneItemEventTrigger, obs::frontend::event>::addHandler(
+		std::make_pair(event, handler)
+	);
 }
 
 void
@@ -54,7 +57,9 @@ OBSManager::addEventHandler(
 
 void
 OBSManager::addEventHandler(const obs::item::event event, EventObserver<obs::item::event>* handler) {
-	m_sceneitemEvent.addHandler(std::make_pair(event, handler));
+	m_sceneitemEvent.EventTrigger<SceneItemEventTrigger, obs::item::event>::addHandler(
+		std::make_pair(event, handler)
+	);
 }
 
 void

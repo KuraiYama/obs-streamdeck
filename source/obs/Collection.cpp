@@ -292,6 +292,9 @@ Collection::updateScenes(std::shared_ptr<Scene>& scene_updated) {
 	}
 
 	if(j == -1) {
+		// Fake event - it happens when source and scene triggers both renamed
+		if(scenes.size() == 0)
+			return event;
 		scene_updated = m_scenes.pop(*scenes.begin());
 		event = obs::scene::event::REMOVED;
 	}

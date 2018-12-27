@@ -86,7 +86,7 @@ ApplicationService::addPluginWindows() {
 	if(action != nullptr) {
 		std::function<void(void)> f = [&dialog] {
 			obs_frontend_push_ui_translation(obs_module_get_string);
-			dialog.open();
+			dialog.show();
 			obs_frontend_pop_ui_translation();
 		};
 		action->connect(action, &QAction::triggered, f);
@@ -94,7 +94,7 @@ ApplicationService::addPluginWindows() {
 
 	Logger::instance().output(dialog.logger());
 
-	dialog.open();
+	dialog.show();
 }
 
 bool
