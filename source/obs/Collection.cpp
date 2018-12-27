@@ -2,6 +2,7 @@
  * Plugin Includes
  */
 #include "include/obs/Collection.hpp"
+#include "include/common/Logger.hpp"
 
 /*
 ========================================================================================================
@@ -13,7 +14,9 @@ Collection::Collection(uint16_t id, std::string name) :
 	OBSStorable(id, name),
 	m_activeScene(nullptr),
 	switching(false),
-	m_lastSceneID(0x0) {
+	active(false),
+	m_lastSceneID(0x0),
+	m_lastSourceID(0x0) {
 }
 
 Collection::~Collection() {
@@ -30,7 +33,7 @@ Collection::buildFromMemory(Memory& memory) {
 	uint16_t id = 0;
 	unsigned int namelen = 0;
 	char collection_name[MAX_NAME_LENGTH];
-	short nb_scenes = 0;
+	short nb_scenes = 0, nb_sources = 0;
 
 	if(memory == nullptr)
 		return nullptr;
@@ -39,9 +42,29 @@ Collection::buildFromMemory(Memory& memory) {
 	memory.read((byte*)&namelen, sizeof(unsigned int));
 	collection_name[namelen] = 0;
 	memory.read(collection_name, namelen);
-	memory.read((byte*)&nb_scenes, sizeof(short));
 
 	Collection* collection = new Collection(id, collection_name);
+
+	memory.read((byte*)&nb_sources, sizeof(short));
+
+	while(nb_sources > 0) {
+		size_t block_size = 0;
+		memory.read((byte*)&block_size, sizeof(size_t));
+		void* end_of_block = memory.tell() + block_size;
+		Source* source = Source::buildFromMemory(collection, memory);
+		if(source != nullptr) {
+			collection->m_sources.push(source);
+			collection->m_lastSourceID = std::max<uint16_t>(collection->m_lastSourceID, source->id());
+		}
+		if(memory.tell() != end_of_block) {
+			delete collection;
+			collection = nullptr;
+			nb_sources = 0;
+		}
+		nb_sources--;
+	}
+
+	memory.read((byte*)&nb_scenes, sizeof(short));
 
 	while(nb_scenes > 0) {
 		size_t block_size = 0;
@@ -72,35 +95,60 @@ Collection::buildFromMemory(Memory& memory) {
 Memory
 Collection::toMemory(size_t& size) const {
 
-	std::vector<Memory> scene_blocks;
+	std::vector<Memory> blocks;
 
 	/*BLOCK
-		id (unsigned long long)
+		id (short)
 		namelen (unsigned int)
 		name (namelen)
+		nbsources (short)
+		foreach(source)
+			block_size(size_t)
+			block_source (block_size)
 		nbscenes (short)
 		foreach(scene)
 			block_size (size_t)
 			block_scene (block_size)
 	*/
 	unsigned int namelen = static_cast<unsigned int>(strlen(m_name.c_str()));
-	size_t total_size = sizeof(uint16_t) + sizeof(unsigned int) + namelen + sizeof(short);
+	size_t total_size = sizeof(uint16_t) + sizeof(unsigned int) + namelen + 2*sizeof(short);
+
+	short nb_sources = static_cast<short>(m_sources.size());
+	for(auto iter = m_sources.begin(); iter != m_sources.end(); iter++) {
+		total_size += sizeof(size_t);
+		blocks.push_back(iter->second->toMemory(total_size));
+	}
+
 	short nb_scenes = static_cast<short>(m_scenes.size());
 	for(auto iter = m_scenes.begin(); iter != m_scenes.end(); iter++) {
 		total_size += sizeof(size_t);
-		scene_blocks.push_back(iter->second->toMemory(total_size));
+		blocks.push_back(iter->second->toMemory(total_size));
 	}
 
 	Memory block(total_size);
 	block.write((byte*)&m_identifier, sizeof(uint16_t));
 	block.write((byte*)&namelen, sizeof(unsigned int));
 	block.write((byte*)m_name.c_str(), namelen);
-	block.write((byte*)&nb_scenes, sizeof(short));
 
-	for(auto iter = scene_blocks.begin(); iter < scene_blocks.end(); iter++) {
+	block.write((byte*)&nb_sources, sizeof(short));
+	auto iter = blocks.begin();
+	unsigned int i = 0;
+	while( i < nb_sources ) {
 		size_t sc_size = iter->size();
 		block.write((byte*)&sc_size, sizeof(size_t));
 		block.write(*iter, iter->size());
+		i++;
+		iter++;
+	}
+
+	block.write((byte*)&nb_scenes, sizeof(short));
+	i = 0;
+	while ( i < nb_scenes ) {
+		size_t sc_size = iter->size();
+		block.write((byte*)&sc_size, sizeof(size_t));
+		block.write(*iter, iter->size());
+		i++;
+		iter++;
 	}
 
 	size += total_size;
@@ -129,6 +177,22 @@ Collection::makeActive() {
 
 void
 Collection::synchronize() {
+
+	auto p = [](void* sources, obs_source_t* obs_source) -> bool {
+		OBSStorage<Source> sources_storage = *reinterpret_cast<OBSStorage<Source>*>(sources);
+		const char* source_name = obs_source_get_name(obs_source);
+		auto source = sources_storage[source_name];
+		log_info << QString("Source %1 sourced.").arg(source_name).toStdString() << log_end;
+		if(source == nullptr) {
+			log_warn << QString("Source %1 doesn't exist.").arg(source_name).toStdString() << log_end;
+		}
+		else
+			source->source(obs_source);
+		return true;
+	};
+
+	obs_enum_sources(p, &m_sources);
+
 	obs_frontend_source_list scenes = {};
 	obs_frontend_get_scenes(&scenes);
 
@@ -142,6 +206,39 @@ Collection::synchronize() {
 }
 
 void
+Collection::loadSources() {
+	std::map<std::string, obs_source_t*> sources;
+
+	auto p = [](void* private_data, obs_source_t* obs_source) -> bool {
+		auto sources = reinterpret_cast<std::map<std::string, obs_source_t*>*>(private_data);
+		const char* name = obs_source_get_name(obs_source);
+		sources->insert(std::make_pair(name, obs_source));
+		return true;
+	};
+
+	obs_enum_sources(p, &sources);
+
+	auto iter = m_sources.begin();
+	while(iter != m_sources.end()) {
+		auto source_find = sources.find(iter->second->name());
+		if(source_find == sources.end()) {
+			auto remove = iter;
+			iter++;
+			m_sources.pop(remove->first);
+		}
+		else {
+			iter->second->source(source_find->second);
+			sources.erase(source_find);
+			iter++;
+		}
+	}
+	for(auto iter = sources.begin(); iter != sources.end(); iter++) {
+		m_lastSourceID++;
+		m_sources.push(new Source(this, m_lastSourceID, iter->second));
+	}
+}
+
+void
 Collection::loadScenes() {
 	std::set<std::string> scenes;
 	char** obs_scenes = obs_frontend_get_scene_names();
@@ -152,13 +249,14 @@ Collection::loadScenes() {
 	}
 	auto iter = m_scenes.begin();
 	while(iter != m_scenes.end()) {
-		if(scenes.find(iter->second->name()) == scenes.end()) {
+		auto scene_find = scenes.find(iter->second->name());
+		if(scene_find == scenes.end()) {
 			auto remove = iter;
 			iter++;
 			m_scenes.pop(remove->first);
 		}
 		else {
-			scenes.erase(iter->second->name());
+			scenes.erase(scene_find);
 			iter->second->loadItems();
 			iter++;
 		}
@@ -167,9 +265,8 @@ Collection::loadScenes() {
 		m_lastSceneID++;
 		m_scenes.push(new Scene(this, m_lastSceneID, *iter))->loadItems();
 	}
-	bfree(obs_scenes);
 
-	// We synchronized the first time
+	bfree(obs_scenes);
 }
 
 obs::scene::event
@@ -238,9 +335,47 @@ Collection::switchScene(const char* name) {
 
 /*
 ========================================================================================================
+	Sources Helpers
+========================================================================================================
+*/
+
+Source*
+Collection::addSource(obs_source_t* source) {
+	const char* source_name = obs_source_get_name(source);
+	if(source_name == NULL) return nullptr;
+	Source* existing_source = m_sources[source_name];
+	if(existing_source == nullptr) {
+		m_lastSourceID++;
+		existing_source = m_sources.push(new Source(this, m_lastSourceID, source)).get();
+	}
+	return existing_source;
+}
+
+std::shared_ptr<Source>
+Collection::removeSource(Source& source) {
+	return m_sources.pop(source.id());
+}
+
+std::shared_ptr<Source>
+Collection::renameSource(Source& source, const char* name) {
+	return m_sources.move(source.name(), name);
+}
+
+/*
+========================================================================================================
 	Accessors
 ========================================================================================================
 */
+
+Sources
+Collection::sources() const {
+	Sources sources;
+	sources.collection = this;
+	for(auto iter = m_sources.begin(); iter != m_sources.end(); iter++)
+		if(iter->second->collection() == this)
+			sources.sources.push_back(const_cast<Source*>(iter->second.get()));
+	return sources;
+}
 
 Scenes
 Collection::scenes() const {

@@ -177,11 +177,17 @@ class OBSStorage<T, true> {
 		move(const std::string name, const std::string new_name) {
 			std::map<std::string, uint16_t>::iterator iter = m_idx.find(name);
 			if(iter != m_idx.end()) {
-				m_idx.emplace(new_name, iter->second);
-				auto ptr = m_pointers.find(iter->second)->second;
-				ptr->name(new_name);
-				m_idx.erase(iter);
-				return ptr;
+				if(name.compare(new_name) == 0) {
+					auto ptr = m_pointers.find(iter->second)->second;
+					return ptr;
+				}
+				else {
+					m_idx.emplace(new_name, iter->second);
+					auto ptr = m_pointers.find(iter->second)->second;
+					ptr->name(new_name);
+					m_idx.erase(iter);
+					return ptr;
+				}
 			}
 			return nullptr;
 		}

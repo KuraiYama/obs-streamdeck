@@ -75,6 +75,17 @@ ServiceImpl<T>::setupEvent(obs::item::event event, obs_item_callback handler) {
 
 template<typename T>
 void
+ServiceImpl<T>::setupEvent(obs::source::event event, obs_source_callback handler) {
+	this->EventObserver<T, obs::source::event>::registerCallback<const obs::source::data&>(
+		event,
+		(obs_source_callback)handler,
+		reinterpret_cast<T*>(this)
+		);
+	_obs_manager->addEventHandler(event, this);
+}
+
+template<typename T>
+void
 ServiceImpl<T>::setupEvent(rpc::event, rpc_callback_void handler) {
 	if(_streamdeck_manager == nullptr)
 		return;
@@ -111,7 +122,7 @@ ServiceImpl<T>::logInfo(const std::string& message) const {
 	log_info << QString("[%1] %2")
 		.arg(QString(m_localName))
 		.arg(QString::fromStdString(message))
-		.toStdString();
+		.toStdString() << log_end;
 }
 
 template<typename T>
@@ -120,7 +131,7 @@ ServiceImpl<T>::logError(const std::string& message) const {
 	log_error << QString("[%1] %2")
 		.arg(QString(m_localName))
 		.arg(QString::fromStdString(message))
-		.toStdString();
+		.toStdString() << log_end;
 }
 
 template<typename T>
@@ -129,7 +140,7 @@ ServiceImpl<T>::logWarning(const std::string& message) const {
 	log_warn << QString("[%1] %2")
 		.arg(QString(m_localName))
 		.arg(QString::fromStdString(message))
-		.toStdString();
+		.toStdString() << log_end;
 }
 
 /*
@@ -227,6 +238,16 @@ ServiceImpl<T>::response_scenes(const rpc::request* data, const char* method) co
 		rpc::response<Scenes>{
 			{data, rpc::event::NO_EVENT, name(), method},
 			{ nullptr, std::vector<ScenePtr>() }
+	};
+}
+
+template<typename T>
+rpc::response<Sources>
+ServiceImpl<T>::response_sources(const rpc::request* data, const char* method) const {
+	return
+		rpc::response<Sources>{
+			{data, rpc::event::NO_EVENT, name(), method},
+			{ nullptr, std::vector<SourcePtr>() }
 	};
 }
 

@@ -34,6 +34,7 @@
 #include "include/services/CollectionsService.hpp"
 #include "include/services/ScenesService.hpp"
 #include "include/services/ItemsService.hpp"
+#include "include/services/SourcesService.hpp"
 
 /*
 ========================================================================================================
@@ -75,6 +76,7 @@ obs_module_load(void) {
 	services.push_back(new CollectionsService());
 	services.push_back(new ScenesService());
 	services.push_back(new ItemsService());
+	services.push_back(new SourcesService());
 
 	return true;
 }

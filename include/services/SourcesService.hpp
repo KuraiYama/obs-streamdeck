@@ -1,17 +1,25 @@
 #pragma once
 
 /*
+ * Qt Includes
+ */
+#include <QMap>
+#include <QMainWindow>
+#include <QAction>
+
+/*
  * OBS Includes
  */
 #include <obs.h>
 #include <obs-frontend-api/obs-frontend-api.h>
+#include <obs-module.h>
 
 /*
  * Plugin Includes
  */
 #include "include/services/Service.hpp"
-#include "include/events/EventTrigger.hpp"
-#include "include/obs/OBSEvents.hpp"
+#include "include/streamdeck/StreamdeckManager.hpp"
+#include "include/obs/Collection.hpp"
 
 /*
 ========================================================================================================
@@ -19,23 +27,7 @@
 ========================================================================================================
 */
 
-class FrontendEventTrigger : public EventTrigger<FrontendEventTrigger, obs::frontend::event> {
-
-	/*
-	====================================================================================================
-		Static Class Functions
-	====================================================================================================
-	*/
-	private:
-
-		static void
-		OnFrontendEvent(obs_frontend_event event, void* trigger) {
-			Service::_obs_started |= (event == OBS_FRONTEND_EVENT_FINISHED_LOADING);
-
-			if(Service::_obs_started) {
-				notify(trigger, static_cast<obs::frontend::event>(event));
-			}
-		}
+class SourcesService : public ServiceImpl<SourcesService> {
 
 	/*
 	====================================================================================================
@@ -44,13 +36,36 @@ class FrontendEventTrigger : public EventTrigger<FrontendEventTrigger, obs::fron
 	*/
 	public:
 
-		FrontendEventTrigger() :
-			EventTrigger<FrontendEventTrigger, obs::frontend::event>() {
-			obs_frontend_add_event_callback(FrontendEventTrigger::OnFrontendEvent, this);
-		}
+		SourcesService();
 
-		~FrontendEventTrigger() {
-			obs_frontend_remove_event_callback(FrontendEventTrigger::OnFrontendEvent, this);
-		}
+		virtual ~SourcesService();
+
+	/*
+	====================================================================================================
+		Instance Methods
+	====================================================================================================
+	*/
+	private:
+
+		bool
+		subscribeSourceChange(const rpc::request& data);
+
+		bool
+		onSourceAdded(const obs::source::data& data);
+
+		bool
+		onSourceRemoved(const obs::source::data& data);
+
+		bool
+		onSourceRenamed(const obs::source::data& data);
+
+		bool
+		onSourceMuted(const obs::source::data& data);
+
+		bool
+		onSourceFlagsChanged(const obs::source::data& data);
+
+		bool
+		onGetSources(const rpc::request& data);
 
 };

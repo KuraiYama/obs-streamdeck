@@ -179,6 +179,9 @@ class StreamdeckManager : public QObject, public SafeEventObservable<rpc::event>
 
 		bool
 		setScene(Streamdeck* client, const rpc::response<ScenePtr>& response);
+
+		bool
+		setSources(Streamdeck* client, const rpc::response<Sources>& response);
 		
 	private:
 

@@ -11,7 +11,7 @@
 ========================================================================================================
 */
 
-thread_local QColor Logger::_internal_color = QColor(255, 255, 255);
+QColor Logger::_internal_color = QColor(255, 255, 255);
 
 /*
 ========================================================================================================
@@ -60,36 +60,34 @@ Logger::output(QTextEdit* output) {
 	);
 }
 
-Logger&
+QColor
 Logger::colorInfo() {
-	std::lock_guard<std::mutex> lock(m_mutex);
-	_internal_color = QColor("#ffffff");
-
-	return *this;
+	return QColor("#ffffff");
 }
 
-Logger&
+QColor
 Logger::colorError() {
-	std::lock_guard<std::mutex> lock(m_mutex);
-	_internal_color = QColor("#a11526");
-
-	return *this;
+	return QColor("#a11526");
 }
 
-Logger&
+QColor
 Logger::colorWarning() {
-	std::lock_guard<std::mutex> lock(m_mutex);
-	_internal_color = QColor("#ff760d");
-
-	return *this;
+	return QColor("#ff760d");
 }
 
-Logger&
+QColor
 Logger::colorCustom(unsigned int color) {
-	std::lock_guard<std::mutex> lock(m_mutex);
-	_internal_color = QColor(color);
+	return QColor(color);
+}
 
-	return *this;
+Logger::LoggerBegin
+Logger::begin() {
+	return Logger::LoggerBegin();
+}
+
+Logger::LoggerEnd
+Logger::end() {
+	return Logger::LoggerEnd();
 }
 
 /*
@@ -112,10 +110,9 @@ Logger&
 operator<<(Logger& logger, const std::string& str) {
 #if defined(DEBUG) || defined(FORCE_DEBUG) 
 	if(logger.m_editOutput != nullptr) {
-		std::lock_guard<std::mutex> lock(logger.m_mutex);
 		try {
 			logger.insertHtml(QString("<font color=\"%1\">%2 "
-				"(<font color=\"#ffd359\">%3</font>)</font><br />")
+				"(<font color=\"#ffd359\">%3</font>)</font>")
 				.arg(logger._internal_color.name(QColor::HexArgb))
 				.arg(QString::fromStdString(str))
 				.arg((quint64)QThread::currentThreadId()));
@@ -132,10 +129,9 @@ Logger&
 operator<<(Logger& logger, const std::string&& str) {
 #if defined(DEBUG) || defined(FORCE_DEBUG) 
 	if(logger.m_editOutput != nullptr) {
-		std::lock_guard<std::mutex> lock(logger.m_mutex);
 		try {
 			logger.insertHtml(QString("<font color=\"%1\">%2 "
-				"(<font color=\"#ffd359\">%3</font>)</font><br />")
+				"(<font color=\"#ffd359\">%3</font>)</font>")
 				.arg(logger._internal_color.name(QColor::HexArgb))
 				.arg(QString::fromStdString(str))
 				.arg((quint64)QThread::currentThreadId()));
@@ -148,7 +144,21 @@ operator<<(Logger& logger, const std::string&& str) {
 	return logger;
 }
 
+
 Logger&
-operator<<(Logger& logger, Logger&) {
+operator<<(Logger& logger, const QColor& color) {
+	logger._internal_color = color;
+	return logger;
+}
+
+void
+operator<<(Logger& logger, Logger::LoggerEnd end) {
+	logger.insertHtml(QString::fromStdString(end.end));
+	logger.m_mutex.unlock();
+}
+
+Logger&
+operator<<(Logger& logger, Logger::LoggerBegin begin) {
+	logger.m_mutex.lock();
 	return logger;
 }

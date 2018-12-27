@@ -85,11 +85,12 @@ class Service {
 };
 
 template<typename T>
-class ServiceImpl : public Service, 
-	private EventObserver<T, obs::frontend::event>, 
+class ServiceImpl : public Service,
+	private EventObserver<T, obs::frontend::event>,
 	private EventObserver<T, obs::save::event>,
 	private EventObserver<T, obs::output::event>,
-	private EventObserver<T, obs::item::event> {
+	private EventObserver<T, obs::item::event>,
+	private EventObserver<T, obs::source::event> {
 
 	/*
 	====================================================================================================
@@ -105,6 +106,8 @@ class ServiceImpl : public Service,
 		using OutputHandler = EventObserver<T, obs::output::event>;
 
 		using ItemHandler = EventObserver<T, obs::item::event>;
+
+		using SourceHandler = EventObserver<T, obs::source::event>;
 
 		using RPCHandler = EventObserver<T, rpc::event>;
 
@@ -130,6 +133,10 @@ class ServiceImpl : public Service,
 		typedef
 		typename ItemHandler::template FuncWrapperB<const obs::item::data&>::Callback
 		obs_item_callback;
+
+		typedef
+		typename SourceHandler::template FuncWrapperB<const obs::source::data&>::Callback
+		obs_source_callback;
 
 		typedef
 		typename RPCHandler::template FuncWrapperB<void>::Callback
@@ -190,6 +197,9 @@ class ServiceImpl : public Service,
 		rpc::response<ScenePtr>
 		response_scene(const rpc::request* data, const char* method) const;
 
+		rpc::response<Sources>
+		response_sources(const rpc::request* data, const char* method) const;
+
 		void
 		setupEvent(obs::frontend::event event, obs_frontend_callback handler);
 
@@ -201,6 +211,9 @@ class ServiceImpl : public Service,
 
 		void
 		setupEvent(obs::item::event event, obs_item_callback handler);
+
+		void
+		setupEvent(obs::source::event event, obs_source_callback handler);
 
 		void
 		setupEvent(rpc::event event, rpc_callback_void handler);

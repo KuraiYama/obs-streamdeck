@@ -1,11 +1,15 @@
 #pragma once
 
 /*
+ * Std Includes
+ */
+#include <memory>
+
+/*
  * Qt Includes
  */
 #include <map>
 #include <vector>
-#include <memory>
 
 /*
  * OBS Includes
@@ -17,6 +21,7 @@
 /*
  * Plugin Includes
  */
+#include "include/common/Memory.hpp"
 #include "include/obs/OBSStorage.hpp"
 
 /*
@@ -25,9 +30,9 @@
 ========================================================================================================
 */
 
-class Item;
+class Collection;
 
-class Scene;
+class Source;
 
 /*
 ========================================================================================================
@@ -35,14 +40,32 @@ class Scene;
 ========================================================================================================
 */
 
-typedef Item* ItemPtr;
+typedef Source* SourcePtr;
 
-typedef struct Items {
-	const Scene* scene;
-	std::vector<ItemPtr> items;
-} Items;
+typedef struct Sources {
+	const Collection* collection;
+	std::vector<SourcePtr> sources;
+} Sources;
 
-class Item : public OBSStorable {
+class Source : public OBSStorable {
+
+	/*
+	====================================================================================================
+		Constants
+	====================================================================================================
+	*/
+	public:
+
+		static const unsigned int MAX_NAME_LENGTH = 99;
+
+	/*
+	====================================================================================================
+		Static Class Functions
+	====================================================================================================
+	*/
+	public:
+
+		static Source* buildFromMemory(Collection* collection, Memory& memory);
 
 	/*
 	====================================================================================================
@@ -51,11 +74,15 @@ class Item : public OBSStorable {
 	*/
 	private:
 
-		Scene* m_parentScene;
+		Collection* m_parentCollection;
 
 		obs_source_t* m_source;
 
-		obs_sceneitem_t* m_item;
+		std::string m_type;
+
+		bool m_audio;
+
+		bool m_muted;
 
 	/*
 	====================================================================================================
@@ -64,11 +91,11 @@ class Item : public OBSStorable {
 	*/
 	public:
 
-		Item(Scene* scene, uint16_t id, obs_sceneitem_t* item);
+		Source(Collection* collection, uint16_t id, obs_source_t* source);
 
-		Item(Scene* scene, uint16_t id, std::string name);
+		Source(Collection* source, uint16_t id, std::string name);
 
-		virtual ~Item();
+		virtual ~Source();
 
 	/*
 	====================================================================================================
@@ -77,19 +104,31 @@ class Item : public OBSStorable {
 	*/
 	public:
 
-		Scene*
-		scene() const;
+		Memory
+		toMemory(size_t& size) const;
 
-		virtual const char*
-		type() const;
-
-		obs_sceneitem_t*
-		item() const;
+		Collection*
+		collection() const;
 
 		void
-		item(obs_sceneitem_t* item);
+		source(obs_source_t* obs_source);
+
+		obs_source_t*
+		source() const;
+
+		const char*
+		type() const;
 
 		bool
-		visible() const;
+		muted() const;
+
+		void
+		muted(bool mute_state);
+
+		bool
+		audio() const;
+
+		void
+		audio(uint64_t flags);
 
 };

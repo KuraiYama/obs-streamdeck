@@ -62,6 +62,12 @@ class CollectionsService : public ServiceImpl<CollectionsService> {
 		onExit();
 
 		bool
+		onCollectionLoad();
+
+		bool
+		onCollectionCleaned();
+
+		bool
 		onCollectionLoading(const obs::save::data& data);
 
 		bool

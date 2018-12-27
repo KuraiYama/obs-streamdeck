@@ -30,6 +30,8 @@ class SceneItemEventTrigger : public EventTrigger<SceneItemEventTrigger, obs::it
 
 		static void
 		OnItemAdded(void* trigger, calldata_t* data) {
+			if(!Service::_obs_started) return;
+
 			obs_scene_t* scene = nullptr;
 			obs_sceneitem_t* item = nullptr;
 			bool result =
@@ -44,6 +46,8 @@ class SceneItemEventTrigger : public EventTrigger<SceneItemEventTrigger, obs::it
 
 		static void
 		OnItemRemoved(void* trigger, calldata_t* data) {
+			if(!Service::_obs_started) return;
+
 			obs_scene_t* scene = nullptr;
 			obs_sceneitem_t* item = nullptr;
 			bool result =
@@ -58,6 +62,8 @@ class SceneItemEventTrigger : public EventTrigger<SceneItemEventTrigger, obs::it
 
 		static void
 		OnItemVisibilityChanged(void* trigger, calldata_t* data) {
+			if(!Service::_obs_started) return;
+
 			obs_scene_t* scene = nullptr;
 			obs_sceneitem_t* item = nullptr;
 			bool visible = false;
@@ -80,7 +86,7 @@ class SceneItemEventTrigger : public EventTrigger<SceneItemEventTrigger, obs::it
 	private:
 		std::map<obs_scene_t*, Scene*> m_scenes;
 
-		std::map<obs_sceneitem_t*, const Item*> m_items;
+		std::map<obs_sceneitem_t*, Item*> m_items;
 
 	/*
 	====================================================================================================
@@ -140,7 +146,7 @@ class SceneItemEventTrigger : public EventTrigger<SceneItemEventTrigger, obs::it
 			obs::item::event event = visible ? obs::item::event::SHOWN : obs::item::event::HIDDEN;
 
 			obs::item::data data = { event , scene_ref->second };
-			data.item = const_cast<Item*>(item_ref->second);
+			data.item = item_ref->second;
 
 			m_event.notifyEvent<const obs::item::data&>(event, data);
 		}
@@ -148,7 +154,7 @@ class SceneItemEventTrigger : public EventTrigger<SceneItemEventTrigger, obs::it
 		void
 		addItem(const Item* item) {
 			if(m_items.find(item->item()) == m_items.end()) {
-				m_items.insert(std::make_pair(item->item(), item));
+				m_items.insert(std::make_pair(item->item(), const_cast<Item*>(item)));
 			}
 		}
 
@@ -189,17 +195,18 @@ class SceneItemEventTrigger : public EventTrigger<SceneItemEventTrigger, obs::it
 			for(auto iter = m_scenes.begin(); iter != m_scenes.end();) {
 				auto remove = iter;
 				iter++;
-				removeScene(remove->first);
+				removeScene(remove);
 			}
-
+			m_scenes.clear();
 			m_items.clear();
 		}
 
 		void
-		removeScene(obs_scene_t* scene) {
-			auto sc = m_scenes.find(scene);
-			if(sc!= m_scenes.end()) {
-				signal_handler_t* signal_handler = obs_source_get_signal_handler(sc->second->source());
+		removeScene(std::map<obs_scene_t*, Scene*>::iterator scene) {
+			if(scene != m_scenes.end()) {
+				signal_handler_t* signal_handler = obs_source_get_signal_handler(
+					scene->second->source()
+				);
 				if(signal_handler != nullptr) {
 
 					signal_handler_disconnect(
@@ -223,9 +230,14 @@ class SceneItemEventTrigger : public EventTrigger<SceneItemEventTrigger, obs::it
 						this
 					);
 
-					m_scenes.erase(sc);
+					m_scenes.erase(scene);
 				}
 			}
+		}
+
+		void
+		removeScene(obs_scene_t* scene) {
+			removeScene(m_scenes.find(scene));
 		}
 
 		void

@@ -66,7 +66,7 @@ Scene::buildFromMemory(Collection* collection, Memory& memory) {
 Memory
 Scene::toMemory(size_t& size) const {
 	/*BLOCK
-		id (unsigned long long)
+		id (short)
 		namelen (unsigned int)
 		name (namelen)
 	*/

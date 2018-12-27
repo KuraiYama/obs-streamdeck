@@ -48,12 +48,27 @@ class Logger {
 
 	/*
 	====================================================================================================
+		Types Definitions
+	====================================================================================================
+	*/
+	public:
+
+		typedef struct LoggerBegin {
+
+		} LoggerBegin;
+
+		typedef struct LoggerEnd {
+			const std::string end = "<br />";
+		} LoggerEnd;
+
+	/*
+	====================================================================================================
 		Static Class Attributes
 	====================================================================================================
 	*/
 	private:
 
-		thread_local static QColor _internal_color;
+		static QColor _internal_color;
 
 	/*
 	====================================================================================================
@@ -64,6 +79,24 @@ class Logger {
 
 		static Logger&
 		instance();
+
+		static QColor
+		colorInfo();
+
+		static QColor
+		colorError();
+
+		static QColor
+		colorWarning();
+
+		static QColor
+		colorCustom(unsigned int color);
+
+		static LoggerBegin
+		begin();
+
+		static LoggerEnd
+		end();
 	
 	/*
 	================================================================================================
@@ -73,6 +106,8 @@ class Logger {
 	private:
 
 		std::mutex m_mutex;
+
+		std::unique_lock<std::mutex> m_lock;
 
 		LoggerPrivateImpl m_loggerImpl;
 
@@ -103,21 +138,10 @@ class Logger {
 		void
 		output(QTextEdit* output);
 
-		Logger&
-		colorInfo();
-
-		Logger&
-		colorError();
-
-		Logger&
-		colorWarning();
-
-		Logger&
-		colorCustom(unsigned int color);
-
 	private:
 
-		void insertHtml(const QString& text);
+		void
+		insertHtml(const QString& text);
 
 	/*
 	====================================================================================================
@@ -127,21 +151,27 @@ class Logger {
 	public:
 
 		friend Logger&
+		operator<<(Logger&, LoggerBegin);
+
+		friend Logger&
 		operator<<(Logger&, const std::string&);
 
 		friend Logger&
 		operator<<(Logger&, const std::string&&);
 
 		friend Logger&
-		operator<<(Logger&, Logger&);
+		operator<<(Logger&, const QColor&);
+
+		friend void
+		operator<<(Logger&, LoggerEnd);
 
 	private:
 
 		Logger
-			operator=(const Logger&) = delete;
+		operator=(const Logger&) = delete;
 
 		Logger&
-			operator=(Logger&&) = delete;
+		operator=(Logger&&) = delete;
 
 };
 
@@ -152,15 +182,22 @@ class Logger {
 */
 
 Logger&
+operator<<(Logger& logger, Logger::LoggerBegin);
+
+Logger&
 operator<<(Logger& logger, const std::string& str);
 
 Logger&
 operator<<(Logger& logger, const std::string&& str);
 
 Logger&
-operator<<(Logger& logger, Logger&);
+operator<<(Logger&, const QColor&);
 
-#define log_info Logger::instance() << Logger::instance().colorInfo()
-#define log_warn Logger::instance() << Logger::instance().colorWarning()
-#define log_error Logger::instance() << Logger::instance().colorError()
-#define log_custom(color) Logger::instance() << Logger::instance().colorCustom(color)
+void
+operator<<(Logger& logger, Logger::LoggerEnd);
+
+#define log_info Logger::instance() << Logger::begin() << Logger::colorInfo()
+#define log_warn Logger::instance() << Logger::begin() << Logger::colorWarning()
+#define log_error Logger::instance() << Logger::begin() << Logger::colorError()
+#define log_custom(color) Logger::instance() << Logger::begin() << Logger::colorCustom(color)
+#define log_end Logger::end();

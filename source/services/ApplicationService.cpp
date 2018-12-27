@@ -192,7 +192,7 @@ ApplicationService::loadDatabase(OBSStorage<Collection>& collections) {
 	uint16_t collection_id = 0;
 
 	try {
-		FileLoader collections_file("collections.dat");
+		FileLoader collections_file(DATABASE_NAME);
 
 		// Read numbers of collections
 		unsigned short collections_count = 0;
@@ -219,7 +219,8 @@ ApplicationService::loadDatabase(OBSStorage<Collection>& collections) {
 		}
 	}
 	catch(std::exception& e) {
-		log_error << QString("OBS Manager failed on loading file - %1").arg(e.what()).toStdString();
+		log_error << QString("OBS Manager failed on loading file - %1").arg(e.what()).toStdString() <<
+			log_end;
 	}
 
 	return collection_id;
@@ -256,7 +257,7 @@ ApplicationService::saveDatabase() {
 	}
 
 	try {
-		FileLoader collections_file("collections.dat", std::ios::out);
+		FileLoader collections_file(DATABASE_NAME, std::ios::out);
 		collections_file.write(block, block.size());
 	}
 	catch(std::exception& e) {

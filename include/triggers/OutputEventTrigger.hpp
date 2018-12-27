@@ -20,7 +20,7 @@
 */
 
 #define OBS_OUTPUT_STATE(E, T) \
-	m_states[T] = boost::bind(&OutputEventTrigger::output_state, this, E, _1, T)
+	m_states[T] = boost::bind(&OutputEventTrigger::outputState, this, E, _1, T)
 
 /*
 ========================================================================================================
@@ -91,17 +91,6 @@ class OutputEventTrigger : public EventTrigger<OutputEventTrigger, obs::output::
 		Instance Methods
 	====================================================================================================
 	*/
-	private:
-
-		void output_state(obs::output::event event, obs_output_t* output, const char* state) {
-			if(m_outputs.find(output) == m_outputs.end()) return;
-			obs::output::data obs_output_data = obs::output::data{ event, output, state };
-
-			if(Service::_obs_started) {
-				m_event.notifyEvent<const obs::output::data&>(event, obs_output_data);
-			}
-		}
-
 	public:
 
 		void
@@ -137,6 +126,17 @@ class OutputEventTrigger : public EventTrigger<OutputEventTrigger, obs::output::
 					}
 					m_outputs.erase(output);
 				}
+			}
+		}
+
+	private:
+
+		void outputState(obs::output::event event, obs_output_t* output, const char* state) {
+			if(m_outputs.find(output) == m_outputs.end()) return;
+			obs::output::data obs_output_data = obs::output::data{ event, output, state };
+
+			if(Service::_obs_started) {
+				m_event.notifyEvent<const obs::output::data&>(event, obs_output_data);
 			}
 		}
 

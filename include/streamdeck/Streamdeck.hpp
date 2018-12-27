@@ -320,6 +320,13 @@ class Streamdeck : public QObject {
 			bool event_mode = false
 		);
 
+		bool sendSources(
+			const rpc::event event,
+			const std::string& resource,
+			const Sources& sources,
+			bool event_mode = false
+		);
+
 		bool
 		checkEventAuthorizations(
 			const rpc::event event,

@@ -17,6 +17,16 @@ CollectionsService::CollectionsService() :
 
 	this->setupEvent(obs::save::event::LOADING, &CollectionsService::onCollectionLoading);
 
+	this->setupEvent(
+		obs::frontend::event::SCENE_COLLECTION_LOAD,
+		&CollectionsService::onCollectionLoad
+	);
+
+	this->setupEvent(
+		obs::frontend::event::SCENE_COLLECTION_CLEANUP,
+		&CollectionsService::onCollectionCleaned
+	);
+
 	this->setupEvent(obs::frontend::event::EXIT, &CollectionsService::onExit);
 
 	this->setupEvent(
@@ -72,7 +82,28 @@ CollectionsService::~CollectionsService() {
 
 bool
 CollectionsService::onExit() {
-	obsManager()->cleanRegisteredScenes();
+	obsManager()->cleanRegisteredSourcesScenes();
+	return true;
+}
+
+bool
+CollectionsService::onCollectionLoad() {
+	obsManager()->cleanRegisteredSourcesScenes();
+	return true;
+}
+
+bool
+CollectionsService::onCollectionCleaned() {
+	auto p = [](void* private_data, obs_source_t* obs_source) -> bool {
+		Q_UNUSED(private_data);
+		const char* name = obs_source_get_name(obs_source);
+		log_warn << QString("%1 exists always").arg(name).toStdString() << log_end;
+		obs_source_release(obs_source);
+		return true;
+	};
+	obs_enum_sources(p, nullptr);
+	obsManager()->resetCollection();
+	logInfo("Clean collection");
 	return true;
 }
 
@@ -86,6 +117,8 @@ CollectionsService::onCollectionLoading(const obs::save::data& data) {
 	// OBS Manager is loading collections, we don't do anything
 	if(obsManager()->isLoadingCollection())
 		return true;
+
+	obsManager()->cleanRegisteredSourcesScenes();
 
 	obsManager()->activeCollection()->switching = true;
 
@@ -128,10 +161,7 @@ CollectionsService::onCollectionSwitched() {
 		.toStdString()
 	);
 
-	obsManager()->cleanRegisteredScenes();
-	Scenes scenes = collection->scenes();
-	for(auto iter = scenes.scenes.begin(); iter < scenes.scenes.end(); iter++)
-		obsManager()->registerScene(*iter);
+	obsManager()->registerAllSourcesScenes();
 
 	if(m_collectionUpdated != nullptr) {
 		m_collectionUpdated = nullptr;

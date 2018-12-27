@@ -73,7 +73,7 @@ Streamdeck::sendEvent(const rpc::event event, const T& data, bool event_mode) {
 	if(converted) {
 		log_custom(LOG_STREAMDECK) << QString("Send Event Message to %1.")
 			.arg(m_subscribedResources[event].c_str())
-			.toStdString();
+			.toStdString() << log_end;
 		send(event, QJsonDocument(response));
 	}
 
@@ -95,7 +95,7 @@ Streamdeck::sendResult(
 	log_custom(LOG_STREAMDECK) << QString("Acknowledge event %1 (%2).")
 		.arg(QString("%1").arg((int)event))
 		.arg(resource.c_str())
-		.toStdString();
+		.toStdString() << log_end;
 
 	send(event, QJsonDocument(response));
 	return true;

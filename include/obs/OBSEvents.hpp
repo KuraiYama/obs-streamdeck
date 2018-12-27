@@ -8,6 +8,7 @@
 
 class Scene;
 class Item;
+class Source;
 
 /*
 ========================================================================================================
@@ -56,7 +57,9 @@ namespace obs {
 			PREVIEW_SCENE_CHANGED,
 
 			SCENE_COLLECTION_CLEANUP,
-			FINISHED_LOADING
+			FINISHED_LOADING,
+			SCENE_COLLECTION_LOAD,
+			SCENE_COLLECTION_CLEANED,
 		};
 
 	}
@@ -168,6 +171,35 @@ namespace obs {
 				Item* item;
 				obs_sceneitem_t* sceneitem;
 			};
+		} data;
+
+	}
+
+	/*
+	====================================================================================================
+		Source
+	====================================================================================================
+	*/
+
+	namespace source {
+
+		enum class event {
+			ADDED = 0,
+			REMOVED,
+			RENAMED,
+			MUTE,
+			FLAGS,
+		};
+
+		typedef struct data {
+			event event;
+			Source* source;
+			union {
+				obs_source_t* obs_source;
+				bool boolean_value;
+				const char* string_value;
+				int64_t uint_value;
+			} data;
 		} data;
 
 	}

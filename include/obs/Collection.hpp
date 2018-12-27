@@ -21,6 +21,7 @@
 #include "include/obs/OBSStorage.hpp"
 #include "include/obs/OBSEvents.hpp"
 #include "include/obs/Scene.hpp"
+#include "include/obs/Source.hpp"
 
 /*
 ========================================================================================================
@@ -67,15 +68,21 @@ class Collection : public OBSStorable {
 	*/
 	public:
 
+		bool active;
+
 		bool switching;
 
 	private:
 
 		OBSStorage<Scene> m_scenes;
 
+		OBSStorage<Source> m_sources;
+
 		mutable Scene* m_activeScene;
 
 		uint16_t m_lastSceneID;
+
+		uint16_t m_lastSourceID;
 
 	/*
 	====================================================================================================
@@ -98,6 +105,18 @@ class Collection : public OBSStorable {
 		void
 		makeActive();
 
+		Source*
+		addSource(obs_source_t* source);
+
+		std::shared_ptr<Source>
+		removeSource(Source& source);
+
+		std::shared_ptr<Source>
+		renameSource(Source& source, const char* name);
+
+		void
+		loadSources();
+
 		void
 		loadScenes();
 
@@ -118,6 +137,9 @@ class Collection : public OBSStorable {
 
 		Scenes
 		scenes() const;
+
+		Sources
+		sources() const;
 
 		Memory
 		toMemory(size_t& size) const;

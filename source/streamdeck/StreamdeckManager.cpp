@@ -13,12 +13,12 @@
 
 StreamdeckServer::StreamdeckServer(QObject* parent) :
 	QTcpServer(parent) {
-	log_info << "[Streamdeck Server] Ready.";
+	log_info << "[Streamdeck Server] Ready." << log_end;
 }
 
 StreamdeckServer::~StreamdeckServer() {
 	close();
-	log_info << "[Streamdeck Server] Close.";
+	log_info << "[Streamdeck Server] Close." << log_end;
 }
 
 StreamdeckManager::StreamdeckManager() : 
@@ -57,15 +57,15 @@ StreamdeckManager::~StreamdeckManager() {
 void
 StreamdeckManager::listen(short listen_port) {
 	m_internalServer.listen(QHostAddress::LocalHost, listen_port);
-	log_custom(LOG_STREAMDECK_MANAGER) << "[Streamdeck Manager] Server is listening.";
+	log_custom(LOG_STREAMDECK_MANAGER) << "[Streamdeck Manager] Server is listening." << log_end;
 }
 
 void
 StreamdeckServer::incomingConnection(qintptr socketDescriptor) {
-	log_info << "[Streamdeck Server] New incoming connection.";
+	log_info << "[Streamdeck Server] New incoming connection." << log_end;
 	StreamdeckClient* client = Streamdeck::createClient(socketDescriptor);
 	if(client != nullptr) {
-		log_info << "[Streamdeck Server] Client created, add to pending list.";
+		log_info << "[Streamdeck Server] Client created, add to pending list." << log_end;
 		QTcpSocket* socket = client->socket();
 		m_pendingClients[socket] = client;
 		addPendingConnection(socket);
@@ -88,7 +88,7 @@ StreamdeckManager::onClientConnected() {
 	
 	if(client != nullptr) {
 		log_custom(LOG_STREAMDECK_MANAGER) << "[Streamdeck Manager] New client is ready."
-			" Creating the streamdeck.";
+			" Creating the streamdeck." << log_end;
 		Streamdeck* streamdeck = new Streamdeck(*client);
 		connect(streamdeck, &Streamdeck::clientDisconnected, this,
 			&StreamdeckManager::onClientDisconnected);
@@ -103,7 +103,7 @@ StreamdeckManager::onClientConnected() {
 void
 StreamdeckManager::onClientDisconnected(Streamdeck* streamdeck, int code) {
 	log_warn << QString("[Streamdeck Manager] Streamdeck disconnected (%1). Deleting it.")
-		.arg(code).toStdString();
+		.arg(code).toStdString() << log_end;
 	m_streamdecks.remove(streamdeck);
 	disconnect(streamdeck, &Streamdeck::clientDisconnected, this,
 		&StreamdeckManager::onClientDisconnected);
@@ -236,6 +236,19 @@ StreamdeckManager::setScene(Streamdeck* client, const rpc::response<ScenePtr>& r
 	return client->sendScene(response.event, resource.toStdString(), response.data);
 }
 
+bool
+StreamdeckManager::setSources(Streamdeck* client, const rpc::response<Sources>& response) {
+	QString resource = response.request != nullptr ?
+		QString("%1.%2")
+		.arg(response.request->serviceName.c_str())
+		.arg(response.request->method.c_str()) :
+		QString("%1.%2")
+		.arg(response.serviceName)
+		.arg(response.method);
+
+	return client->sendSources(response.event, resource.toStdString(), response.data);
+}
+
 /*
 ========================================================================================================
 	Messages Handling
@@ -250,7 +263,7 @@ StreamdeckManager::validate(rpc::response_base& response) {
 		log_error << QString("Service %1::%2 could not process the requested event %3.")
 			.arg(response.serviceName)
 			.arg(response.method)
-			.arg((int)response.request->event).toStdString();
+			.arg((int)response.request->event).toStdString() << log_end;
 		if(response.request != nullptr)
 			response.event = response.request->event;
 	}
@@ -270,13 +283,13 @@ StreamdeckManager::receiveMessage(
 		return;
 
 	log_custom(LOG_STREAMDECK_MANAGER) << "[Streamdeck Manager] Message received. "
-		"Dispatching to services.";
+		"Dispatching to services." << log_end;
 
 	error = !this->notifyEvent<const rpc::request&>(event, 
 		(rpc::request { event, streamdeck, service.toStdString(), method.toStdString(), args }));
 
 	if(error) {
-		log_error << "[Streamdeck Manager] Error when processing messages.";
+		log_error << "[Streamdeck Manager] Error when processing messages." << log_end;
 		close(streamdeck);
 		m_streamdecks.remove(streamdeck);
 	}

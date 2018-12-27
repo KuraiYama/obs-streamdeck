@@ -57,6 +57,28 @@ OBSManager::addEventHandler(const obs::item::event event, EventObserver<obs::ite
 	m_sceneitemEvent.addHandler(std::make_pair(event, handler));
 }
 
+void
+OBSManager::addEventHandler(const obs::source::event event, EventObserver<obs::source::event>* handler) {
+	m_sourceEvent.addHandler(std::make_pair(event, handler));
+}
+
+void
+OBSManager::registerAllSourcesScenes() {
+	Sources sources = m_activeCollection->sources();
+	for(auto iter = sources.sources.begin(); iter < sources.sources.end(); iter++)
+		registerSource(*iter);
+
+	Scenes scenes = m_activeCollection->scenes();
+	for(auto iter = scenes.scenes.begin(); iter < scenes.scenes.end(); iter++)
+		registerScene(*iter);
+}
+
+void
+OBSManager::cleanRegisteredSourcesScenes() {
+	m_sourceEvent.removeAll();
+	m_sceneitemEvent.removeAll();
+}
+
 /*
 ========================================================================================================
 	Outputs Management
@@ -71,6 +93,22 @@ OBSManager::registerOutput(obs_output_t* output) {
 void
 OBSManager::unregisterOutput(obs_output_t* output) {
 	m_outputEvent.removeOutput(output);
+}
+
+/*
+========================================================================================================
+	Sources Management
+========================================================================================================
+*/
+
+void
+OBSManager::registerSource(const Source* source) {
+	m_sourceEvent.addSource(source);
+}
+
+void
+OBSManager::unregisterSource(const Source* source) {
+	m_sourceEvent.removeSource(source);
 }
 
 /*
@@ -93,11 +131,6 @@ OBSManager::unregisterScene(const Scene* scene) {
 	Items items = scene->items();
 	for(auto iter = items.items.begin(); iter < items.items.end(); iter++)
 		m_sceneitemEvent.removeItem((*iter)->item());
-}
-
-void
-OBSManager::cleanRegisteredScenes() {
-	m_sceneitemEvent.removeAll();
 }
 
 /*
@@ -123,10 +156,19 @@ OBSManager::unregisterItem(const Item* item) {
 */
 
 void
+OBSManager::resetCollection() {
+	if(m_activeCollection != nullptr)
+		m_activeCollection->active = false;
+	m_activeCollection = nullptr;
+}
+
+void
 OBSManager::makeActive() {
 	char* current_collection = obs_frontend_get_current_scene_collection();
 	if(current_collection == nullptr) return;
 	m_activeCollection = m_collections[current_collection];
+	if(m_activeCollection != nullptr)
+		m_activeCollection->active = true;
 }
 
 void
@@ -151,6 +193,7 @@ OBSManager::loadCollections(OBSStorage<Collection>& collections, const uint16_t 
 		m_collections.push(collection);
 
 		switchCollection(collection.get());
+		collection->loadSources();
 		collection->loadScenes();
 		++i;
 	}
@@ -163,9 +206,8 @@ OBSManager::loadCollections(OBSStorage<Collection>& collections, const uint16_t 
 		this->makeActive();
 		this->m_activeCollection->synchronize();
 		this->m_activeCollection->makeActive();
-		Scenes scenes = m_activeCollection->scenes();
-		for(auto iter = scenes.scenes.begin(); iter < scenes.scenes.end(); iter++)
-			registerScene(*iter);
+
+		registerAllSourcesScenes();
 	}
 	else {
 		this->switchCollection(current_collection_bf);

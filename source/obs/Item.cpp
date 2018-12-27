@@ -51,7 +51,6 @@ void
 Item::item(obs_sceneitem_t* item) {
 	m_item = item;
 	m_source = obs_sceneitem_get_source(item);
-	m_name = obs_source_get_name(m_source);
 }
 
 const char*
