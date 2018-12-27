@@ -27,6 +27,7 @@
 #include "include/triggers/FrontendEventTrigger.hpp"
 #include "include/triggers/SaveEventTrigger.hpp"
 #include "include/triggers/OutputEventTrigger.hpp"
+#include "include/triggers/SceneEventTrigger.hpp"
 #include "include/triggers/SceneItemEventTrigger.hpp"
 #include "include/triggers/SourceEventTrigger.hpp"
 
@@ -52,6 +53,8 @@ class OBSManager {
 		SaveEventTrigger m_saveEvent;
 
 		OutputEventTrigger m_outputEvent;
+
+		SceneEventTrigger m_sceneEvent;
 
 		SceneItemEventTrigger m_sceneitemEvent;
 
@@ -92,6 +95,9 @@ class OBSManager {
 
 		void
 		addEventHandler(const obs::item::event event, EventObserver<obs::item::event>* handler);
+
+		void
+		addEventHandler(const obs::scene::event event, EventObserver<obs::scene::event>* handler);
 
 		void
 		addEventHandler(const obs::source::event event, EventObserver<obs::source::event>* handler);

@@ -15,8 +15,15 @@ ScenesService::ScenesService() :
 	m_sceneUpdated(nullptr),
 	m_sceneToSwitch(0x0) {
 
+#ifdef USE_SCENE_BY_FRONTEND
 	this->setupEvent(obs::frontend::event::SCENE_LIST_CHANGED, &ScenesService::onScenesListChanged);
+#else
+	this->setupEvent(obs::scene::event::ADDED, &ScenesService::onSceneEvent);
 
+	this->setupEvent(obs::scene::event::REMOVED, &ScenesService::onSceneEvent);
+
+	this->setupEvent(obs::scene::event::RENAMED, &ScenesService::onSceneEvent);
+#endif
 	this->setupEvent(obs::frontend::event::SCENE_CHANGED, &ScenesService::onSceneSwitched);
 
 	this->setupEvent(rpc::event::SCENE_ADDED_SUBSCRIBE, &ScenesService::subscribeSceneChange);
@@ -45,17 +52,41 @@ bool
 ScenesService::onScenesListChanged() {
 	obs::scene::event evt = obsManager()->activeCollection()->updateScenes(m_sceneUpdated);
 	switch(evt) {
-	case obs::scene::event::ADDED:
-		return onSceneAdded(*m_sceneUpdated.get());
-		break;
-	case obs::scene::event::REMOVED:
-		return onSceneRemoved(*m_sceneUpdated.get());
-		break;
-	case obs::scene::event::RENAMED:
-		return onSceneUpdated(*m_sceneUpdated.get());
-		break;
-	default:
-		break;
+		case obs::scene::event::ADDED:
+			return onSceneAdded(*m_sceneUpdated.get());
+			break;
+		case obs::scene::event::REMOVED:
+			return onSceneRemoved(*m_sceneUpdated.get());
+			break;
+		case obs::scene::event::RENAMED:
+			return onSceneUpdated(*m_sceneUpdated.get());
+			break;
+		default:
+			break;
+	}
+	return true;
+}
+
+bool
+ScenesService::onSceneEvent(const obs::scene::data& data) {
+	// Loading collection - nothing to do
+	if(obsManager()->isLoadingCollection() || obsManager()->activeCollection() == nullptr)
+		return true;
+
+	switch(data.event) {
+		case obs::scene::event::ADDED:
+			return onSceneAdded(*obsManager()->activeCollection()->addScene(data.obs_source));
+			break;
+		case obs::scene::event::REMOVED:
+			return onSceneRemoved(*obsManager()->activeCollection()->removeScene(*data.scene).get());
+			break;
+		case obs::scene::event::RENAMED:
+			return onSceneUpdated(
+				*obsManager()->activeCollection()->renameScene(*data.scene, data.name).get()
+			);
+			break;
+		default:
+			break;
 	}
 	return true;
 }

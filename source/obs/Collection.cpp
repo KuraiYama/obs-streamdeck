@@ -301,7 +301,6 @@ Collection::updateScenes(std::shared_ptr<Scene>& scene_updated) {
 	else {
 		const char* name = obs_source_get_name(obs_scenes.sources.array[j]);
 		if(scenes.size() == 0) {
-			m_lastSceneID++;
 			scene_updated = std::shared_ptr<Scene>(new Scene(this, m_lastSceneID, name));
 			m_scenes.push(scene_updated);
 			scene_updated->source(obs_scenes.sources.array[j]);
@@ -362,6 +361,31 @@ Collection::removeSource(Source& source) {
 std::shared_ptr<Source>
 Collection::renameSource(Source& source, const char* name) {
 	return m_sources.move(source.name(), name);
+}
+
+/*
+========================================================================================================
+	Scene Helpers
+========================================================================================================
+*/
+
+Scene*
+Collection::addScene(obs_source_t* scene) {
+	m_lastSceneID++;
+	Scene* scene_ref = m_scenes.push(new Scene(this, m_lastSceneID, scene)).get();
+	this->makeActive();
+
+	return scene_ref;
+}
+
+std::shared_ptr<Scene>
+Collection::removeScene(Scene& scene) {
+	return m_scenes.pop(scene.id());
+}
+
+std::shared_ptr<Scene>
+Collection::renameScene(Scene& scene, const char* name) {
+	return m_scenes.move(scene.name(), name);
 }
 
 /*

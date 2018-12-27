@@ -49,6 +49,11 @@ SourcesService::onSourceAdded(const obs::source::data& data) {
 	if(obsManager()->isLoadingCollection() || obsManager()->activeCollection() == nullptr)
 		return true;
 
+	// Scene are handled by ScenesService
+	if(strcmp(obs_source_get_id(data.data.obs_source), "scene") == 0) {
+		return true;
+	}
+
 	if(data.data.obs_source == nullptr) {
 		logError("Something went wrong on source creation.");
 		return false;

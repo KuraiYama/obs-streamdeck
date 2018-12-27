@@ -105,6 +105,15 @@ class Collection : public OBSStorable {
 		void
 		makeActive();
 
+		Scene*
+		addScene(obs_source_t* scene);
+
+		std::shared_ptr<Scene>
+		removeScene(Scene& scene);
+
+		std::shared_ptr<Scene>
+		renameScene(Scene& scene, const char* name);
+
 		Source*
 		addSource(obs_source_t* source);
 

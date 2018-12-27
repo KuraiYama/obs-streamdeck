@@ -20,8 +20,11 @@
 */
 
 class SceneItemEventTrigger :
-	public EventTrigger<SceneItemEventTrigger, obs::item::event>,
-	public EventTrigger<SceneItemEventTrigger, obs::frontend::event> {
+	public EventTrigger<SceneItemEventTrigger, obs::item::event>
+#ifdef USE_SCENE_BY_FRONTEND
+	, public EventTrigger<SceneItemEventTrigger, obs::frontend::event>
+#endif
+	{
 
 	/*
 	====================================================================================================
@@ -30,6 +33,7 @@ class SceneItemEventTrigger :
 	*/
 	private:
 
+#ifdef USE_SCENE_BY_FRONTEND
 		static void
 		OnSceneRename(void* trigger, calldata_t* data) {
 			if(!Service::_obs_started) return;
@@ -46,6 +50,7 @@ class SceneItemEventTrigger :
 				trigger_ref.triggerRenamedScene(scene, name);
 			}
 		}
+#endif
 
 		static void
 		OnItemAdded(void* trigger, calldata_t* data) {
@@ -129,6 +134,7 @@ class SceneItemEventTrigger :
 	*/
 	public:
 
+#ifdef USE_SCENE_BY_FRONTEND
 		void
 		triggerRenamedScene(obs_scene_t* scene, const char* name) {
 			auto iter = m_scenes.find(scene);
@@ -140,6 +146,7 @@ class SceneItemEventTrigger :
 				EventTrigger<SceneItemEventTrigger, obs::frontend::event>::m_event;
 			event_ref.notifyEvent(obs::frontend::event::SCENE_LIST_CHANGED);
 		}
+#endif
 
 		void
 		triggerAddedItem(obs_scene_t* scene, obs_sceneitem_t* item) {
@@ -149,9 +156,13 @@ class SceneItemEventTrigger :
 			obs::item::data data = { obs::item::event::ADDED, iter->second };
 			data.sceneitem = item;
 
+#ifdef USE_SCENE_BY_FRONTEND
 			UnsafeEventObservable<obs::item::event>& event_ref =
 				EventTrigger<SceneItemEventTrigger, obs::item::event>::m_event;
 			event_ref.notifyEvent<const obs::item::data&>(obs::item::event::ADDED, data);
+#else
+			m_event.notifyEvent<const obs::item::data&>(obs::item::event::ADDED, data);
+#endif
 		}
 
 		void
@@ -165,9 +176,13 @@ class SceneItemEventTrigger :
 			obs::item::data data = { obs::item::event::REMOVED, scene_ref->second };
 			data.item = const_cast<Item*>(item_ref->second);
 
+#ifdef USE_SCENE_BY_FRONTEND
 			UnsafeEventObservable<obs::item::event>& event_ref =
 				EventTrigger<SceneItemEventTrigger, obs::item::event>::m_event;
 			event_ref.notifyEvent<const obs::item::data&>(obs::item::event::REMOVED, data);
+#else
+			m_event.notifyEvent<const obs::item::data&>(obs::item::event::REMOVED, data);
+#endif
 		}
 
 		void
@@ -183,9 +198,13 @@ class SceneItemEventTrigger :
 			obs::item::data data = { event , scene_ref->second };
 			data.item = item_ref->second;
 
+#ifdef USE_SCENE_BY_FRONTEND
 			UnsafeEventObservable<obs::item::event>& event_ref =
 				EventTrigger<SceneItemEventTrigger, obs::item::event>::m_event;
 			event_ref.notifyEvent<const obs::item::data&>(event, data);
+#else
+			m_event.notifyEvent<const obs::item::data&>(event, data);
+#endif
 		}
 
 		void
@@ -201,12 +220,14 @@ class SceneItemEventTrigger :
 				signal_handler_t* signal_handler = obs_source_get_signal_handler(scene->source());
 				if(signal_handler != nullptr) {
 
+#ifdef USE_SCENE_BY_FRONTEND
 					signal_handler_connect(
 						signal_handler,
 						"rename",
 						SceneItemEventTrigger::OnSceneRename,
 						this
 					);
+#endif
 
 					signal_handler_connect(
 						signal_handler,
@@ -253,12 +274,14 @@ class SceneItemEventTrigger :
 				);
 				if(signal_handler != nullptr) {
 
+#ifdef USE_SCENE_BY_FRONTEND
 					signal_handler_disconnect(
 						signal_handler,
 						"rename",
 						SceneItemEventTrigger::OnSceneRename,
 						this
 					);
+#endif
 
 					signal_handler_disconnect(
 						signal_handler,

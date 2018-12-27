@@ -90,6 +90,7 @@ class ServiceImpl : public Service,
 	private EventObserver<T, obs::save::event>,
 	private EventObserver<T, obs::output::event>,
 	private EventObserver<T, obs::item::event>,
+	private EventObserver<T, obs::scene::event>,
 	private EventObserver<T, obs::source::event> {
 
 	/*
@@ -108,6 +109,8 @@ class ServiceImpl : public Service,
 		using ItemHandler = EventObserver<T, obs::item::event>;
 
 		using SourceHandler = EventObserver<T, obs::source::event>;
+
+		using SceneHandler = EventObserver<T, obs::scene::event>;
 
 		using RPCHandler = EventObserver<T, rpc::event>;
 
@@ -137,6 +140,10 @@ class ServiceImpl : public Service,
 		typedef
 		typename SourceHandler::template FuncWrapperB<const obs::source::data&>::Callback
 		obs_source_callback;
+
+		typedef
+		typename SceneHandler::template FuncWrapperB<const obs::scene::data&>::Callback
+		obs_scene_callback;
 
 		typedef
 		typename RPCHandler::template FuncWrapperB<void>::Callback
@@ -214,6 +221,9 @@ class ServiceImpl : public Service,
 
 		void
 		setupEvent(obs::source::event event, obs_source_callback handler);
+
+		void
+		setupEvent(obs::scene::event event, obs_scene_callback handler);
 
 		void
 		setupEvent(rpc::event event, rpc_callback_void handler);

@@ -62,6 +62,9 @@ class ScenesService : public ServiceImpl<ScenesService> {
 		onScenesListChanged();
 
 		bool
+		onSceneEvent(const obs::scene::data& data);
+
+		bool
 		subscribeSceneChange(const rpc::request& data);
 
 		bool

@@ -36,10 +36,14 @@ OBSManager::addEventHandler(
 	const obs::frontend::event event,
 	EventObserver<obs::frontend::event>* handler
 ) {
+#ifdef USE_SCENE_BY_FRONTEND
 	m_frontendEvent.addHandler(std::make_pair(event, handler));
 	m_sceneitemEvent.EventTrigger<SceneItemEventTrigger, obs::frontend::event>::addHandler(
 		std::make_pair(event, handler)
 	);
+#else
+	m_frontendEvent.addHandler(std::make_pair(event, handler));
+#endif;
 }
 
 void
@@ -56,10 +60,19 @@ OBSManager::addEventHandler(
 }
 
 void
+OBSManager::addEventHandler(const obs::scene::event event, EventObserver<obs::scene::event>* handler) {
+	m_sceneEvent.addHandler(std::make_pair(event, handler));
+}
+
+void
 OBSManager::addEventHandler(const obs::item::event event, EventObserver<obs::item::event>* handler) {
+#ifdef USE_SCENE_BY_FRONTEND
 	m_sceneitemEvent.EventTrigger<SceneItemEventTrigger, obs::item::event>::addHandler(
 		std::make_pair(event, handler)
 	);
+#else
+	m_sceneitemEvent.addHandler(std::make_pair(event, handler));
+#endif
 }
 
 void
@@ -81,6 +94,7 @@ OBSManager::registerAllSourcesScenes() {
 void
 OBSManager::cleanRegisteredSourcesScenes() {
 	m_sourceEvent.removeAll();
+	m_sceneEvent.removeAll();
 	m_sceneitemEvent.removeAll();
 }
 
@@ -124,6 +138,7 @@ OBSManager::unregisterSource(const Source* source) {
 
 void
 OBSManager::registerScene(const Scene* scene) {
+	m_sceneEvent.addScene(scene);
 	m_sceneitemEvent.addScene(scene);
 	Items items = scene->items();
 	for(auto iter = items.items.begin(); iter < items.items.end(); iter++)
@@ -132,6 +147,7 @@ OBSManager::registerScene(const Scene* scene) {
 
 void
 OBSManager::unregisterScene(const Scene* scene) {
+	m_sceneEvent.removeScene(scene->scene());
 	m_sceneitemEvent.removeScene(scene->scene());
 	Items items = scene->items();
 	for(auto iter = items.items.begin(); iter < items.items.end(); iter++)

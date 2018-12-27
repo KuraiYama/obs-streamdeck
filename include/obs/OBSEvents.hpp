@@ -145,6 +145,15 @@ namespace obs {
 			LIST_BUILD,
 		};
 
+		typedef struct data {
+			event event;
+			Scene* scene;
+			union {
+				obs_source_t* obs_source;
+				const char* name;
+			};
+		} data;
+
 	}
 
 	/*
