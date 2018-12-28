@@ -7,15 +7,15 @@
 #include <set>
 
 /*
+ * Plugin Includes
+ */
+#include "include/obs/OBSStorable.hpp"
+
+/*
 ========================================================================================================
 	Types Predeclarations
 ========================================================================================================
 */
-
-class OBSStorable;
-
-template<typename T>
-using is_storable = std::is_base_of<OBSStorable, T>;
 
 template<typename T, bool = is_storable<T>::value>
 class OBSStorage;
@@ -25,70 +25,6 @@ class OBSStorage;
 	Types Definitions
 ========================================================================================================
 */
-
-class OBSStorable {
-
-	/*
-	====================================================================================================
-		Instance Data Members
-	====================================================================================================
-	*/
-	protected:
-
-		uint16_t m_identifier;
-
-		std::string m_name;
-
-	/*
-	====================================================================================================
-		Constructors / Destructor
-	====================================================================================================
-	*/
-	protected:
-
-		OBSStorable(uint16_t identifier, const std::string& name) :
-			m_identifier(identifier),
-			m_name(name) {
-		}
-
-	/*
-	====================================================================================================
-		Accessors
-	====================================================================================================
-	*/
-	public:
-
-		const std::string&
-		name() const {
-			return m_name;
-		}
-
-		std::string&
-		name() {
-			return m_name;
-		}
-
-		void
-		name(const std::string& name) {
-			m_name = name;
-		}
-
-		uint16_t
-		id() const {
-			return m_identifier;
-		}
-
-		uint16_t&
-		id() {
-			return m_identifier;
-		}
-
-		void
-		id(uint16_t identifier) {
-			m_identifier = identifier;
-		}
-
-};
 
 template<typename T>
 class OBSStorage<T, false> {
