@@ -123,6 +123,12 @@ class Collection : public OBSStorable {
 		std::shared_ptr<Source>
 		renameSource(Source& source, const char* name);
 
+		Source*
+		getSourceById(uint16_t id) const;
+
+		Source*
+		getSourceByName(const std::string& name) const;
+
 		void
 		loadSources();
 

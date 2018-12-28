@@ -29,6 +29,8 @@ class Item;
 
 class Scene;
 
+class Source;
+
 /*
 ========================================================================================================
 	Types Definitions
@@ -57,6 +59,10 @@ class Item : public OBSStorable {
 
 		obs_sceneitem_t* m_item;
 
+		Source* m_sourceRef;
+
+		bool m_visible;
+
 	/*
 	====================================================================================================
 		Constructors / Destructor
@@ -80,6 +86,9 @@ class Item : public OBSStorable {
 		Scene*
 		scene() const;
 
+		const Source*
+		source() const;
+
 		virtual const char*
 		type() const;
 
@@ -91,5 +100,8 @@ class Item : public OBSStorable {
 
 		bool
 		visible() const;
+
+		void
+		visible(bool toggle);
 
 };

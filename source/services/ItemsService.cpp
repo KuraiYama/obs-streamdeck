@@ -96,12 +96,14 @@ ItemsService::onItemUpdated(const obs::item::data& data) {
 
 	switch(data.event) {
 		case obs::item::event::HIDDEN:
+			data.item->visible(false);
 			logInfo(QString("Item %1 hidden.")
 				.arg(data.item->name().c_str())
 				.toStdString()
 			);
 			break;
 		case obs::item::event::SHOWN:
+			data.item->visible(true);
 			logInfo(QString("Item %1 shown.")
 				.arg(data.item->name().c_str())
 				.toStdString()

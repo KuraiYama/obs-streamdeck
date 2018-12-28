@@ -332,8 +332,11 @@ Streamdeck::sendSchema(
 			for(auto iter_it = items.items.begin(); iter_it < items.items.end(); iter_it++) {
 				QJsonObject item;
 				uint64_t item_id = (scene_id << 24) + /* type << 8 */ + (*iter_it)->id();
-				addToJsonObject(item, "sceneItemId", QString("%1").arg((*iter_it)->id()));
-				addToJsonObject(item, "sourceId", QString("%1").arg(item_id));
+				addToJsonObject(item, "sceneItemId", QString("%1").arg(item_id));
+				const Source* sourceRef = (*iter_it)->source();
+				uint64_t source_id =
+					(sourceRef->collection()->id() << 17) + (1 << 16) + sourceRef->id();
+				addToJsonObject(item, "sourceId", QString("%1").arg(source_id));
 				addToJsonObject(item, "visible", (*iter_it)->visible());
 				addToJsonArray(items_json, item);
 			}
@@ -441,14 +444,16 @@ Streamdeck::sendScenes(
 			Item* item_ptr = (*iter_it);
 			QJsonObject item;
 			uint64_t item_id = (scene_id << 24) + /* type << 8 */ + item_ptr->id();
-			addToJsonObject(item, "sceneItemId", QString("%1").arg(item_ptr->id()));
-			addToJsonObject(item, "sourceId", QString("%1").arg(item_id));
+			addToJsonObject(item, "sceneItemId", QString("%1").arg(item_id));
+			const Source* sourceRef = item_ptr->source();
+			uint64_t source_id = (sourceRef->collection()->id() << 17) + (1 << 16) + sourceRef->id();
+			addToJsonObject(item, "sourceId", QString("%1").arg(source_id));
 			addToJsonObject(item, "visible", item_ptr->visible());
 			addToJsonObject(item, "sceneNodeType", item_ptr->type());
 
 			addToJsonArray(nodes_items, item);
 		}
-#ifdef SEND_ITEMS
+#ifndef NO_SEND_ITEMS
 		addToJsonObject(scene, ((std::rand() % 2) == 0 ? "nodes" : "items"), nodes_items);
 #endif
 		addToJsonArray(result, scene);

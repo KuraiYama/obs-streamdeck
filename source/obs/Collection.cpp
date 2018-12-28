@@ -301,6 +301,7 @@ Collection::updateScenes(std::shared_ptr<Scene>& scene_updated) {
 	else {
 		const char* name = obs_source_get_name(obs_scenes.sources.array[j]);
 		if(scenes.size() == 0) {
+			m_lastSceneID++;
 			scene_updated = std::shared_ptr<Scene>(new Scene(this, m_lastSceneID, name));
 			m_scenes.push(scene_updated);
 			scene_updated->source(obs_scenes.sources.array[j]);
@@ -340,6 +341,16 @@ Collection::switchScene(const char* name) {
 	Sources Helpers
 ========================================================================================================
 */
+
+Source*
+Collection::getSourceById(uint16_t id) const {
+	return m_sources[id];
+}
+
+Source*
+Collection::getSourceByName(const std::string& name) const {
+	return m_sources[name];
+}
 
 Source*
 Collection::addSource(obs_source_t* source) {

@@ -1,6 +1,7 @@
 /*
  * Plugin Includes
  */
+#include "include/obs/Collection.hpp"
 #include "include/obs/Scene.hpp"
 #include "include/obs/Item.hpp"
 
@@ -20,12 +21,14 @@ Item::Item(Scene* scene, uint16_t id, obs_sceneitem_t* item) :
 	m_parentScene(scene),
 	m_item(item) {
 	m_source = obs_sceneitem_get_source(m_item);
+	m_visible = obs_sceneitem_visible(m_item);
+	m_sourceRef = m_parentScene->collection()->getSourceByName(m_name);
 }
 
 Item::Item(Scene* scene, uint16_t id, std::string name) :
 	OBSStorable(id, name),
 	m_parentScene(scene) {
-	m_source = obs_sceneitem_get_source(m_item);
+	m_sourceRef = m_parentScene->collection()->getSourceByName(name);
 }
 
 Item::~Item() {
@@ -42,6 +45,11 @@ Item::scene() const {
 	return m_parentScene;
 }
 
+const Source*
+Item::source() const {
+	return m_sourceRef;
+}
+
 obs_sceneitem_t*
 Item::item() const {
 	return m_item;
@@ -51,6 +59,7 @@ void
 Item::item(obs_sceneitem_t* item) {
 	m_item = item;
 	m_source = obs_sceneitem_get_source(item);
+	m_visible = obs_sceneitem_visible(m_item);
 }
 
 const char*
@@ -60,5 +69,10 @@ Item::type() const {
 
 bool
 Item::visible() const {
-	return obs_sceneitem_visible(m_item);
+	return m_parentScene->collection()->active && m_visible;
+}
+
+void
+Item::visible(bool toggle) {
+	m_visible = toggle;
 }

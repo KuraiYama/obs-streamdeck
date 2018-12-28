@@ -116,10 +116,7 @@ Source::type() const {
 
 bool
 Source::muted() const {
-	if(m_parentCollection->active)
-		return m_muted;
-	else
-		return false;
+	return m_parentCollection->active && m_muted;
 }
 
 void
