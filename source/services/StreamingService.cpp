@@ -71,7 +71,7 @@ StreamingService::subscribeStreamStatusChange(const rpc::request& data) {
 
 bool
 StreamingService::startStreaming(const rpc::request& data) {
-	rpc::response<bool> response = response_bool(&data, "startStreaming");
+	rpc::response<rpc::response_error> response = response_error(&data, "startStreaming");
 
 	if(data.event == rpc::event::START_STREAMING) {
 		response.event = rpc::event::START_STREAMING;
@@ -96,7 +96,7 @@ StreamingService::startStreaming(const rpc::request& data) {
 
 bool
 StreamingService::stopStreaming(const rpc::request& data) {
-	rpc::response<bool> response = response_bool(&data, "stopStreaming");
+	rpc::response<rpc::response_error> response = response_error(&data, "stopStreaming");
 
 	if(data.event == rpc::event::STOP_STREAMING) {
 		response.event = rpc::event::STOP_STREAMING;
@@ -251,9 +251,9 @@ StreamingService::onStreamStarted(void* streaming_service, calldata_t* data) {
 	response.data = "live";
 	service->streamdeckManager()->commit_all(response, &StreamdeckManager::setEvent);
 
-	rpc::response<bool> action = service->response_bool(nullptr, "onStreamingStarted");
+	rpc::response<rpc::response_error> action = service->response_error(nullptr, "onStreamingStarted");
 	action.event = rpc::event::START_STREAMING;
-	action.data = false;
+	action.data.error_flag = false;
 	service->streamdeckManager()->commit_all(action, &StreamdeckManager::setError);
 }
 
@@ -299,14 +299,14 @@ StreamingService::onStreamStopped(void* streaming_service, calldata_t* data) {
 	response.data = "offline";
 	service->streamdeckManager()->commit_all(response, &StreamdeckManager::setEvent);
 
-	rpc::response<bool> action = service->response_bool(nullptr, "onStreamingStopped");
+	rpc::response<rpc::response_error> action = service->response_error(nullptr, "onStreamingStopped");
 	if(code == 0) {
 		action.event = rpc::event::STOP_STREAMING;
-		action.data = false;
+		action.data.error_flag = false;
 	}
 	else {
 		action.event = rpc::event::START_STREAMING;
-		action.data = true;
+		action.data.error_flag = true;
 	}
 	service->streamdeckManager()->commit_all(action, &StreamdeckManager::setError);
 }

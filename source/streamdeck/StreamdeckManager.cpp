@@ -142,7 +142,7 @@ StreamdeckManager::setSubscription(Streamdeck* client, const rpc::response<std::
 }
 
 bool
-StreamdeckManager::setError(Streamdeck* client, const rpc::response<bool>& response) {
+StreamdeckManager::setError(Streamdeck* client, const rpc::response<rpc::response_error>& response) {
 	QString resource = response.request != nullptr ?
 		QString("%1.%2")
 			.arg(response.request->serviceName.c_str())

@@ -163,7 +163,7 @@ class StreamdeckManager : public QObject, public SafeEventObservable<rpc::event>
 		);
 
 		bool
-		setError(Streamdeck* client, const rpc::response<bool>& response);
+		setError(Streamdeck* client, const rpc::response<rpc::response_error>& response);
 
 		bool
 		setSchema(Streamdeck* client, const rpc::response<Collections>& response);

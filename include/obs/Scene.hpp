@@ -122,6 +122,9 @@ class Scene : public OBSStorable {
 		Items
 		items() const;
 
+		unsigned int
+		itemCount() const;
+
 		obs_scene_t*
 		scene() const;
 

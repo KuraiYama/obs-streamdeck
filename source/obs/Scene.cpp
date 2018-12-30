@@ -176,6 +176,11 @@ Scene::items() const {
 	return items;
 }
 
+unsigned int
+Scene::itemCount() const {
+	return m_items.size();
+}
+
 Source&
 Scene::sourcedScene() {
 	return m_internalSource;

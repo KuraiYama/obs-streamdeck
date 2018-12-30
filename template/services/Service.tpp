@@ -203,6 +203,18 @@ ServiceImpl<T>::response_bool(const rpc::request* data, const char* method) cons
 }
 
 template<typename T>
+rpc::response<rpc::response_error>
+ServiceImpl<T>::response_error(const rpc::request* data, const char* method) const {
+	rpc::response_error error = { false };
+	error.error_flag = true;
+	return
+		rpc::response<rpc::response_error>{
+			{data, rpc::event::NO_EVENT, name(), method},
+			error
+	};
+}
+
+template<typename T>
 rpc::response<std::pair<std::string,std::string>>
 ServiceImpl<T>::response_string2(const rpc::request* data, const char* method) const {
 	return

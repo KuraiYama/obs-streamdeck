@@ -275,11 +275,20 @@ bool
 Streamdeck::sendError(
 	const rpc::event event,
 	const std::string& resource,
-	bool error,
+	rpc::response_error error,
 	bool event_mode
 ) {
 	QJsonObject response = buildJsonResult(event, QString::fromStdString(resource), event_mode);
-	this->addToJsonObject(response, "error", error);
+	if(error.hasMessage == false) {
+		this->addToJsonObject(response, "error", error.error_flag);
+	}
+	else {
+		if(strlen(error.error_message) > 0) {
+			QJsonObject error_json;
+			this->addToJsonObject(error_json, "message", error.error_message);
+			this->addToJsonObject(response, "error", error_json);
+		}
+	}
 
 	log_custom(LOG_STREAMDECK) << QString("Error Message sent for event %1.")
 		.arg((int)event)
@@ -323,7 +332,7 @@ Streamdeck::sendSchema(
 		Scenes scenes = (*iter)->scenes();
 		for(auto iter_sc = scenes.scenes.begin(); iter_sc < scenes.scenes.end(); iter_sc++) {
 			QJsonObject scene;
-			uint64_t scene_id = (collection_id << 17) + (*iter_sc)->id();
+			uint64_t scene_id = (collection_id << 18) + (*iter_sc)->id();
 			addToJsonObject(scene, "id", QString("%1").arg(scene_id));
 			addToJsonObject(scene, "name", QString::fromStdString((*iter_sc)->name()));
 
@@ -341,8 +350,9 @@ Streamdeck::sendSchema(
 
 				uint64_t item_id = (scene_id << 24) + /* type << 8 */ + (*iter_it)->id();
 				addToJsonObject(item, "sceneItemId", QString("%1").arg(item_id));
+				short flag = (*iter_src)->registrable() ? 1 : 2;
 				uint64_t source_id =
-					(sourceRef->collection()->id() << 17) + (1 << 16) + sourceRef->id();
+					(sourceRef->collection()->id() << 18) + (flag << 16) + sourceRef->id();
 				addToJsonObject(item, "sourceId", QString("%1").arg(source_id));
 				addToJsonObject(item, "visible", (*iter_it)->visible());
 				addToJsonArray(items_json, item);
@@ -356,8 +366,8 @@ Streamdeck::sendSchema(
 		Sources sources = (*iter)->sources();
 		for(auto iter_src = sources.sources.begin(); iter_src != sources.sources.end(); iter_src++) {
 			QJsonObject source;
-			short flag = (*iter_src)->registrable() ? 1 : 0;
-			uint64_t source_id = (collection_id << 17) + (flag << 16) + (*iter_src)->id();
+			short flag = (*iter_src)->registrable() ? 1 : 2;
+			uint64_t source_id = (collection_id << 18) + (flag << 16) + (*iter_src)->id();
 			addToJsonObject(scene, "id", QString("%1").arg(source_id));
 			addToJsonObject(scene, "name", QString::fromStdString((*iter_src)->name()));
 			addToJsonObject(source, "type", (*iter_src)->type());
@@ -442,7 +452,7 @@ Streamdeck::sendScenes(
 		QJsonObject scene;
 		uint64_t scene_id = scene_ptr->id();
 		if(scenes.collection != nullptr)
-			scene_id += (scenes.collection->id() << 17);
+			scene_id += (scenes.collection->id() << 18);
 		addToJsonObject(scene, "id", QString("%1").arg(scene_id));
 		addToJsonObject(scene, "name", QString::fromStdString(scene_ptr->name()));
 
@@ -461,8 +471,8 @@ Streamdeck::sendScenes(
 			QJsonObject item;
 			uint64_t item_id = (scene_id << 24) + /* type << 8 */ + item_ptr->id();
 			addToJsonObject(item, "sceneItemId", QString("%1").arg(item_id));
-			short flag = sourceRef->registrable() ? 1 : 0;
-			uint64_t source_id = (sourceRef->collection()->id() << 17) + (flag << 16) + sourceRef->id();
+			short flag = sourceRef->registrable() ? 1 : 2;
+			uint64_t source_id = (sourceRef->collection()->id() << 18) + (flag << 16) + sourceRef->id();
 			addToJsonObject(item, "sourceId", QString("%1").arg(source_id));
 			addToJsonObject(item, "visible", item_ptr->visible());
 			addToJsonObject(item, "sceneNodeType", item_ptr->type());
@@ -490,7 +500,7 @@ Streamdeck::sendScene(
 	bool event_mode
 ) {
 	QJsonObject response = buildJsonResponse(event, QString::fromStdString(resource), event_mode);
-	uint64_t id = (scene->collection()->id() << 17) + scene->id();
+	uint64_t id = (scene->collection()->id() << 18) + scene->id();
 	addToJsonObject(response, "result", QString("%1").arg(id));
 	addToJsonObject(response, "collection", QString("%1").arg(scene->collection()->id()));
 
@@ -519,7 +529,7 @@ Streamdeck::sendSources(
 		QJsonObject source;
 		uint64_t source_id = source_ptr->id();
 		if(sources.collection != nullptr)
-			source_id += (sources.collection->id() << 17) + ((source_ptr->registrable() ? 1 : 0) << 16);
+			source_id += (sources.collection->id() << 18) + ((source_ptr->registrable() ? 1 : 2) << 16);
 		addToJsonObject(source, "id", QString("%1").arg(source_id));
 		addToJsonObject(source, "name", QString::fromStdString(source_ptr->name()));
 		addToJsonObject(source, "type", source_ptr->type());

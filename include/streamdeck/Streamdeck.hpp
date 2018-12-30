@@ -277,7 +277,7 @@ class Streamdeck : public QObject {
 		sendError(
 			const rpc::event event,
 			const std::string& resource,
-			bool error,
+			rpc::response_error error,
 			bool event_mode = false
 		);
 

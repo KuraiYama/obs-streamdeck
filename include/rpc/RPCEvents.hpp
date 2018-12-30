@@ -52,8 +52,8 @@ namespace rpc {
 		GET_SOURCES = 10,
 		MAKE_SCENE_ACTIVE = 11,
 		GET_ACTIVE_SCENE = 12,
-		MUTE_AUDIO_SOURCE = 13,
-		UNMUTE_AUDIO_SOURCE = 14,
+		ENABLE_SOURCE = 13,
+		DISABLE_SOURCE = 14,
 		HIDE_ITEM = 15,
 		SHOW_ITEM = 16,
 		SCENE_SWITCHED_SUBSCRIBE = 17,
@@ -99,6 +99,14 @@ namespace rpc {
 
 	template<>
 	struct response<void> : response_base {
+	};
+
+	struct response_error {
+		bool hasMessage;
+		union {
+			bool error_flag;
+			const char* error_message;
+		};
 	};
 
 }

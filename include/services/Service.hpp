@@ -189,6 +189,9 @@ class ServiceImpl : public Service,
 		rpc::response<bool>
 		response_bool(const rpc::request* data, const char* method) const;
 
+		rpc::response<rpc::response_error>
+		response_error(const rpc::request* data, const char* method) const;
+
 		rpc::response<std::pair<std::string, std::string>>
 		response_string2(const rpc::request* data, const char* method) const;
 

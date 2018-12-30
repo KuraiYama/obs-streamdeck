@@ -69,7 +69,7 @@ RecordingService::subscribeRecordStatusChange(const rpc::request& data) {
 
 bool
 RecordingService::startRecording(const rpc::request& data) {
-	rpc::response<bool> response = response_bool(&data, "startRecording");
+	rpc::response<rpc::response_error> response = response_error(&data, "startRecording");
 
 	if(data.event == rpc::event::START_RECORDING) {
 		response.event = rpc::event::START_RECORDING;
@@ -94,7 +94,7 @@ RecordingService::startRecording(const rpc::request& data) {
 
 bool
 RecordingService::stopRecording(const rpc::request& data) {
-	rpc::response<bool> response = response_bool(&data, "stopRecording");
+	rpc::response<rpc::response_error> response = response_error(&data, "stopRecording");
 
 	if(data.event == rpc::event::STOP_RECORDING) {
 		response.event = rpc::event::STOP_RECORDING;
@@ -217,9 +217,9 @@ RecordingService::onRecordStarting(void* recordingService, calldata_t* data) {
 	response.data = "recording";
 	service->streamdeckManager()->commit_all(response, &StreamdeckManager::setEvent);
 
-	rpc::response<bool> action = service->response_bool(nullptr, "onRecordingStarting");
+	rpc::response<rpc::response_error> action = service->response_error(nullptr, "onRecordingStarting");
 	action.event = rpc::event::START_RECORDING;
-	action.data = false;
+	action.data.error_flag = false;
 	service->streamdeckManager()->commit_all(action, &StreamdeckManager::setError);
 }
 
@@ -284,14 +284,14 @@ RecordingService::onRecordStopped(void* recording_service, calldata_t* data) {
 	response.data = "offline";
 	service->streamdeckManager()->commit_all(response, &StreamdeckManager::setEvent);
 
-	rpc::response<bool> action = service->response_bool(nullptr, "onRecordingStopped");
+	rpc::response<rpc::response_error> action = service->response_error(nullptr, "onRecordingStopped");
 	if(code == 0) {
 		action.event = rpc::event::STOP_RECORDING;
-		action.data = false;
+		action.data.error_flag = false;
 	}
 	else {
 		action.event = rpc::event::START_RECORDING;
-		action.data = true;
+		action.data.error_flag = true;
 	}
 	service->streamdeckManager()->commit_all(action, &StreamdeckManager::setError);
 }

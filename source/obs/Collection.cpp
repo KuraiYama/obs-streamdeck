@@ -430,10 +430,20 @@ Collection::sources() const {
 	for(auto iter = m_sources.begin(); iter != m_sources.end(); iter++)
 		if(iter->second->collection() == this)
 			sources.sources.push_back(const_cast<Source*>(iter->second.get()));
+
+	bool has_sources = sources.sources.size() > 0;
+
+	unsigned int itemCount = 0;
 	for(auto iter = m_scenes.begin(); iter != m_scenes.end(); iter++) {
-		if(iter->second->collection() == this)
+		if(iter->second->collection() == this) {
 			sources.sources.push_back(const_cast<Source*>(&iter->second->sourcedScene()));
+			itemCount += iter->second->itemCount();
+		}
 	}
+
+	if(!has_sources && itemCount == 0)
+		sources.sources.clear();
+
 	return sources;
 }
 

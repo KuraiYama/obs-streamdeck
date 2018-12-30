@@ -114,6 +114,8 @@ CollectionsService::onCollectionLoading(const obs::save::data& data) {
 
 	obsManager()->makeActive();
 
+	obsManager()->activeCollection()->synchronize();
+
 	// OBS Manager is loading collections, we don't do anything
 	if(obsManager()->isLoadingCollection())
 		return true;
@@ -121,8 +123,6 @@ CollectionsService::onCollectionLoading(const obs::save::data& data) {
 	obsManager()->cleanRegisteredSourcesScenes();
 
 	obsManager()->activeCollection()->switching = true;
-
-	obsManager()->activeCollection()->synchronize();
 
 	logInfo("Collection Loaded.");
 	return true;
