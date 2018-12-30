@@ -331,9 +331,16 @@ Streamdeck::sendSchema(
 			Items items = (*iter_sc)->items();
 			for(auto iter_it = items.items.begin(); iter_it < items.items.end(); iter_it++) {
 				QJsonObject item;
+
+				const Source* sourceRef = (*iter_it)->source();
+				// In this case, we are pending a deletion, but deletion is not completed
+				// We ignore the item
+				if(sourceRef == nullptr) {
+					continue;
+				}
+
 				uint64_t item_id = (scene_id << 24) + /* type << 8 */ + (*iter_it)->id();
 				addToJsonObject(item, "sceneItemId", QString("%1").arg(item_id));
-				const Source* sourceRef = (*iter_it)->source();
 				uint64_t source_id =
 					(sourceRef->collection()->id() << 17) + (1 << 16) + sourceRef->id();
 				addToJsonObject(item, "sourceId", QString("%1").arg(source_id));
@@ -349,7 +356,8 @@ Streamdeck::sendSchema(
 		Sources sources = (*iter)->sources();
 		for(auto iter_src = sources.sources.begin(); iter_src != sources.sources.end(); iter_src++) {
 			QJsonObject source;
-			uint64_t source_id = (collection_id << 17) + (1 << 16) + (*iter_src)->id();
+			short flag = (*iter_src)->registrable() ? 1 : 0;
+			uint64_t source_id = (collection_id << 17) + (flag << 16) + (*iter_src)->id();
 			addToJsonObject(scene, "id", QString("%1").arg(source_id));
 			addToJsonObject(scene, "name", QString::fromStdString((*iter_src)->name()));
 			addToJsonObject(source, "type", (*iter_src)->type());
@@ -442,11 +450,19 @@ Streamdeck::sendScenes(
 		std::vector<ItemPtr> items = std::move(scene_ptr->items().items);
 		for(auto iter_it = items.begin(); iter_it < items.end(); iter_it++) {
 			Item* item_ptr = (*iter_it);
+			const Source* sourceRef = item_ptr->source();
+
+			// In this case, we are pending a deletion, but deletion is not completed by OBS
+			// We ignore the item
+			if(sourceRef == nullptr) {
+				continue;
+			}
+
 			QJsonObject item;
 			uint64_t item_id = (scene_id << 24) + /* type << 8 */ + item_ptr->id();
 			addToJsonObject(item, "sceneItemId", QString("%1").arg(item_id));
-			const Source* sourceRef = item_ptr->source();
-			uint64_t source_id = (sourceRef->collection()->id() << 17) + (1 << 16) + sourceRef->id();
+			short flag = sourceRef->registrable() ? 1 : 0;
+			uint64_t source_id = (sourceRef->collection()->id() << 17) + (flag << 16) + sourceRef->id();
 			addToJsonObject(item, "sourceId", QString("%1").arg(source_id));
 			addToJsonObject(item, "visible", item_ptr->visible());
 			addToJsonObject(item, "sceneNodeType", item_ptr->type());
@@ -503,7 +519,7 @@ Streamdeck::sendSources(
 		QJsonObject source;
 		uint64_t source_id = source_ptr->id();
 		if(sources.collection != nullptr)
-			source_id += (sources.collection->id() << 17) + (1 << 16);
+			source_id += (sources.collection->id() << 17) + ((source_ptr->registrable() ? 1 : 0) << 16);
 		addToJsonObject(source, "id", QString("%1").arg(source_id));
 		addToJsonObject(source, "name", QString::fromStdString(source_ptr->name()));
 		addToJsonObject(source, "type", source_ptr->type());

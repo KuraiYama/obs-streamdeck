@@ -16,19 +16,23 @@
 ========================================================================================================
 */
 
-Source::Source(Collection* collection, uint16_t id, obs_source_t* source) :
+Source::Source(Collection* collection, uint16_t id, obs_source_t* source, bool registrable) :
 	OBSStorable(id, obs_source_get_name(source)),
 	m_parentCollection(collection) {
 	this->source(source);
+	m_registrable = registrable;
 }
 
-Source::Source(Collection* collection, uint16_t id, std::string name) :
+Source::Source(Collection* collection, uint16_t id, std::string name, bool registrable) :
 	OBSStorable(id, name),
 	m_parentCollection(collection) {
 	m_source = nullptr;
+	m_registrable = registrable;
 }
 
 Source::~Source() {
+	for(auto iter = m_references.begin(); iter != m_references.end(); iter++)
+		**iter = nullptr;
 }
 
 /*
@@ -86,6 +90,26 @@ Source::toMemory(size_t& size) const {
 
 /*
 ========================================================================================================
+	References Helpers
+========================================================================================================
+*/
+
+void
+Source::addReference(Source** source) {
+	*source = this;
+	m_references.insert(source);
+}
+
+void
+Source::removeReference(Source** source) {
+	if(m_references.find(source) != m_references.end()) {
+		*source = nullptr;
+		m_references.erase(source);
+	}
+}
+
+/*
+========================================================================================================
 	Accessors
 ========================================================================================================
 */
@@ -93,6 +117,11 @@ Source::toMemory(size_t& size) const {
 Collection*
 Source::collection() const {
 	return m_parentCollection;
+}
+
+bool
+Source::registrable() const {
+	return m_registrable;
 }
 
 void

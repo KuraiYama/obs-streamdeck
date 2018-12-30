@@ -118,7 +118,13 @@ class Collection : public OBSStorable {
 		addSource(obs_source_t* source);
 
 		std::shared_ptr<Source>
+		addSource(Source* source);
+
+		std::shared_ptr<Source>
 		removeSource(Source& source);
+
+		std::shared_ptr<Source>
+		removeSource(uint16_t id);
 
 		std::shared_ptr<Source>
 		renameSource(Source& source, const char* name);
@@ -149,6 +155,12 @@ class Collection : public OBSStorable {
 
 		Scene*
 		activeScene() const;
+
+		Scene*
+		getSceneById(uint16_t id) const;
+
+		Scene*
+		getSceneByName(const std::string& name) const;
 
 		Scenes
 		scenes() const;

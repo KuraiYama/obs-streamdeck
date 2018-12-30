@@ -22,16 +22,16 @@ Item::Item(Scene* scene, uint16_t id, obs_sceneitem_t* item) :
 	m_item(item) {
 	m_source = obs_sceneitem_get_source(m_item);
 	m_visible = obs_sceneitem_visible(m_item);
-	m_sourceRef = m_parentScene->collection()->getSourceByName(m_name);
 }
 
-Item::Item(Scene* scene, uint16_t id, std::string name) :
+Item::Item(Scene* scene, uint16_t id, const std::string& name) :
 	OBSStorable(id, name),
 	m_parentScene(scene) {
-	m_sourceRef = m_parentScene->collection()->getSourceByName(name);
 }
 
 Item::~Item() {
+	if(m_sourceRef != nullptr)
+		m_sourceRef->removeReference(const_cast<Source**>(&m_sourceRef));
 }
 
 /*

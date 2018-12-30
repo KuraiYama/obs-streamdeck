@@ -19,6 +19,7 @@
  */
 #include "include/common/Memory.hpp"
 #include "include/obs/OBSStorage.hpp"
+#include "include/obs/Source.hpp"
 #include "include/obs/Item.hpp"
 
 /*
@@ -26,6 +27,8 @@
 	Types Predeclarations
 ========================================================================================================
 */
+
+class Source;
 
 class Scene;
 
@@ -73,6 +76,8 @@ class Scene : public OBSStorable {
 
 		OBSStorage<Item> m_items;
 
+		Source m_internalSource;
+
 		Collection* m_parentCollection;
 
 		obs_scene_t* m_scene;
@@ -105,9 +110,6 @@ class Scene : public OBSStorable {
 		std::shared_ptr<Item>
 		deleteItem(Item* item);
 
-		void
-		loadItems();
-
 		bool
 		makeActive();
 
@@ -125,6 +127,9 @@ class Scene : public OBSStorable {
 
 		obs_source_t*
 		source() const;
+
+		Source&
+		sourcedScene();
 
 		void
 		source(obs_source_t* obs_source);

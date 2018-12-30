@@ -31,6 +31,8 @@ class Scene;
 
 class Source;
 
+class ItemBuilder;
+
 /*
 ========================================================================================================
 	Types Definitions
@@ -46,12 +48,14 @@ typedef struct Items {
 
 class Item : public OBSStorable {
 
+	friend class ItemBuilder;
+
 	/*
 	====================================================================================================
 		Instance Data Members
 	====================================================================================================
 	*/
-	private:
+	protected:
 
 		Scene* m_parentScene;
 
@@ -72,7 +76,7 @@ class Item : public OBSStorable {
 
 		Item(Scene* scene, uint16_t id, obs_sceneitem_t* item);
 
-		Item(Scene* scene, uint16_t id, std::string name);
+		Item(Scene* scene, uint16_t id, const std::string& name);
 
 		virtual ~Item();
 

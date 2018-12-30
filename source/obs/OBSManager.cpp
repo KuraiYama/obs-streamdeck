@@ -122,12 +122,14 @@ OBSManager::unregisterOutput(obs_output_t* output) {
 
 void
 OBSManager::registerSource(const Source* source) {
-	m_sourceEvent.addSource(source);
+	if(source->registrable())
+		m_sourceEvent.addSource(source);
 }
 
 void
 OBSManager::unregisterSource(const Source* source) {
-	m_sourceEvent.removeSource(source);
+	if(source->registrable())
+		m_sourceEvent.removeSource(source);
 }
 
 /*
@@ -271,6 +273,7 @@ OBSManager::updateCollections(std::shared_ptr<Collection>& collection_updated) {
 			collection_updated = std::shared_ptr<Collection>(new Collection(m_lastCollectionID, name));
 			m_collections.push(collection_updated);
 			collection_updated->switching = true;
+			collection_updated->loadSources();
 			collection_updated->loadScenes();
 			this->makeActive();
 			collection_updated->synchronize();

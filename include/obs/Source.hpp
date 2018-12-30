@@ -74,6 +74,8 @@ class Source : public OBSStorable {
 	*/
 	private:
 
+		std::set<Source**> m_references;
+
 		Collection* m_parentCollection;
 
 		obs_source_t* m_source;
@@ -84,6 +86,8 @@ class Source : public OBSStorable {
 
 		bool m_muted;
 
+		bool m_registrable;
+
 	/*
 	====================================================================================================
 		Constructors / Destructor
@@ -91,9 +95,9 @@ class Source : public OBSStorable {
 	*/
 	public:
 
-		Source(Collection* collection, uint16_t id, obs_source_t* source);
+		Source(Collection* collection, uint16_t id, obs_source_t* source, bool registrable = true);
 
-		Source(Collection* source, uint16_t id, std::string name);
+		Source(Collection* source, uint16_t id, std::string name, bool registrable = true);
 
 		virtual ~Source();
 
@@ -103,6 +107,15 @@ class Source : public OBSStorable {
 	====================================================================================================
 	*/
 	public:
+
+		void
+		addReference(Source** source);
+
+		void
+		removeReference(Source** source);
+
+		bool
+		registrable() const;
 
 		Memory
 		toMemory(size_t& size) const;

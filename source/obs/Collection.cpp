@@ -169,12 +169,6 @@ Collection::makeActive() {
 	m_activeScene = m_scenes[name];
 }
 
-/*
-========================================================================================================
-	Scenes Helpers
-========================================================================================================
-*/
-
 void
 Collection::synchronize() {
 
@@ -205,38 +199,11 @@ Collection::synchronize() {
 	obs_frontend_source_list_free(&scenes);
 }
 
-void
-Collection::loadSources() {
-	std::map<std::string, obs_source_t*> sources;
-
-	auto p = [](void* private_data, obs_source_t* obs_source) -> bool {
-		auto sources = reinterpret_cast<std::map<std::string, obs_source_t*>*>(private_data);
-		const char* name = obs_source_get_name(obs_source);
-		sources->insert(std::make_pair(name, obs_source));
-		return true;
-	};
-
-	obs_enum_sources(p, &sources);
-
-	auto iter = m_sources.begin();
-	while(iter != m_sources.end()) {
-		auto source_find = sources.find(iter->second->name());
-		if(source_find == sources.end()) {
-			auto remove = iter;
-			iter++;
-			m_sources.pop(remove->first);
-		}
-		else {
-			iter->second->source(source_find->second);
-			sources.erase(source_find);
-			iter++;
-		}
-	}
-	for(auto iter = sources.begin(); iter != sources.end(); iter++) {
-		m_lastSourceID++;
-		m_sources.push(new Source(this, m_lastSourceID, iter->second));
-	}
-}
+/*
+========================================================================================================
+	Scenes Helpers
+========================================================================================================
+*/
 
 void
 Collection::loadScenes() {
@@ -257,13 +224,12 @@ Collection::loadScenes() {
 		}
 		else {
 			scenes.erase(scene_find);
-			iter->second->loadItems();
 			iter++;
 		}
 	}
 	for(auto iter = scenes.begin(); iter != scenes.end(); iter++) {
 		m_lastSceneID++;
-		m_scenes.push(new Scene(this, m_lastSceneID, *iter))->loadItems();
+		m_scenes.push(new Scene(this, m_lastSceneID, *iter));
 	}
 
 	bfree(obs_scenes);
@@ -336,50 +302,6 @@ Collection::switchScene(const char* name) {
 	return scene != nullptr;
 }
 
-/*
-========================================================================================================
-	Sources Helpers
-========================================================================================================
-*/
-
-Source*
-Collection::getSourceById(uint16_t id) const {
-	return m_sources[id];
-}
-
-Source*
-Collection::getSourceByName(const std::string& name) const {
-	return m_sources[name];
-}
-
-Source*
-Collection::addSource(obs_source_t* source) {
-	const char* source_name = obs_source_get_name(source);
-	if(source_name == NULL) return nullptr;
-	Source* existing_source = m_sources[source_name];
-	if(existing_source == nullptr) {
-		m_lastSourceID++;
-		existing_source = m_sources.push(new Source(this, m_lastSourceID, source)).get();
-	}
-	return existing_source;
-}
-
-std::shared_ptr<Source>
-Collection::removeSource(Source& source) {
-	return m_sources.pop(source.id());
-}
-
-std::shared_ptr<Source>
-Collection::renameSource(Source& source, const char* name) {
-	return m_sources.move(source.name(), name);
-}
-
-/*
-========================================================================================================
-	Scene Helpers
-========================================================================================================
-*/
-
 Scene*
 Collection::addScene(obs_source_t* scene) {
 	m_lastSceneID++;
@@ -399,6 +321,102 @@ Collection::renameScene(Scene& scene, const char* name) {
 	return m_scenes.move(scene.name(), name);
 }
 
+Scene*
+Collection::getSceneById(uint16_t id) const {
+	return m_scenes[id];
+}
+
+Scene*
+Collection::getSceneByName(const std::string& name) const {
+	return m_scenes[name];
+}
+
+/*
+========================================================================================================
+	Sources Helpers
+========================================================================================================
+*/
+
+void
+Collection::loadSources() {
+	std::map<std::string, obs_source_t*> sources;
+
+	auto p = [](void* private_data, obs_source_t* obs_source) -> bool {
+		auto sources = reinterpret_cast<std::map<std::string, obs_source_t*>*>(private_data);
+		const char* name = obs_source_get_name(obs_source);
+		sources->insert(std::make_pair(name, obs_source));
+		return true;
+	};
+
+	obs_enum_sources(p, &sources);
+
+	auto iter = m_sources.begin();
+	while(iter != m_sources.end()) {
+		auto source_find = sources.find(iter->second->name());
+		if(source_find == sources.end()) {
+			auto remove = iter;
+			iter++;
+			m_sources.pop(remove->first);
+		}
+		else {
+			iter->second->source(source_find->second);
+			sources.erase(source_find);
+			iter++;
+		}
+	}
+	for(auto iter = sources.begin(); iter != sources.end(); iter++) {
+		m_lastSourceID++;
+		m_sources.push(new Source(this, m_lastSourceID, iter->second));
+	}
+}
+
+Source*
+Collection::addSource(obs_source_t* source) {
+	const char* source_name = obs_source_get_name(source);
+	if(source_name == NULL) return nullptr;
+	Source* existing_source = m_sources[source_name];
+	if(existing_source == nullptr) {
+		m_lastSourceID++;
+		existing_source = m_sources.push(new Source(this, m_lastSourceID, source)).get();
+	}
+	return existing_source;
+}
+
+std::shared_ptr<Source>
+Collection::addSource(Source* source) {
+	Source* existing_source = m_sources[source->id()];
+	if(existing_source != nullptr) {
+		m_sources.pop(source->id());
+	}
+	return m_sources.push(source);
+}
+
+std::shared_ptr<Source>
+Collection::removeSource(Source& source) {
+	return m_sources.pop(source.id());
+}
+
+std::shared_ptr<Source>
+Collection::removeSource(uint16_t id) {
+	return m_sources.pop(id);
+}
+
+
+std::shared_ptr<Source>
+Collection::renameSource(Source& source, const char* name) {
+	return m_sources.move(source.name(), name);
+}
+
+Source*
+Collection::getSourceById(uint16_t id) const {
+	return m_sources[id];
+}
+
+Source*
+Collection::getSourceByName(const std::string& name) const {
+	return m_sources[name];
+}
+
 /*
 ========================================================================================================
 	Accessors
@@ -412,6 +430,10 @@ Collection::sources() const {
 	for(auto iter = m_sources.begin(); iter != m_sources.end(); iter++)
 		if(iter->second->collection() == this)
 			sources.sources.push_back(const_cast<Source*>(iter->second.get()));
+	for(auto iter = m_scenes.begin(); iter != m_scenes.end(); iter++) {
+		if(iter->second->collection() == this)
+			sources.sources.push_back(const_cast<Source*>(&iter->second->sourcedScene()));
+	}
 	return sources;
 }
 

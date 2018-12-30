@@ -4,6 +4,7 @@
 #include "include/obs/Scene.hpp"
 #include "include/obs/Collection.hpp"
 #include "include/common/Logger.hpp"
+#include "include/obs/ItemBuilder.hpp"
 
 /*
  * Qt Includes
@@ -18,13 +19,15 @@
 
 Scene::Scene(Collection* collection, uint16_t id, obs_source_t* source) :
 	OBSStorable(id, obs_source_get_name(source)),
-	m_parentCollection(collection) {
+	m_parentCollection(collection),
+	m_internalSource(collection, id, source, false) {
 	this->source(source);
 }
 
 Scene::Scene(Collection* collection, uint16_t id, std::string name) :
 	OBSStorable(id, name),
-	m_parentCollection(collection) {
+	m_parentCollection(collection),
+	m_internalSource(collection, id, name, false) {
 	m_source = nullptr;
 	m_scene = nullptr;
 }
@@ -104,8 +107,7 @@ Scene::makeActive() {
 
 Item*
 Scene::createItem(obs_sceneitem_t* item) {
-	uint16_t item_id = static_cast<uint16_t>(obs_sceneitem_get_id(item));
-	Item* item_ptr = m_items.push(new Item(this, item_id, item)).get();
+	Item* item_ptr = m_items.push(ItemBuilder::instance()->build(this, item)).get();
 	return item_ptr;
 }
 
@@ -113,10 +115,6 @@ std::shared_ptr<Item>
 Scene::deleteItem(Item* item) {
 	std::shared_ptr<Item> item_ptr = m_items.pop(item->id());
 	return item_ptr;
-}
-
-void
-Scene::loadItems() {
 }
 
 void
@@ -131,7 +129,7 @@ Scene::synchronize() {
 			iter->item(item);
 		}
 		else {
-			scene_ref.m_items.push(new Item(&scene_ref, id, item));
+			scene_ref.m_items.push(ItemBuilder::instance()->build(&scene_ref, item));
 		}
 		return true;
 	};
@@ -164,6 +162,7 @@ Scene::source(obs_source_t* obs_source) {
 	m_source = obs_source;
 	m_name = obs_source_get_name(m_source);
 	m_scene = obs_scene_from_source(m_source);
+	m_internalSource.source(obs_source);
 	this->synchronize();
 }
 
@@ -175,4 +174,9 @@ Scene::items() const {
 		if(iter->second->scene() == this)
 			items.items.push_back(const_cast<Item*>(iter->second.get()));
 	return items;
+}
+
+Source&
+Scene::sourcedScene() {
+	return m_internalSource;
 }
