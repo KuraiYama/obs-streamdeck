@@ -110,6 +110,9 @@ class Scene : public OBSStorable {
 		std::shared_ptr<Item>
 		deleteItem(Item* item);
 
+		Item*
+		getItemById(uint16_t id);
+
 		bool
 		makeActive();
 

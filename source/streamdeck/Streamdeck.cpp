@@ -72,8 +72,6 @@ Streamdeck::Streamdeck(StreamdeckClient& client) :
 	setEventAuthorizations(rpc::event::START_RECORDING, EVENT_READ);
 	setEventAuthorizations(rpc::event::STOP_RECORDING, EVENT_READ);
 	setEventAuthorizations(rpc::event::MAKE_SCENE_ACTIVE, EVENT_READ);
-	//setEventAuthorizations(rpc::event::MUTE_SOURCE, EVENT_READ);
-	//setEventAuthorizations(rpc::event::UNMUTE_SOURCE, EVENT_READ);
 }
 
 Streamdeck::~Streamdeck() {
@@ -350,8 +348,8 @@ Streamdeck::sendSchema(
 					continue;
 				}
 
-				uint64_t item_id = (scene_id << 24) + /* type << 8 */ + (*iter_it)->id();
-				addToJsonObject(item, "sceneItemId", QString("%1").arg(item_id));
+				uint32_t item_id = /* type << 8 */ + (*iter_it)->id();
+				addToJsonObject(item, "sceneItemId", (int32_t)item_id);
 				short flag = (*iter_src)->registrable() ? 1 : 2;
 				uint64_t source_id =
 					(sourceRef->collection()->id() << 18) + (flag << 16) + sourceRef->id();
@@ -471,8 +469,8 @@ Streamdeck::sendScenes(
 			}
 
 			QJsonObject item;
-			uint64_t item_id = (scene_id << 24) + /* type << 8 */ + item_ptr->id();
-			addToJsonObject(item, "sceneItemId", QString("%1").arg(item_id));
+			uint64_t item_id = /* type << 8 */ + item_ptr->id();
+			addToJsonObject(item, "sceneItemId", (int32_t)item_id);
 			short flag = sourceRef->registrable() ? 1 : 2;
 			uint64_t source_id = (sourceRef->collection()->id() << 18) + (flag << 16) + sourceRef->id();
 			addToJsonObject(item, "sourceId", QString("%1").arg(source_id));
@@ -642,8 +640,26 @@ Streamdeck::parse(
 	}
 
 	// Because Elgato guys don't know how to make a clear protocol
+	if(params.find("sceneId") != params.end()) {
+		uint64_t scene_id = params["sceneId"].toString().toULongLong();
+		uint16_t collection_id = scene_id >> 18;
+		scene_id = (scene_id) & 0x0FFFF;
+
+		args.append(QList<QVariant>({ collection_id, (uint16_t)scene_id }));
+	}
+
+	if(params.find("sceneItemId") != params.end()) {
+		uint16_t item_id = params["sceneItemId"].toString().toUInt();
+		args.append(item_id);
+	}
+
 	if(params.find("sourceId") != params.end()) {
-		args.append(params["sourceId"].toString());
+		uint64_t source_id = params["sourceId"].toString().toULongLong();
+		uint16_t collection_id = source_id >> 18;
+		uint16_t type = (source_id >> 16) & 0x03;
+		source_id = (source_id) & 0x0FFFF;
+
+		args.append(QList<QVariant>({ collection_id, (uint16_t)type, (uint16_t)source_id }));
 	}
 
 	logEvent(event, json_quest);
@@ -735,6 +751,8 @@ Streamdeck::lockEventAuthorizations(const rpc::event event) {
 			setEventAuthorizations(rpc::event::SOURCE_ADDED_SUBSCRIBE, 0x0);
 			setEventAuthorizations(rpc::event::SOURCE_REMOVED_SUBSCRIBE, 0x0);
 			setEventAuthorizations(rpc::event::SOURCE_UPDATED_SUBSCRIBE, 0x0);
+			setEventAuthorizations(rpc::event::SHOW_ITEM, 0x0);
+			setEventAuthorizations(rpc::event::HIDE_ITEM, 0x0);
 			break;
 
 		case rpc::event::MAKE_COLLECTION_ACTIVE:
@@ -760,6 +778,8 @@ Streamdeck::lockEventAuthorizations(const rpc::event event) {
 			setEventAuthorizations(rpc::event::SOURCE_UPDATED_SUBSCRIBE, 0x0);
 			setEventAuthorizations(rpc::event::MUTE_SOURCE, 0x0);
 			setEventAuthorizations(rpc::event::UNMUTE_SOURCE, 0x0);
+			setEventAuthorizations(rpc::event::SHOW_ITEM, 0x0);
+			setEventAuthorizations(rpc::event::HIDE_ITEM, 0x0);
 			break;
 
 		case rpc::event::FETCH_COLLECTIONS_SCHEMA:
@@ -788,17 +808,9 @@ Streamdeck::lockEventAuthorizations(const rpc::event event) {
 			setEventAuthorizations(rpc::event::MAKE_COLLECTION_ACTIVE, 0x0);
 			setEventAuthorizations(rpc::event::MUTE_SOURCE, 0x0);
 			setEventAuthorizations(rpc::event::UNMUTE_SOURCE, 0x0);
+			setEventAuthorizations(rpc::event::SHOW_ITEM, 0x0);
+			setEventAuthorizations(rpc::event::HIDE_ITEM, 0x0);
 			break;
-
-		/*case rpc::event::MUTE_SOURCE:
-			setEventAuthorizations(rpc::event::MUTE_SOURCE, EVENT_WRITE);
-			setEventAuthorizations(rpc::event::UNMUTE_SOURCE, 0x0);
-			break;
-
-		case rpc::event::UNMUTE_SOURCE:
-			setEventAuthorizations(rpc::event::MUTE_SOURCE, 0x0);
-			setEventAuthorizations(rpc::event::UNMUTE_SOURCE, EVENT_WRITE);
-			break;*/
 
 		default:
 			break;
@@ -863,11 +875,10 @@ Streamdeck::unlockEventAuthorizations(const rpc::event event) {
 			setEventAuthorizations(rpc::event::SOURCE_ADDED_SUBSCRIBE, EVENT_READ_WRITE);
 			setEventAuthorizations(rpc::event::SOURCE_REMOVED_SUBSCRIBE, EVENT_READ_WRITE);
 			setEventAuthorizations(rpc::event::SOURCE_UPDATED_SUBSCRIBE, EVENT_READ_WRITE);
-
-		//case rpc::event::MUTE_SOURCE:
-		//case rpc::event::UNMUTE_SOURCE:
 			setEventAuthorizations(rpc::event::MUTE_SOURCE, EVENT_READ_WRITE);
 			setEventAuthorizations(rpc::event::UNMUTE_SOURCE, EVENT_READ_WRITE);
+			setEventAuthorizations(rpc::event::SHOW_ITEM, EVENT_READ_WRITE);
+			setEventAuthorizations(rpc::event::HIDE_ITEM, EVENT_READ_WRITE);
 			break;
 
 		default:
@@ -1011,6 +1022,11 @@ Streamdeck::logEvent(const rpc::event event, const QJsonDocument& json_quest) {
 		case rpc::event::MUTE_SOURCE:
 		case rpc::event::UNMUTE_SOURCE:
 			log_custom(0xff228d) << "Source un/mute" << log_end;
+			break;
+
+		case rpc::event::SHOW_ITEM:
+		case rpc::event::HIDE_ITEM:
+			log_custom(0xffdec7) << "Item show/hide" << log_end;
 			break;
 
 		case rpc::event::GET_SOURCES:

@@ -147,18 +147,24 @@ operator<<(Logger& logger, const std::string&& str) {
 
 Logger&
 operator<<(Logger& logger, const QColor& color) {
+#if defined(DEBUG) || defined(FORCE_DEBUG) 
 	logger._internal_color = color;
+#endif
 	return logger;
 }
 
 void
 operator<<(Logger& logger, Logger::LoggerEnd end) {
+#if defined(DEBUG) || defined(FORCE_DEBUG) 
 	logger.insertHtml(QString::fromStdString(end.end));
 	logger.m_mutex.unlock();
+#endif
 }
 
 Logger&
 operator<<(Logger& logger, Logger::LoggerBegin begin) {
+#if defined(DEBUG) || defined(FORCE_DEBUG) 
 	logger.m_mutex.lock();
+#endif
 	return logger;
 }

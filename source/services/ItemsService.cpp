@@ -27,6 +27,9 @@ ItemsService::ItemsService() :
 
 	this->setupEvent(obs::item::event::SHOWN, &ItemsService::onItemUpdated);
 
+	this->setupEvent(rpc::event::SHOW_ITEM, &ItemsService::onItemChangeVisibility);
+	
+	this->setupEvent(rpc::event::HIDE_ITEM, &ItemsService::onItemChangeVisibility);
 }
 
 ItemsService::~ItemsService() {
@@ -149,4 +152,84 @@ ItemsService::subscribeItemChange(const rpc::request& data) {
 
 	logError("subscribeItemChange not called by ITEM_SUBSCRIBE");
 	return false;
+}
+
+bool
+ItemsService::onItemChangeVisibility(const rpc::request& data) {
+	rpc::response<rpc::response_error> response = response_error(&data, "onItemChangeVisibility");
+	if(data.event == rpc::event::SHOW_ITEM || data.event == rpc::event::HIDE_ITEM) {
+		response.event = data.event;
+		logInfo("Show/hide item required.");
+
+		if(!checkResource(&data, QRegExp("visibilityItem"))) {
+			logWarning("Unknown resource for visibilityItem.");
+		}
+
+		if(data.args.size() < 3) {
+			response.data.hasMessage = true;
+			response.data.error_message = "Not enough argument provided by visibility_item.";
+			logError(response.data.error_message);
+			streamdeckManager()->commit_to(response, &StreamdeckManager::setError);
+			return false;
+		}
+
+		QList<QVariant> source_ids = data.args[data.args.count() - 1].toList();
+		uint16_t item_id = static_cast<uint16_t>(data.args[data.args.count() - 2].toUInt());
+		QList<QVariant> scene_ids = data.args[data.args.count() - 3].toList();
+
+		uint16_t source_collection_id = (uint16_t)source_ids[0].toUInt();
+		uint16_t scene_collection_id = (uint16_t)scene_ids[0].toUInt();
+		uint16_t current_collection_id = obsManager()->activeCollection()->id();
+
+		uint16_t is_collection = (source_collection_id ^ scene_collection_id ^ current_collection_id);
+
+		if(is_collection != current_collection_id) {
+			response.data.hasMessage = true;
+			response.data.error_message = "Item, scene and source collection mismatch.";
+			logError(response.data.error_message);
+			goto send_message;
+		}
+
+		uint16_t scene_id = (uint16_t)scene_ids[1].toUInt();
+		uint16_t source_id = (uint16_t)source_ids[2].toUInt();
+		uint16_t source_flag = (uint16_t)source_ids[1].toUInt();
+
+		Scene* scene = obsManager()->activeCollection()->getSceneById(scene_id);
+
+		if(scene == nullptr) {
+			response.data.hasMessage = true;
+			response.data.error_message = "The requested scene is not owned by the current collection.";
+			logError(response.data.error_message);
+			goto send_message;
+		}
+
+		Item* item = scene->getItemById(item_id);
+
+		if(item == nullptr) {
+			response.data.hasMessage = true;
+			response.data.error_message = "The requested item is not owned by the asked scene.";
+			logError(response.data.error_message);
+			goto send_message;
+		}
+
+		if(source_id != item->source()->id()) {
+			response.data.hasMessage = true;
+			response.data.error_message = "Mismatch between source and item reference.";
+			logError(response.data.error_message);
+			goto send_message;
+		}
+
+		if(!item->visible(data.event == rpc::event::SHOW_ITEM, true)) {
+			response.data.hasMessage = true;
+			response.data.error_message = "Something went wrong when showing/hiding item.";
+			logError(response.data.error_message);
+		}
+		else
+			response.data.error_flag = false;
+	}
+	else
+		logError("visibilityItem not called by VISIBILITY_ITEM");
+
+send_message:
+	return streamdeckManager()->commit_to(response, &StreamdeckManager::setError);
 }

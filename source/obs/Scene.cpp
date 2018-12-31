@@ -117,6 +117,11 @@ Scene::deleteItem(Item* item) {
 	return item_ptr;
 }
 
+Item*
+Scene::getItemById(uint16_t id) {
+	return m_items[id];
+}
+
 void
 Scene::synchronize() {
 	typedef bool (*callback_type)(obs_scene_t* scene, obs_sceneitem_t* item, void* private_data);

@@ -105,7 +105,7 @@ class Item : public OBSStorable {
 		bool
 		visible() const;
 
-		void
-		visible(bool toggle);
+		bool
+		visible(bool toggle, bool rpc_action = false);
 
 };

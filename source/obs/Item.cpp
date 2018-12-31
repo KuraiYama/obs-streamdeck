@@ -72,7 +72,16 @@ Item::visible() const {
 	return m_parentScene->collection()->active && m_visible;
 }
 
-void
-Item::visible(bool toggle) {
-	m_visible = toggle;
+bool
+Item::visible(bool toggle, bool rpc_action) {
+	if(m_parentScene->collection()->active) {
+		m_visible = toggle;
+		if(rpc_action) {
+			obs_sceneitem_set_visible(m_item, toggle);
+			bool result = obs_sceneitem_visible(m_item);
+			return result == toggle;
+		}
+		return true;
+	}
+	return false;
 }

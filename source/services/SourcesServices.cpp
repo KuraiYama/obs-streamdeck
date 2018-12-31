@@ -287,7 +287,7 @@ SourcesService::onMuteSource(const rpc::request& data) {
 			logWarning("Unknown resource for muteSources.");
 		}
 
-		if(data.args.size() <= 0 || data.args[data.args.count()-1].compare("") == 0) {
+		if(data.args.size() < 1) {
 			response.data.hasMessage = true;
 			response.data.error_message = "No argument provided by (un)mute_source.";
 			logError(response.data.error_message);
@@ -295,16 +295,17 @@ SourcesService::onMuteSource(const rpc::request& data) {
 			return false;
 		}
 
-		uint64_t id = QString(data.args[data.args.count() - 1].toString()).toLongLong();
-		uint16_t collection_id = (id >> 18);
+		QList<QVariant> ids = data.args[data.args.count() - 1].toList();
+		uint16_t collection_id = (uint16_t)ids[0].toUInt();
+		uint16_t flag = (uint16_t)ids[1].toUInt();
+		uint16_t source_id = (uint16_t)ids[2].toUInt();
+
 		if(collection_id != obsManager()->activeCollection()->id()) {
 			response.data.hasMessage = true;
 			response.data.error_message = "This source is not owned by the current collection.";
 			logError(response.data.error_message);
 		}
 		else {
-			byte flag = (id >> 16) & 0x03;
-			uint16_t source_id = id & 0x0FFFF;
 			Source* source = nullptr;
 			if(flag == 2) {
 				Scene* scene = obsManager()->activeCollection()->getSceneById(source_id);

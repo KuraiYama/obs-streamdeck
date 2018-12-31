@@ -59,4 +59,7 @@ class ItemsService : public ServiceImpl<ItemsService> {
 		bool
 		onItemUpdated(const obs::item::data& data);
 
+		bool
+		onItemChangeVisibility(const rpc::request& data);
+
 };
