@@ -72,6 +72,8 @@ Streamdeck::Streamdeck(StreamdeckClient& client) :
 	setEventAuthorizations(rpc::event::START_RECORDING, EVENT_READ);
 	setEventAuthorizations(rpc::event::STOP_RECORDING, EVENT_READ);
 	setEventAuthorizations(rpc::event::MAKE_SCENE_ACTIVE, EVENT_READ);
+	//setEventAuthorizations(rpc::event::MUTE_SOURCE, EVENT_READ);
+	//setEventAuthorizations(rpc::event::UNMUTE_SOURCE, EVENT_READ);
 }
 
 Streamdeck::~Streamdeck() {
@@ -639,6 +641,11 @@ Streamdeck::parse(
 		args = QVector<QVariant>::fromList(json_args.toVariantList());
 	}
 
+	// Because Elgato guys don't know how to make a clear protocol
+	if(params.find("sourceId") != params.end()) {
+		args.append(params["sourceId"].toString());
+	}
+
 	logEvent(event, json_quest);
 }
 
@@ -751,6 +758,8 @@ Streamdeck::lockEventAuthorizations(const rpc::event event) {
 			setEventAuthorizations(rpc::event::SOURCE_ADDED_SUBSCRIBE, 0x0);
 			setEventAuthorizations(rpc::event::SOURCE_REMOVED_SUBSCRIBE, 0x0);
 			setEventAuthorizations(rpc::event::SOURCE_UPDATED_SUBSCRIBE, 0x0);
+			setEventAuthorizations(rpc::event::MUTE_SOURCE, 0x0);
+			setEventAuthorizations(rpc::event::UNMUTE_SOURCE, 0x0);
 			break;
 
 		case rpc::event::FETCH_COLLECTIONS_SCHEMA:
@@ -777,7 +786,19 @@ Streamdeck::lockEventAuthorizations(const rpc::event event) {
 			setEventAuthorizations(rpc::event::SOURCE_REMOVED_SUBSCRIBE, 0x0);
 			setEventAuthorizations(rpc::event::SOURCE_UPDATED_SUBSCRIBE, 0x0);
 			setEventAuthorizations(rpc::event::MAKE_COLLECTION_ACTIVE, 0x0);
+			setEventAuthorizations(rpc::event::MUTE_SOURCE, 0x0);
+			setEventAuthorizations(rpc::event::UNMUTE_SOURCE, 0x0);
 			break;
+
+		/*case rpc::event::MUTE_SOURCE:
+			setEventAuthorizations(rpc::event::MUTE_SOURCE, EVENT_WRITE);
+			setEventAuthorizations(rpc::event::UNMUTE_SOURCE, 0x0);
+			break;
+
+		case rpc::event::UNMUTE_SOURCE:
+			setEventAuthorizations(rpc::event::MUTE_SOURCE, 0x0);
+			setEventAuthorizations(rpc::event::UNMUTE_SOURCE, EVENT_WRITE);
+			break;*/
 
 		default:
 			break;
@@ -818,6 +839,7 @@ Streamdeck::unlockEventAuthorizations(const rpc::event event) {
 		case rpc::event::MAKE_SCENE_ACTIVE:
 		case rpc::event::MAKE_COLLECTION_ACTIVE:
 			setEventAuthorizations(rpc::event::MAKE_SCENE_ACTIVE, EVENT_READ);
+
 		case rpc::event::GET_COLLECTIONS:
 		case rpc::event::GET_SCENES:
 		case rpc::event::GET_SOURCES:
@@ -841,6 +863,11 @@ Streamdeck::unlockEventAuthorizations(const rpc::event event) {
 			setEventAuthorizations(rpc::event::SOURCE_ADDED_SUBSCRIBE, EVENT_READ_WRITE);
 			setEventAuthorizations(rpc::event::SOURCE_REMOVED_SUBSCRIBE, EVENT_READ_WRITE);
 			setEventAuthorizations(rpc::event::SOURCE_UPDATED_SUBSCRIBE, EVENT_READ_WRITE);
+
+		//case rpc::event::MUTE_SOURCE:
+		//case rpc::event::UNMUTE_SOURCE:
+			setEventAuthorizations(rpc::event::MUTE_SOURCE, EVENT_READ_WRITE);
+			setEventAuthorizations(rpc::event::UNMUTE_SOURCE, EVENT_READ_WRITE);
 			break;
 
 		default:
@@ -979,6 +1006,11 @@ Streamdeck::logEvent(const rpc::event event, const QJsonDocument& json_quest) {
 
 		case rpc::event::GET_SCENES:
 			log_custom(0xebdcd9) << "Get scenes" << log_end;
+			break;
+
+		case rpc::event::MUTE_SOURCE:
+		case rpc::event::UNMUTE_SOURCE:
+			log_custom(0xff228d) << "Source un/mute" << log_end;
 			break;
 
 		case rpc::event::GET_SOURCES:

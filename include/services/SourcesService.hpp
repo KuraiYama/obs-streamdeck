@@ -68,4 +68,6 @@ class SourcesService : public ServiceImpl<SourcesService> {
 		bool
 		onGetSources(const rpc::request& data);
 
+		bool
+		onMuteSource(const rpc::request& data);
 };

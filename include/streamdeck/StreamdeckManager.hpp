@@ -142,6 +142,9 @@ class StreamdeckManager : public QObject, public SafeEventObservable<rpc::event>
 			bool(StreamdeckManager::*functor)(Streamdeck*, const rpc::response<T>&)
 		);
 
+		QString
+		formatResource(const rpc::response_base& response);
+
 		bool
 		setAcknowledge(Streamdeck* client, const rpc::response<void>& response);
 

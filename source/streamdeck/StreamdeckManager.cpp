@@ -123,16 +123,26 @@ StreamdeckManager::close(Streamdeck* streamdeck) {
 	streamdeck->close();
 }
 
+QString
+StreamdeckManager::formatResource(const rpc::response_base& response) {
+	if(response.request == nullptr) {
+		return QString("%1.%2").arg(response.serviceName).arg(response.method);
+	}
+	else {
+		const char* service = response.request->serviceName.c_str();
+		if(strlen(service) == 0)
+			service = response.serviceName;
+		const char* method = response.request->method.c_str();
+		if(strlen(method) == 0)
+			method = response.method;
+
+		return QString("%1.%2").arg(service).arg(method);
+	}
+}
+
 bool
 StreamdeckManager::setAcknowledge(Streamdeck* client, const rpc::response<void>& response) {
-	QString resource = response.request != nullptr ?
-		QString("%1.%2")
-		.arg(response.request->serviceName.c_str())
-		.arg(response.request->method.c_str()) :
-		QString("%1.%2")
-		.arg(response.serviceName)
-		.arg(response.method);
-
+	QString resource = formatResource(response);
 	return client->sendAcknowledge(response.event, resource.toStdString());
 }
 
@@ -143,14 +153,7 @@ StreamdeckManager::setSubscription(Streamdeck* client, const rpc::response<std::
 
 bool
 StreamdeckManager::setError(Streamdeck* client, const rpc::response<rpc::response_error>& response) {
-	QString resource = response.request != nullptr ?
-		QString("%1.%2")
-			.arg(response.request->serviceName.c_str())
-			.arg(response.request->method.c_str()) :
-		QString("%1.%2")
-			.arg(response.serviceName)
-			.arg(response.method);
-
+	QString resource = formatResource(response);
 	return client->sendError(response.event, resource.toStdString(), response.data);
 }
 
@@ -159,10 +162,7 @@ StreamdeckManager::setRecordStreamState(
 	Streamdeck* client, 
 	const rpc::response<std::pair<std::string, std::string>>& response
 ) {
-	QString resource = QString("%1.%2")
-		.arg(response.request->serviceName.c_str())
-		.arg(response.request->method.c_str());
-
+	QString resource = formatResource(response);
 	return client->sendRecordStreamState(
 		response.event,
 		resource.toStdString(),
@@ -173,79 +173,37 @@ StreamdeckManager::setRecordStreamState(
 
 bool
 StreamdeckManager::setSchema(Streamdeck* client, const rpc::response<Collections>& response) {
-	QString resource = response.request != nullptr ?
-		QString("%1.%2")
-		.arg(response.request->serviceName.c_str())
-		.arg(response.request->method.c_str()) :
-		QString("%1.%2")
-		.arg(response.serviceName)
-		.arg(response.method);
-
+	QString resource = formatResource(response);
 	return client->sendSchema(response.event, resource.toStdString(), response.data);
 }
 
 bool
 StreamdeckManager::setCollections(Streamdeck* client, const rpc::response<Collections>& response) {
-	QString resource = response.request != nullptr ?
-		QString("%1.%2")
-			.arg(response.request->serviceName.c_str())
-			.arg(response.request->method.c_str()) :
-		QString("%1.%2")
-			.arg(response.serviceName)
-			.arg(response.method);
-
+	QString resource = formatResource(response);
 	return client->sendCollections(response.event, resource.toStdString(), response.data);
 }
 
 bool
 StreamdeckManager::setCollection(Streamdeck* client, const rpc::response<CollectionPtr>& response) {
-	QString resource = response.request != nullptr ?
-		QString("%1.%2")
-		.arg(response.request->serviceName.c_str())
-		.arg(response.request->method.c_str()) :
-		QString("%1.%2")
-		.arg(response.serviceName)
-		.arg(response.method);
-
+	QString resource = formatResource(response);
 	return client->sendCollection(response.event, resource.toStdString(), response.data);
 }
 
 bool
 StreamdeckManager::setScenes(Streamdeck* client, const rpc::response<Scenes>& response) {
-	QString resource = response.request != nullptr ?
-		QString("%1.%2")
-		.arg(response.request->serviceName.c_str())
-		.arg(response.request->method.c_str()) :
-		QString("%1.%2")
-		.arg(response.serviceName)
-		.arg(response.method);
-
+	QString resource = formatResource(response);
 	return client->sendScenes(response.event, resource.toStdString(), response.data);
 }
 
 bool
 StreamdeckManager::setScene(Streamdeck* client, const rpc::response<ScenePtr>& response) {
-	QString resource = response.request != nullptr ?
-		QString("%1.%2")
-		.arg(response.request->serviceName.c_str())
-		.arg(response.request->method.c_str()) :
-		QString("%1.%2")
-		.arg(response.serviceName)
-		.arg(response.method);
-
+	QString resource = formatResource(response);
 	return client->sendScene(response.event, resource.toStdString(), response.data);
 }
 
 bool
 StreamdeckManager::setSources(Streamdeck* client, const rpc::response<Sources>& response) {
-	QString resource = response.request != nullptr ?
-		QString("%1.%2")
-		.arg(response.request->serviceName.c_str())
-		.arg(response.request->method.c_str()) :
-		QString("%1.%2")
-		.arg(response.serviceName)
-		.arg(response.method);
-
+	QString resource = formatResource(response);
 	return client->sendSources(response.event, resource.toStdString(), response.data);
 }
 

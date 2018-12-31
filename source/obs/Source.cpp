@@ -148,10 +148,18 @@ Source::muted() const {
 	return m_parentCollection->active && m_muted;
 }
 
-void
-Source::muted(bool mute_state) {
-	if(m_parentCollection->active)
+bool
+Source::muted(bool mute_state, bool rpc_action) {
+	if(m_parentCollection->active && m_audio && m_source != nullptr) {
 		m_muted = mute_state;
+		if(rpc_action) {
+			obs_source_set_muted(m_source, mute_state);
+			m_muted = obs_source_muted(m_source);
+			return m_muted == mute_state;
+		}
+		return true;
+	}
+	return false;
 }
 
 bool

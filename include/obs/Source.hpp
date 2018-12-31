@@ -135,8 +135,8 @@ class Source : public OBSStorable {
 		bool
 		muted() const;
 
-		void
-		muted(bool mute_state);
+		bool
+		muted(bool mute_state, bool rpc_action = false);
 
 		bool
 		audio() const;
