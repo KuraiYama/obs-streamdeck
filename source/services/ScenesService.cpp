@@ -301,9 +301,9 @@ ScenesService::onMakeSceneActive(const rpc::request& data) {
 			return false;
 		}
 
-		uint32_t id = data.args[0].toString().toInt();
-		uint16_t collection_id = (id & 0xFFFF0000) >> 16;
-		uint16_t scene_id = id & 0x0000FFFF;
+		uint32_t id = (uint32_t)data.args[0].toString().toInt();
+		uint16_t collection_id = id >> 18;
+		uint16_t scene_id = id & 0x0FFFF;
 
 		if(collection_id != obsManager()->activeCollection()->id()) {
 			logWarning("Scene doesn't belong to the active collection. Abort.");
