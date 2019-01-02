@@ -1,23 +1,9 @@
 #pragma once
 
 /*
- * Qt Includes
+ * Plugin Includes
  */
-#include <QDialog>
-#include <QMainWindow>
-#include <QPlainTextEdit>
-
-/*
-========================================================================================================
-	Types Predeclarations
-========================================================================================================
-*/
-
-namespace Ui {
-
-	class InfoDialog;
-
-}
+#include "include/obs/Item.hpp"
 
 /*
 ========================================================================================================
@@ -25,9 +11,17 @@ namespace Ui {
 ========================================================================================================
 */
 
-class InfoDialog : public QDialog {
+class ItemGroup :
+	public Item {
 
-    Q_OBJECT
+	/*
+	====================================================================================================
+		Static Class Attributes
+	====================================================================================================
+	*/
+	public:
+
+		static bool _toggle_subitems;
 
 	/*
 	====================================================================================================
@@ -36,7 +30,9 @@ class InfoDialog : public QDialog {
 	*/
 	private:
 
-		Ui::InfoDialog *ui;
+		std::set<Item*> m_items;
+
+		bool m_toggling;
 
 	/*
 	====================================================================================================
@@ -45,9 +41,11 @@ class InfoDialog : public QDialog {
 	*/
 	public:
 
-		explicit InfoDialog(QWidget *parent = 0);
+		ItemGroup(Scene* scene, uint16_t id, obs_sceneitem_t* item);
 
-		~InfoDialog();
+		ItemGroup(Scene* scene, uint16_t id, const std::string& name);
+
+		virtual ~ItemGroup();
 
 	/*
 	====================================================================================================
@@ -57,25 +55,21 @@ class InfoDialog : public QDialog {
 	public:
 
 		void
-		write(QString string);
+		item(obs_sceneitem_t* item) override;
 
-		QTextEdit*
-		logger() const;
-
-		void
-		showEvent(QShowEvent* event) override;
-
-	/*
-	====================================================================================================
-		Slots
-	====================================================================================================
-	*/
-	private slots:
+		const char*
+		type() const override;
 
 		void
-		clicked(bool checked);
+		remove(Item* item);
 
 		void
-		accept() override;
+		add(Item* item);
+
+		bool
+		visible() const override;
+
+		bool
+		visible(bool toggle, bool rpc_action = false) override;
 
 };

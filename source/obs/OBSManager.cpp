@@ -19,7 +19,8 @@
 OBSManager::OBSManager() :
 	m_activeCollection(nullptr),
 	m_isLoadingCollection(false),
-	m_lastCollectionID(0x0) {
+	m_lastCollectionID(0x0),
+	configuration(0x0) {
 }
 
 OBSManager::~OBSManager() {
@@ -218,6 +219,7 @@ OBSManager::loadCollections(OBSStorage<Collection>& collections, const uint16_t 
 		switchCollection(collection.get());
 		collection->loadSources();
 		collection->loadScenes();
+		collection->synchronize();
 		++i;
 	}
 

@@ -3,6 +3,7 @@
  */
 #include "include/services/ApplicationService.hpp"
 #include "include/common/Logger.hpp"
+#include "include/obs/ItemGroup.hpp"
 
 /*
 ========================================================================================================
@@ -94,7 +95,7 @@ ApplicationService::addPluginWindows() {
 
 	Logger::instance().output(dialog.logger());
 
-	dialog.show();
+	//dialog.show();
 }
 
 bool
@@ -109,6 +110,9 @@ ApplicationService::onApplicationLoaded() {
 
 	streamdeckManager()->listen();
 	logInfo("Application Loaded.");
+
+	ItemGroup::_toggle_subitems = (obsManager()->configuration & obsManager()->HIDE_GROUP);
+
 	return true;
 }
 
@@ -194,6 +198,9 @@ ApplicationService::loadDatabase(OBSStorage<Collection>& collections) {
 	try {
 		FileLoader collections_file(DATABASE_NAME);
 
+		// Read Configurations
+		collections_file.read((byte*)&obsManager()->configuration, sizeof(byte));
+
 		// Read numbers of collections
 		unsigned short collections_count = 0;
 		collections_file.read((byte*)&collections_count, sizeof(unsigned short));
@@ -258,6 +265,8 @@ ApplicationService::saveDatabase() {
 
 	try {
 		FileLoader collections_file(DATABASE_NAME, std::ios::out);
+		// Write configuration
+		collections_file.write((byte*)&obsManager()->configuration, sizeof(byte));
 		collections_file.write(block, block.size());
 	}
 	catch(std::exception& e) {

@@ -33,6 +33,8 @@ class Source;
 
 class ItemBuilder;
 
+class ItemGroup;
+
 /*
 ========================================================================================================
 	Types Definitions
@@ -50,6 +52,8 @@ class Item : public OBSStorable {
 
 	friend class ItemBuilder;
 
+	friend class ItemGroup;
+
 	/*
 	====================================================================================================
 		Instance Data Members
@@ -58,6 +62,8 @@ class Item : public OBSStorable {
 	protected:
 
 		Scene* m_parentScene;
+
+		ItemGroup* m_ownerItem;
 
 		obs_source_t* m_source;
 
@@ -99,13 +105,16 @@ class Item : public OBSStorable {
 		obs_sceneitem_t*
 		item() const;
 
-		void
+		ItemGroup*
+		owner() const;
+
+		virtual void
 		item(obs_sceneitem_t* item);
 
-		bool
+		virtual bool
 		visible() const;
 
-		bool
+		virtual bool
 		visible(bool toggle, bool rpc_action = false);
 
 };

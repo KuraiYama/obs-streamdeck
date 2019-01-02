@@ -3,7 +3,7 @@
  */
 #include "include/common/Logger.hpp"
 
-#define FORCE_DEBUG
+//#define FORCE_DEBUG
 
 /*
 ========================================================================================================

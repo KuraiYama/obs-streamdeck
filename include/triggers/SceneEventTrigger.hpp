@@ -122,12 +122,12 @@ class SceneEventTrigger : public EventTrigger<SceneEventTrigger, obs::scene::eve
 					this
 				);
 
-				signal_handler_connect(
+				/*signal_handler_connect(
 					signal_handler,
 					"source_destroy",
 					SceneEventTrigger::OnSourceDestroyed,
 					this
-				);
+				);*/
 
 				signal_handler_connect(
 					signal_handler,
@@ -158,12 +158,12 @@ class SceneEventTrigger : public EventTrigger<SceneEventTrigger, obs::scene::eve
 					this
 				);
 
-				signal_handler_disconnect(
+				/*signal_handler_disconnect(
 					signal_handler,
 					"source_destroy",
 					SceneEventTrigger::OnSourceDestroyed,
 					this
-				);
+				);*/
 
 				signal_handler_disconnect(
 					signal_handler,

@@ -62,4 +62,7 @@ class ItemsService : public ServiceImpl<ItemsService> {
 		bool
 		onItemChangeVisibility(const rpc::request& data);
 
+		bool
+		onItemsReordered(const obs::item::data& data);
+
 };

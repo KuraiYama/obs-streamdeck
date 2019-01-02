@@ -114,6 +114,8 @@ Scene::createItem(obs_sceneitem_t* item) {
 std::shared_ptr<Item>
 Scene::deleteItem(Item* item) {
 	std::shared_ptr<Item> item_ptr = m_items.pop(item->id());
+	if(item_ptr->owner() != nullptr)
+		item_ptr->owner()->remove(item_ptr.get());
 	return item_ptr;
 }
 
@@ -127,7 +129,6 @@ Scene::synchronize() {
 	typedef bool (*callback_type)(obs_scene_t* scene, obs_sceneitem_t* item, void* private_data);
 	auto func = [](obs_scene_t* scene, obs_sceneitem_t* item, void* private_data) -> bool {
 		Scene& scene_ref = *reinterpret_cast<Scene*>(private_data);
-		if(scene != scene_ref.scene()) return false;
 		uint16_t id = static_cast<uint16_t>(obs_sceneitem_get_id(item));
 		auto iter = scene_ref.m_items[id];
 		if(iter != nullptr) {

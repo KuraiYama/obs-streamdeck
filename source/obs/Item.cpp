@@ -4,6 +4,7 @@
 #include "include/obs/Collection.hpp"
 #include "include/obs/Scene.hpp"
 #include "include/obs/Item.hpp"
+#include "include/obs/ItemGroup.hpp"
 
  /*
   * Qt Includes
@@ -19,14 +20,16 @@
 Item::Item(Scene* scene, uint16_t id, obs_sceneitem_t* item) :
 	OBSStorable(id, obs_source_get_name(obs_sceneitem_get_source(item))),
 	m_parentScene(scene),
-	m_item(item) {
+	m_item(item),
+	m_ownerItem(nullptr) {
 	m_source = obs_sceneitem_get_source(m_item);
 	m_visible = obs_sceneitem_visible(m_item);
 }
 
 Item::Item(Scene* scene, uint16_t id, const std::string& name) :
 	OBSStorable(id, name),
-	m_parentScene(scene) {
+	m_parentScene(scene),
+	m_ownerItem(nullptr) {
 }
 
 Item::~Item() {
@@ -55,8 +58,16 @@ Item::item() const {
 	return m_item;
 }
 
+ItemGroup*
+Item::owner() const {
+	return m_ownerItem;
+}
+
 void
 Item::item(obs_sceneitem_t* item) {
+	if(m_ownerItem != nullptr)
+		m_ownerItem->remove(this);
+	m_ownerItem = nullptr;
 	m_item = item;
 	m_source = obs_sceneitem_get_source(item);
 	m_visible = obs_sceneitem_visible(m_item);

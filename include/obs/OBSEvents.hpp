@@ -169,6 +169,7 @@ namespace obs {
 			REMOVED,
 			SHOWN,
 			HIDDEN,
+			REORDER,
 
 			LIST_BUILD,
 		};

@@ -27,6 +27,8 @@ ItemsService::ItemsService() :
 
 	this->setupEvent(obs::item::event::SHOWN, &ItemsService::onItemUpdated);
 
+	this->setupEvent(obs::item::event::REORDER, &ItemsService::onItemsReordered);
+
 	this->setupEvent(rpc::event::SHOW_ITEM, &ItemsService::onItemChangeVisibility);
 	
 	this->setupEvent(rpc::event::HIDE_ITEM, &ItemsService::onItemChangeVisibility);
@@ -40,6 +42,12 @@ ItemsService::~ItemsService() {
 	OBS Event Handling
 ========================================================================================================
 */
+
+bool
+ItemsService::onItemsReordered(const obs::item::data& data) {
+	data.scene->synchronize();
+	return true;
+}
 
 bool
 ItemsService::onItemAdded(const obs::item::data& data) {

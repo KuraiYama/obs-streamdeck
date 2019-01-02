@@ -5,6 +5,7 @@
  */
 #include "include/obs/Item.hpp"
 #include "include/obs/ItemScene.hpp"
+#include "include/obs/ItemGroup.hpp"
 
 /*
 ========================================================================================================
@@ -34,7 +35,7 @@ class ItemBuilder {
 	*/
 	private:
 
-		std::map<std::string, Item*(ItemBuilder::*)(Scene*, uint16_t, const std::string&)> m_builders;
+		std::map<std::string, Item*(ItemBuilder::*)(Scene*, uint16_t, obs_sceneitem_t*)> m_builders;
 
 	/*
 	====================================================================================================
@@ -45,6 +46,7 @@ class ItemBuilder {
 
 		ItemBuilder() {
 			m_builders["scene"] = &ItemBuilder::buildItemScene;
+			m_builders["group"] = &ItemBuilder::buildItemGroup;
 			m_builders["default"] = &ItemBuilder::buildItem;
 		}
 
@@ -71,9 +73,9 @@ class ItemBuilder {
 
 			auto builder = m_builders.find(obs_source_get_id(obs_source));
 			if(builder == m_builders.end())
-				item = (this->*m_builders["default"])(scene, id, name);
+				item = (this->*m_builders["default"])(scene, id, obs_item);
 			else
-				item = (this->*builder->second)(scene, id, name);
+				item = (this->*builder->second)(scene, id, obs_item);
 
 			item->item(obs_item);
 
@@ -83,16 +85,24 @@ class ItemBuilder {
 	private:
 
 		Item*
-		buildItem(Scene* scene, uint16_t id, const std::string& name) {
-			Item* item = new Item(scene, id, name);
-			scene->collection()->getSourceByName(name)->addReference(&item->m_sourceRef);
+		buildItem(Scene* scene, uint16_t id, obs_sceneitem_t* obs_item) {
+			Item* item = new Item(scene, id, obs_item);
+			scene->collection()->getSourceByName(item->name())->addReference(&item->m_sourceRef);
 			return item;
 		}
 
 		Item*
-		buildItemScene(Scene* scene, uint16_t id, const std::string& name) {
-			ItemScene* item = new ItemScene(scene, id, name);
-			scene->collection()->getSceneByName(name)->sourcedScene().addReference(&item->m_sourceRef);
+		buildItemScene(Scene* scene, uint16_t id, obs_sceneitem_t* obs_item) {
+			ItemScene* item = new ItemScene(scene, id, obs_item);
+			scene->collection()->getSceneByName(item->name())->sourcedScene()
+				.addReference(&item->m_sourceRef);
+			return item;
+		}
+
+		Item*
+		buildItemGroup(Scene* scene, uint16_t id, obs_sceneitem_t* obs_item) {
+			ItemGroup* item = new ItemGroup(scene, id, obs_item);
+			scene->collection()->getSourceByName(item->name())->addReference(&item->m_sourceRef);
 			return item;
 		}
 

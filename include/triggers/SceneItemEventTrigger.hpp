@@ -102,6 +102,19 @@ class SceneItemEventTrigger :
 			trigger_ref.triggerChangedItem(scene, item, visible);
 		}
 
+		static void
+		OnItemReordered(void* trigger, calldata_t* data) {
+			if(!Service::_obs_started) return;
+
+			obs_scene_t* scene = nullptr;
+			bool result = calldata_get_ptr(data, "scene", &scene);
+
+			if(!result) return;
+
+			SceneItemEventTrigger& trigger_ref = *reinterpret_cast<SceneItemEventTrigger*>(trigger);
+			trigger_ref.triggerReorderedItems(scene);
+		}
+
 	/*
 	====================================================================================================
 		Instance Data Members
@@ -208,6 +221,16 @@ class SceneItemEventTrigger :
 		}
 
 		void
+		triggerReorderedItems(obs_scene_t* scene) {
+			auto scene_ref = m_scenes.find(scene);
+			if(scene_ref == m_scenes.end()) return;
+
+			obs::item::data data = { obs::item::event::REORDER , scene_ref->second };
+
+			m_event.notifyEvent<const obs::item::data&>(obs::item::event::REORDER, data);
+		}
+
+		void
 		addItem(const Item* item) {
 			if(m_items.find(item->item()) == m_items.end()) {
 				m_items.insert(std::make_pair(item->item(), const_cast<Item*>(item)));
@@ -247,6 +270,13 @@ class SceneItemEventTrigger :
 						signal_handler,
 						"item_visible",
 						SceneItemEventTrigger::OnItemVisibilityChanged,
+						this
+					);
+
+					signal_handler_connect(
+						signal_handler,
+						"reorder",
+						SceneItemEventTrigger::OnItemReordered,
 						this
 					);
 
@@ -301,6 +331,13 @@ class SceneItemEventTrigger :
 						signal_handler,
 						"item_visible",
 						SceneItemEventTrigger::OnItemVisibilityChanged,
+						this
+					);
+
+					signal_handler_disconnect(
+						signal_handler,
+						"reorder",
+						SceneItemEventTrigger::OnItemReordered,
 						this
 					);
 
